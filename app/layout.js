@@ -1,8 +1,16 @@
 import '../assets/globals.css';
 import { Poppins } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 const poppins = Poppins({
   variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ['100', '300', '400', '700'],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   weight: ['100', '300', '400', '700'],
   display: "swap",
@@ -18,10 +26,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={poppins.className}
+        className={`${poppins.className} ${inter.className}`}
       >
-        <main className='py-20'>
-
+        <main className='max-w-md mx-auto bg-white'>
         {children}
         </main>
       </body>
