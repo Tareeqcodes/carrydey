@@ -1,23 +1,26 @@
 "use client";
-import { Package, Plane, Wallet } from "lucide-react";
+import { Package, Plane, Wallet, Star, CheckCircle, Shield } from "lucide-react";
+import Link from "next/link";
 
 export default function page() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500  justify-center p-6 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 justify-center p-6 text-white">
         <div className="flex justify-between items-center mb-12">
-            <span className="text-white text-xl font-bold">SendMate</span>
-          <button 
-            className="text-white hover:text-gray-200"
+            <span className="text-white text-xl font-bold">PacMate</span>
+          <Link 
+            href="/login"
+            className="text-white font-semibold hover:text-gray-200"
           >
             Sign In
-          </button>
+          </Link>
         </div>
       <div className="text-center space-y-8 max-w-md">
         <div className="space-y-4">
-          <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto backdrop-blur-sm">
-            <Package size={40} className="text-white" />
-          </div>
-          <h1 className="text-4xl font-bold">SendMate</h1>
+         
+           <h1 className="text-3xl  font-bold mb-6">
+            Send packages with
+            <span className="block text-yellow-300">fellow travelers</span>
+          </h1>
           <p className="text-lg text-white/90">Connect senders with travelers for seamless package delivery across Nigeria</p>
         </div>
         
@@ -53,6 +56,22 @@ export default function page() {
           </div>
         </div>
       </div>
+      <div className="mt-16 text-center w-full ">
+                <div className="flex justify-center items-center space-x-3 text-white/80">
+                  <div className="flex items-center space-x-1">
+                    <Shield className="h-4 w-4" />
+                    <span className="text-xs">Verified Users</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="text-xs">Secure Payments</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4" />
+                    <span className="text-xs">Trusted Reviews</span>
+                  </div>
+                </div>
+              </div>
     </div>
   )
 }
