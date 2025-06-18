@@ -10,7 +10,7 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const searchParams = useSearchParams();
-  const role = searchParams.get('role'); // Get role from URL
+  const role = searchParams.get('role');
   
   const { login, loginWithGoogle } = useAuth();
 
