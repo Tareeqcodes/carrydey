@@ -1,6 +1,7 @@
 import '../assets/globals.css';
 import { Poppins } from 'next/font/google';
 import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/context/Authcontext';
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -28,9 +29,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${poppins.className} ${inter.className}`}
       >
+          <AuthProvider>
         <main className='max-w-md mx-auto bg-white'>
         {children}
         </main>
+          </AuthProvider>
       </body>
     </html>
   );

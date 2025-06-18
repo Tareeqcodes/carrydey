@@ -1,47 +1,78 @@
 'use client';
 import { useState } from 'react';
-// import { useAuth } from '@/context/Authcontext';
+import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/context/Authcontext';
 import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
-   const [sent, setSent] = useState(false);
-  // const [userRole, setUserRole] = useState('');
-  // const { user, login, loginWithGoogle } = useAuth();
+  const [sent, setSent] = useState(false);
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role'); // Get role from URL
   
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   await login(email);
-  //   setSent(true);
-  // };
-  
-  // const handleGoogleLogin = async () => {
-  //   await loginWithGoogle();
-  // };
-  
+  const { login, loginWithGoogle } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(email, role);
+    setSent(true);
+  };
+
+  const handleGoogleLogin = async () => {
+    await loginWithGoogle(role);
+  };
+
+  // Dynamic text based on role
+  const getWelcomeText = () => {
+    if (role === 'sender') {
+      return {
+        title: 'Join as Sender',
+        subtitle: 'Send packages with trusted travelers'
+      };
+    } else if (role === 'traveler') {
+      return {
+        title: 'Join as Traveler',
+        subtitle: 'Earn money while traveling'
+      };
+    }
+    return {
+      title: 'Welcome Back',
+      subtitle: 'Sign in to your account'
+    };
+  };
+
+  const welcomeText = getWelcomeText();
+
   return (
     <div className="flex flex-col min-h-screen items-justify justify-center bg-gray-50 px-4">
       <div className="flex flex-col mb-5 space-y-6 pl-10">
-          <Link 
-            href="/"
-            className="flex items-center text-gray-600 mb-4"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
-          </Link>
-          <div>
-          <h1 className="text-xl font-semibold text-gray-500">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your account</p>
-          </div>
+        <Link
+          href="/"
+          className="flex items-center text-gray-600 mb-4"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back
+        </Link>
+        <div>
+              <h1 className="text-xl font-semibold text-gray-500">Create Account</h1>
+          <h2 className="text-sm font-semibold text-gray-500">
+            {welcomeText.title}
+          </h2>
+          {/* <p className="text-gray-600">
+            {welcomeText.subtitle}
+          </p> */}
         </div>
+      </div>
+      
       <div className="max-w-md text-justify rounded-xl bg-white p-10 shadow-xl">
-
         {sent ? (
-          <p className="text-green-600 text-sm font-light text-center">Magic link sent! Check your inbox.</p>
+          <p className="text-green-600 text-sm font-light text-center">
+            Magic link sent! Check your inbox.
+          </p>
         ) : (
-          <form  className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <label className="text-sm py-5">
               Email
             </label>
@@ -61,22 +92,24 @@ export default function LoginForm() {
             </button>
           </form>
         )}
+        
         <div className="my-4 text-center text-gray-500 relative">
           <hr className="absolute top-3 w-full border-t border-b-gray-100" />
           <span className="relative text-xs bg-white px-3">Or continue with</span>
         </div>
         
-          <button
-            // onClick={handleGoogleLogin}
-            className="w-full border border-gray-300 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 cursor-pointer transition"
-          >
-            <Image
-              src="/google.svg"
-              alt='Google-image'
-              width={25}
-              height={25}
-            />Google
-          </button>
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full border border-gray-300 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 cursor-pointer transition"
+        >
+          <Image
+            src="/google.svg"
+            alt='Google-image'
+            width={25}
+            height={25}
+          />
+          Google
+        </button>
       </div>
     </div>
   );

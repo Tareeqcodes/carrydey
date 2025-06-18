@@ -9,7 +9,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-   
 
   useEffect(() => {
     checkSession();
@@ -26,33 +25,37 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } catch (error) {
-        setUser(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (email) => {
+  const login = async (email, role = null) => {
     try {
+      const baseUrl = 'http://localhost:3000/verify';
+      const verifyUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
+      
       await account.createMagicURLToken(
         ID.unique(),
         email,
-        'https://www.tagtrace.online/verify'
+        verifyUrl
       );    
     } catch (error) {
       alert(error.message);
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (role = null) => {
     try {
-      const redirectUrl = 'https://www.tagtrace.online/verify';
-      account.createOAuth2Session('google', "https://www.tagtrace.online", redirectUrl);
+      const baseUrl = 'http://localhost:3000/verify';
+      const redirectUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
+      
+      account.createOAuth2Session('google', "http://localhost:3000", redirectUrl);
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);
     }
   };
-  
 
   const logout = async () => {
     await account.deleteSession('current');
@@ -61,7 +64,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout, checkSession }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      loginWithGoogle, 
+      logout, 
+      checkSession 
+    }}>
       {loading ? <Spinner /> : children}
     </AuthContext.Provider>
   );
