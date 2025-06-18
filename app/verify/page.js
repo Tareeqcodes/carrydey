@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { account, databases } from '@/config/Appwriteconfig';
+import { account, databases, ID } from '@/config/Appwriteconfig';
 import { useAuth } from '@/context/Authcontext';
 
 export default function Confirm() {
@@ -13,7 +13,7 @@ export default function Confirm() {
       const urlParams = new URLSearchParams(window.location.search);
       const userId = urlParams.get('userId');
       const secret = urlParams.get('secret');
-      const role = urlParams.get('role');
+      const role = urlParams.get('role'); // Get role from URL
 
       console.log('Params:', { userId, secret, role });
 
@@ -24,9 +24,24 @@ export default function Confirm() {
       }
 
       try {
-        // Create session
-        const session = await account.createSession(userId, secret);    
-        console.log('Session created:', session);
+        // Check if there's already an active session
+        let sessionExists = false;
+        try {
+          const currentSession = await account.getSession('current');
+          if (currentSession) {
+            sessionExists = true;
+            console.log('Session already exists');
+          }
+        } catch (e) {
+          // No active session, which is fine
+          console.log('No active session found');
+        }
+
+        // Only create session if one doesn't exist
+        if (!sessionExists) {
+          const session = await account.createSession(userId, secret);    
+          console.log('Session created:', session);
+        }
         
         // Update auth context
         await checkSession(); 
@@ -49,48 +64,69 @@ export default function Confirm() {
   const storeUserRole = async (userId, userRole) => {
     try {
       console.log('Storing user role:', { userId, userRole });
+      
+      // Check if environment variables are set
+      const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+      const collectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
+      
+      if (!databaseId || !collectionId) {
+        console.error('Database configuration missing. Please set NEXT_PUBLIC_APPWRITE_DATABASE_ID and NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID in your environment variables.');
+        return;
+      }
+      
+      // Try to create the document
+      const userData = {
+        userId: userId,
+        role: userRole,
+        createdAt: new Date().toISOString(),
+      };
+      
       await databases.createDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID, // Your database ID
-        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID, // Your users collection ID
-        userId, // Use userId as document ID
-        {
-          userId: userId,
-          role: userRole,
-          createdAt: new Date().toISOString(),
-          // Add other default fields as needed
-        }
+        databaseId,
+        collectionId,
+        ID.unique(), // Use unique ID instead of userId to avoid conflicts
+        userData
       );
       
       console.log('User role stored successfully');
     } catch (error) {
-      // If document already exists, update it instead
-      if (error.code === 409) {
+      console.error('Error storing user role:', error);
+      
+      // If it's a duplicate error, try to update existing document
+      if (error.code === 409 || error.message.includes('already exists')) {
         try {
-          await databases.updateDocument(
+          // First, try to find the existing document
+          const existingDocs = await databases.listDocuments(
             process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
             process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-            userId,
-            {
-              role: userRole,
-              updatedAt: new Date().toISOString(),
-            }
+            [
+              Query.equal('userId', userId)
+            ]
           );
-          console.log('User role updated successfully');
+          
+          if (existingDocs.documents.length > 0) {
+            // Update the first matching document
+            await databases.updateDocument(
+              process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+              process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+              existingDocs.documents[0].$id,
+              {
+                role: userRole,
+                updatedAt: new Date().toISOString(),
+              }
+            );
+            console.log('User role updated successfully');
+          }
         } catch (updateError) {
           console.error('Error updating user role:', updateError);
         }
-      } else {
-        console.error('Error storing user role:', error);
       }
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h2>Verifying your account...</h2>
-        <p>Please wait while we set up your account.</p>
-      </div>
+    <div className='h-screen text-sm text-green-400 p-20 text-center items-center justify-center'>
+      Verifying please wait...
     </div>
   );
 }
