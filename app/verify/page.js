@@ -19,8 +19,9 @@ export default function Confirm() {
       const userId = urlParams.get('userId');
       const secret = urlParams.get('secret');
       const role = urlParams.get('role');
+      const name = urlParams.get('name');
 
-      console.log('Params:', { userId, secret, role });
+      console.log('Params:', { userId, secret, role, name });
 
       if (!userId || !secret) {
         console.warn('Missing credentials from URL');
@@ -32,6 +33,8 @@ export default function Confirm() {
         Processed.current = true; 
 
         let sessionExists = false;
+        let userName = name;
+
         try {
           const currentSession = await account.getSession('current');
           if (currentSession) {
@@ -48,10 +51,19 @@ export default function Confirm() {
         }
 
         await checkSession();
+
+           if (!userName) {
+          try {
+            const user = await account.get();
+            userName = user.name;
+          } catch (error) {
+            console.log('Could not get user name from account:', error.message);
+          }
+        }
         
         // Store user role with duplicate check
         if (role) {
-          await storeUserRole(userId, role);
+          await storeUserRole(userId, role, userName);
         }
 
         router.push('/dashboard');
@@ -65,9 +77,9 @@ export default function Confirm() {
     verifySession();
   }, []); // Remove dependencies to prevent re-runs
 
-  const storeUserRole = async (userId, userRole) => {
+  const storeUserRole = async (userId, userRole, userName) => {
     try {
-      console.log('Storing user role:', { userId, userRole });
+      console.log('Storing user role:', { userId, userRole, userName });
 
       const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
       const collectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
@@ -77,7 +89,6 @@ export default function Confirm() {
         return;
       }
 
-      // Check if user role already exists
       try {
         const existingUser = await databases.listDocuments(
           databaseId,
@@ -95,6 +106,7 @@ export default function Confirm() {
 
       const userData = {
         userId: userId,
+        userName: userName || 'Unknown User',
         role: userRole,
         createdAt: new Date().toISOString(),
       };

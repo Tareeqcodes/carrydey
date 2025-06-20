@@ -8,15 +8,16 @@ import Link from 'next/link';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [sent, setSent] = useState(false);
   const searchParams = useSearchParams();
   const role = searchParams.get('role');
-  
+     
   const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, role);
+    await login(email, role, name);
     setSent(true);
   };
 
@@ -24,7 +25,6 @@ export default function LoginForm() {
     await loginWithGoogle(role);
   };
 
-  // Dynamic text based on role
   const getWelcomeText = () => {
     if (role === 'sender') {
       return {
@@ -56,7 +56,7 @@ export default function LoginForm() {
           Back
         </Link>
         <div>
-              <h1 className="text-xl font-semibold text-gray-500">Create Account</h1>
+            <h1 className="text-xl font-semibold text-gray-500">Create Account</h1>
           <h2 className="text-sm font-semibold text-gray-500">
             {welcomeText.title}
           </h2>
@@ -65,7 +65,7 @@ export default function LoginForm() {
           </p> */}
         </div>
       </div>
-      
+            
       <div className="max-w-md text-justify rounded-xl bg-white p-10 shadow-xl">
         {sent ? (
           <p className="text-green-600 text-sm font-light text-center">
@@ -73,17 +73,34 @@ export default function LoginForm() {
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <label className="text-sm py-5">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full rounded-xl border border-gray-300 p-2 mt-2 focus:border-indigo-500 focus:outline-none"
-              required
-            />
+            <div>
+              <label className="text-sm py-5">
+                Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full rounded-xl border border-gray-300 p-2 mt-2 focus:border-indigo-500 focus:outline-none"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm py-5">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full rounded-xl border border-gray-300 p-2 mt-2 focus:border-indigo-500 focus:outline-none"
+                required
+              />
+            </div>
+            
             <button
               type="submit"
               className="w-full rounded-xl cursor-pointer bg-indigo-600 my-5 p-2 text-white hover:bg-indigo-700"
@@ -92,12 +109,12 @@ export default function LoginForm() {
             </button>
           </form>
         )}
-        
+                
         <div className="my-4 text-center text-gray-500 relative">
           <hr className="absolute top-3 w-full border-t border-b-gray-100" />
           <span className="relative text-xs bg-white px-3">Or continue with</span>
         </div>
-        
+                
         <button
           onClick={handleGoogleLogin}
           className="w-full border border-gray-300 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 cursor-pointer transition"

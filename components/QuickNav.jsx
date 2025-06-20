@@ -4,6 +4,7 @@ import { Search, MessageCircle, History } from 'lucide-react';
 export default function QuickNav() {
   return (
     <>
+    
      <div className="bg-white rounded-2xl p-6 mt-4 shadow-sm border border-gray-100">
           <h3 className="font-semibold mb-4 text-gray-900">Quick Tools</h3>
           <div className="grid grid-cols-3 gap-4">
@@ -30,6 +31,7 @@ export default function QuickNav() {
             </button>
           </div>
         </div>
+        <div className="h-20"></div>
     </>
   )
 }

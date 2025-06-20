@@ -10,10 +10,8 @@ export default function Page() {
 
   const handleRoleSelection = (role) => {
     if (user) {
-      // If already logged in, go straight to dashboard
       router.push('/dashboard');
     } else {
-      // If not logged in, go to login with role parameter
       router.push(`/login?role=${role}`);
     }
   };
@@ -22,21 +20,14 @@ export default function Page() {
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 justify-center p-6 text-white">
       <div className="flex justify-between items-center mb-12">
         <span className="text-white text-xl font-bold">PacMate</span>
-        {user ? (
-          <Link
-            href="/dashboard"
-            className="text-white font-semibold hover:text-gray-200"
-          >
-            Dashboard
-          </Link>
-        ) : (
-          <Link
-            href="/login"
-            className="text-white font-semibold hover:text-gray-200"
-          >
-            Sign In
-          </Link>
-        )}
+         {user && (
+           <Link
+             href="/dashboard"
+             className="text-white font-semibold hover:text-gray-200"
+           >
+             Dashboard
+           </Link>
+         )}
       </div>
       
       <div className="text-center space-y-8 max-w-md">
