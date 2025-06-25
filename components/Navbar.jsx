@@ -1,4 +1,5 @@
-
+'use client';
+import Link from 'next/link';
 import { User, Search, Plus, Wallet, Settings } from 'lucide-react';
 export default function Navbar() {
   return (
@@ -40,16 +41,16 @@ export default function Navbar() {
           </div>
           <span className="text-xs font-medium">Wallet</span>
         </button>
-        
+          <Link href="/setting">
         <button 
-          className='flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors '
+          className='flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors cursor-pointer'
         >
           <div className="relative">
-         
             <Settings size={24} className="relative z-10" />
           </div>
           <span className="text-xs font-medium">Settings</span>
         </button>
+          </Link>
       </div>
     </div>
   )
