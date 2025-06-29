@@ -4,7 +4,8 @@ import { databases, Query } from '@/config/Appwriteconfig';
 import { useAuth } from '@/context/Authcontext';
 import Main from './Main';
 import Hero from './Hero';
-import ContentLoading from './Ui/ContentLoading';
+import ContentLoading from './ui/ContentLoading';
+
 
 export default function UserRole() {
   const [userData, setUserData] = useState(null);

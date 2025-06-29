@@ -106,9 +106,11 @@ export default function Confirm() {
 
       const userData = {
         userId: userId,
-        userName: userName || 'Unknown User',
+        userName: userName || 'User',
         role: userRole,
         createdAt: new Date().toISOString(),
+        phone: '',
+        imageId: '',
       };
 
       await databases.createDocument(
