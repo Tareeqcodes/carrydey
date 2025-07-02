@@ -4,8 +4,7 @@ import { Bell, Plus } from 'lucide-react';
 
 export default function ContentLoading() {
   return (
-    <div>
-      {/* Main Component Loading - Mimicking the exact structure */}
+    <>
       <section>
         <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 px-4 py-6">
           <div className="flex items-center justify-between">
@@ -107,6 +106,6 @@ export default function ContentLoading() {
           </div>
         </motion.div>
       </div>
-    </div>
+    </>
   )
 }
