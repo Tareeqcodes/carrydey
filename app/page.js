@@ -19,7 +19,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 justify-center p-6 text-white">
       <div className="flex justify-between items-center mb-12">
-        <span className="text-white text-xl font-bold">PacMate</span>
+        <Link href="/setting" className="text-white text-xl font-bold">PacMate</Link>
          {user && (
            <Link
              href="/dashboard"
