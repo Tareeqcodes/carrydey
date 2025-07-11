@@ -1,17 +1,17 @@
 'use client';
 import { useAuth } from '@/context/Authcontext';
-import { Bell, CreditCard, Settings, MessageCircle, User, LogOut } from 'lucide-react';
+import { Bell, CreditCard, Shield, CheckCircle, Settings, Package, MessageCircle, User, LogOut } from 'lucide-react';
 import Header from '@/components/Header';
 // import Profile from '@/components/setting/Profile';
 
 const settingsOptions = [
-  { label: 'Settings', value: 'settings', icon: Settings },
   { label: 'Profile', value: 'profile', icon: User },
-  { label: 'Notifications', value: 'notifications', icon: Bell },
+  { label: 'My Packages', value: 'my_packages', icon: Package },
+  { label: 'Verification Center', value: 'verification_center', icon: Shield },
   { label: 'Payment Methods', value: 'payment_methods', icon: CreditCard },
-  { label: 'Account Settings', value: 'account_settings', icon: Settings },
+  { label: 'Notifications', value: 'notifications', icon: Bell },
+  { label: 'Settings', value: 'settings', icon: Settings },
   { label: 'Help & Support', value: 'help_support', icon: MessageCircle },
-  { label: 'Privacy Policy', value: 'privacy_policy', icon: User },
 ];
 
 
@@ -30,14 +30,14 @@ export default function page() {
                   <User size={24} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">Tariq</h3>
+                  <h3 className="font-semibold text-lg">Tariq Auwal</h3>
                   <p className="text-gray-600">{user?.email}</p>
-                  <p className="text-sm text-gray-500">+23412345678899</p>
+                   <div className="flex items-center space-x-2 mt-3">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-green-600">Verified Account</span>
+              </div>
                 </div>
               </div>
-              <button className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                Edit Profile
-              </button>
             </div>
         
         {/* Settings Options */}
