@@ -20,7 +20,7 @@ export default function page() {
       <Money />
       <PackageFeed />
       <QuickNav />
-      <Navbar />
+      <Navbar /> 
     </div>
       </div>
     
