@@ -14,17 +14,17 @@ export default function Navbar() {
           </div>
           <span className="text-xs font-medium">Home</span>
         </button>
-        
-        <button 
-     
-          className='flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors'
-        >
-          <div className="relative">
-           
-            <Search size={24} className="relative z-10" />
+
+        <Link href="/browse">
+          <button 
+            className='flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors'
+          >
+            <div className="relative">
+              <Search size={24} className="relative z-10" />
           </div>
           <span className="text-xs font-medium">Browse</span>
         </button>
+        </Link>
         
         <button 
           className="flex flex-col items-center space-y-1 p-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
