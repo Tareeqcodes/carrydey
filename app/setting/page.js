@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
@@ -222,11 +223,12 @@ const page = () => {
       {/* Main Settings Screen */}
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center space-x-4">
-          <button className="p-2 hover:bg-gray-100 rounded-lg">
+        
+        <div>
+          <Link href="/dashboard" className="flex items-center space-x-2">
             <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-xl font-semibold">Settings</h1>
+            <span className="text-gray-600 text-lg font-medium">Back to Dashboard</span>
+          </Link>
         </div>
 
         {/* Profile Card */}
