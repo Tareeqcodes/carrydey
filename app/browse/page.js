@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Clock, Package } from "lucide-react";
+import { MapPin, Clock, Package, Filter, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { databases } from "@/config/Appwriteconfig";
 
@@ -11,6 +11,13 @@ const collection = process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
 export default function PackagesPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({
+    status: "all",
+    timePosted: "all",
+    rewardRange: "all",
+    size: "all"
+  });
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +33,106 @@ export default function PackagesPage() {
     fetchData();
   }, []);
 
+  // Filter options
+  const filterOptions = {
+    status: [
+      { value: "all", label: "All Status", count: data.length },
+      { value: "urgent", label: "Urgent", count: data.filter(item => item.status?.toLowerCase() === "urgent").length },
+      { value: "express", label: "Express", count: data.filter(item => item.status?.toLowerCase() === "express").length },
+      { value: "standard", label: "Standard", count: data.filter(item => item.status?.toLowerCase() === "standard" || !item.status).length }
+    ],
+    timePosted: [
+      { value: "all", label: "All Time" },
+      { value: "today", label: "Today" },
+      { value: "week", label: "This Week" },
+      { value: "month", label: "This Month" }
+    ],
+    rewardRange: [
+      { value: "all", label: "All Rewards" },
+      { value: "low", label: "₦0 - ₦5,000" },
+      { value: "medium", label: "₦5,001 - ₦15,000" },
+      { value: "high", label: "₦15,001+" }
+    ],
+    size: [
+      { value: "all", label: "All Sizes" },
+      { value: "small", label: "Small" },
+      { value: "medium", label: "Medium" },
+      { value: "large", label: "Large" }
+    ]
+  };
 
+  // Filter the data based on active filters
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      // Status filter
+      if (activeFilters.status !== "all") {
+        const itemStatus = item.status?.toLowerCase() || "standard";
+        if (itemStatus !== activeFilters.status) return false;
+      }
+
+      // Time posted filter
+      if (activeFilters.timePosted !== "all") {
+        const createdDate = new Date(item.createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now - createdDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        switch (activeFilters.timePosted) {
+          case "today":
+            if (diffDays > 1) return false;
+            break;
+          case "week":
+            if (diffDays > 7) return false;
+            break;
+          case "month":
+            if (diffDays > 30) return false;
+            break;
+        }
+      }
+
+      // Reward range filter
+      if (activeFilters.rewardRange !== "all") {
+        const reward = item.reward;
+        switch (activeFilters.rewardRange) {
+          case "low":
+            if (reward > 5000) return false;
+            break;
+          case "medium":
+            if (reward <= 5000 || reward > 15000) return false;
+            break;
+          case "high":
+            if (reward <= 15000) return false;
+            break;
+        }
+      }
+
+      // Size filter
+      if (activeFilters.size !== "all") {
+        const itemSize = item.size?.toLowerCase();
+        if (itemSize !== activeFilters.size) return false;
+      }
+
+      return true;
+    });
+  }, [data, activeFilters]);
+
+  const handleFilterChange = (filterType, value) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilters({
+      status: "all",
+      timePosted: "all",
+      rewardRange: "all",
+      size: "all"
+    });
+  };
+
+  const hasActiveFilters = Object.values(activeFilters).some(filter => filter !== "all");
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-NG", {
@@ -126,24 +232,182 @@ export default function PackagesPage() {
           </p>
         </motion.div>
 
+        {/* Filter Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className='mb-6'>
+          
+          {/* Main Filter Pills */}
+          <div className='flex flex-wrap gap-3 mb-4'>
+            {filterOptions.status.map((option) => (
+              <motion.button
+                key={option.value}
+                onClick={() => handleFilterChange('status', option.value)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  activeFilters.status === option.value
+                    ? 'bg-blue-500 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                }`}>
+                {option.label}
+                {option.count !== undefined && (
+                  <span className={`ml-2 text-xs ${
+                    activeFilters.status === option.value ? 'text-blue-100' : 'text-gray-500'
+                  }`}>
+                    ({option.count})
+                  </span>
+                )}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Advanced Filters Toggle */}
+          <div className='flex items-center justify-between'>
+            <motion.button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className='flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors'>
+              <Filter className='w-4 h-4' />
+              <span className='text-sm font-medium'>
+                {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+              </span>
+            </motion.button>
+
+            {hasActiveFilters && (
+              <motion.button
+                onClick={clearAllFilters}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className='flex items-center gap-2 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors'>
+                <X className='w-4 h-4' />
+                Clear All
+              </motion.button>
+            )}
+          </div>
+
+          {/* Advanced Filters */}
+          <AnimatePresence>
+            {showAdvancedFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className='mt-4 overflow-hidden'>
+                <div className='bg-white rounded-2xl p-6 shadow-sm border border-gray-100'>
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                    
+                    {/* Time Posted Filter */}
+                    <div>
+                      <label className='block text-sm font-semibold text-gray-700 mb-3'>
+                        Time Posted
+                      </label>
+                      <div className='space-y-2'>
+                        {filterOptions.timePosted.map((option) => (
+                          <motion.button
+                            key={option.value}
+                            onClick={() => handleFilterChange('timePosted', option.value)}
+                            whileHover={{ x: 4 }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                              activeFilters.timePosted === option.value
+                                ? 'bg-blue-100 text-blue-700 font-medium'
+                                : 'text-gray-600 hover:bg-gray-50'
+                            }`}>
+                            {option.label}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Reward Range Filter */}
+                    <div>
+                      <label className='block text-sm font-semibold text-gray-700 mb-3'>
+                        Reward Range
+                      </label>
+                      <div className='space-y-2'>
+                        {filterOptions.rewardRange.map((option) => (
+                          <motion.button
+                            key={option.value}
+                            onClick={() => handleFilterChange('rewardRange', option.value)}
+                            whileHover={{ x: 4 }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                              activeFilters.rewardRange === option.value
+                                ? 'bg-green-100 text-green-700 font-medium'
+                                : 'text-gray-600 hover:bg-gray-50'
+                            }`}>
+                            {option.label}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Size Filter */}
+                    <div>
+                      <label className='block text-sm font-semibold text-gray-700 mb-3'>
+                        Package Size
+                      </label>
+                      <div className='space-y-2'>
+                        {filterOptions.size.map((option) => (
+                          <motion.button
+                            key={option.value}
+                            onClick={() => handleFilterChange('size', option.value)}
+                            whileHover={{ x: 4 }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                              activeFilters.size === option.value
+                                ? 'bg-purple-100 text-purple-700 font-medium'
+                                : 'text-gray-600 hover:bg-gray-50'
+                            }`}>
+                            {option.label}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Results Counter */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className='mt-4 text-sm text-gray-600'>
+            Showing {filteredData.length} of {data.length} packages
+          </motion.div>
+        </motion.div>
+
+        {/* Packages List */}
         <AnimatePresence>
           <motion.div
             variants={containerVariants}
             initial='hidden'
             animate='visible'
             className='space-y-4'>
-            {data.length === 0 ? (
+            {filteredData.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className='text-center py-12 bg-white rounded-2xl shadow-sm'>
                 <Package className='mx-auto h-12 w-12 text-gray-400 mb-4' />
-                <p className='text-gray-500 text-lg'>
-                  No packages available at the moment
+                <p className='text-gray-500 text-lg mb-2'>
+                  {hasActiveFilters ? 'No packages match your filters' : 'No packages available at the moment'}
                 </p>
+                {hasActiveFilters && (
+                  <motion.button
+                    onClick={clearAllFilters}
+                    whileHover={{ scale: 1.05 }}
+                    className='text-blue-600 hover:text-blue-700 font-medium'>
+                    Clear filters to see all packages
+                  </motion.button>
+                )}
               </motion.div>
             ) : (
-              data.map((item, index) => (
+              filteredData.map((item, index) => (
                 <motion.div
                   key={item.$id}
                   variants={itemVariants}

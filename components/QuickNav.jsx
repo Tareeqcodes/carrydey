@@ -8,15 +8,7 @@ export default function QuickNav() {
      <div className="bg-white rounded-2xl p-6 mt-4 shadow-sm border border-gray-100">
           <h3 className="font-semibold mb-4 text-gray-900">Quick Tools</h3>
           <div className="grid grid-cols-3 gap-4">
-            <button 
-           
-              className="text-center space-y-2 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto">
-                <Search size={20} className="text-blue-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">Search</span>
-            </button>
+            
             <button className="text-center space-y-2 p-3 rounded-xl hover:bg-gray-50 transition-colors">
               <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto">
                 <MessageCircle size={20} className="text-green-600" />

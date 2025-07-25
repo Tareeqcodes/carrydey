@@ -23,33 +23,6 @@ export default function Money() {
               Manage Wallet
             </button>
           </div>
-
-          {/* Performance Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">Active Packages</p>
-                  <p className="text-xl font-bold text-gray-900">3</p>
-                  <p className="text-xs text-green-600">+2 this week</p>
-                </div>
-   
-                  <Package size={20} className="text-blue-500" /> 
-                  <Plane size={20} className="text-green-500" />
-                
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">This Month</p>
-                  <p className="text-xl font-bold text-gray-900">₦45k</p>
-                  <p className="text-xs text-green-600">+12% from last month</p>
-                </div>
-                <TrendingUp size={20} className="text-green-500" />
-              </div>
-            </div>
-          </div>
         </div>
     </>
   )
