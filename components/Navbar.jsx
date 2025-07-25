@@ -5,15 +5,17 @@ export default function Navbar() {
   return (
      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
       <div className="flex justify-around">
-        <button 
-          className='flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors'
-        >
-          <div className="relative">
-        
+        <Link href="/dashboard">
+          <button 
+            className='flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors'
+          >
+            <div className="relative">
+
             <User size={24} className="relative z-10" />
           </div>
           <span className="text-xs font-medium">Home</span>
         </button>
+        </Link>
 
         <Link href="/browse">
           <button 
