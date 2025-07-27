@@ -1,7 +1,7 @@
 import '../assets/globals.css';
 import { Poppins } from 'next/font/google';
 import { Inter } from 'next/font/google';
-import { AuthProvider } from '@/context/Authcontext';
+import { AuthProvider } from '@/hooks/Authcontext';
 import Navbar from '@/components/Navbar';
 
 const poppins = Poppins({

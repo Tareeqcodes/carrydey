@@ -3,8 +3,8 @@ import { useState } from 'react'
 import Header from '@/components/Header'
 import { MapPin, Calendar } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion";
-import { databases, ID } from '@/config/Appwriteconfig'
-import { useAuth } from '@/context/Authcontext'
+import { databases, ID } from '@/lib/config/Appwriteconfig'
+import { useAuth } from '@/hooks/Authcontext'
 
 export default function PostPackage() {
   const { user } = useAuth()

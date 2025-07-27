@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { MapPin, Calendar, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Header from '@/components/Header';
-import { databases, ID } from '@/config/Appwriteconfig';
-import { useAuth } from '@/context/Authcontext';
+import { databases, ID } from '@/lib/config/Appwriteconfig';
+import { useAuth } from '@/hooks/Authcontext';
 
 export default function PostTrip() {
   const { user } = useAuth();

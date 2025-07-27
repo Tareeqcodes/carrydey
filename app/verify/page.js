@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { account, databases, ID, Query } from '@/config/Appwriteconfig';
-import { useAuth } from '@/context/Authcontext';
+import { account, databases, ID, Query } from '@/lib/config/Appwriteconfig';
+import { useAuth } from '@/hooks/Authcontext';
 
 export default function Confirm() {
   const router = useRouter();

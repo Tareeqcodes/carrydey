@@ -4,8 +4,8 @@ import Money from "@/components/Money"
 import PackageFeed from "@/components/PackageFeed"
 import UserRole from "@/components/UserRole"
 import QuickNav from "@/components/QuickNav"
-import { useAuth } from "@/context/Authcontext"
-// import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/Authcontext"
+
 
 
 export default function page() {

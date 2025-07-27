@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Edit3, Save, CheckCircle, User, Mail, Phone, Calendar } from 'lucide-react';
-import { account, databases, ID, Query, storage } from '@/config/Appwriteconfig';
-import { useAuth } from '@/context/Authcontext';
+import { account, databases, ID, Query, storage } from '@/lib/config/Appwriteconfig';
+import { useAuth } from '@/hooks/Authcontext';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const usercll = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;

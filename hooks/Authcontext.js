@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
-import { account, ID } from '@/config/Appwriteconfig';
+import { account, ID } from '@/lib/config/Appwriteconfig';
 import Spinner from '@/components/Spinner';
 
 const AuthContext = createContext();

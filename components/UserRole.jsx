@@ -1,10 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react';
-import { databases, Query } from '@/config/Appwriteconfig';
-import { useAuth } from '@/context/Authcontext';
+import { databases, Query } from '@/lib/config/Appwriteconfig';
+import { useAuth } from '@/hooks/Authcontext';
 import Main from './Main';
 import Hero from './Hero';
-import ContentLoading from './ui/ContentLoading';
+import ContentLoading from '@/components/ui/ContentLoading';
 
 
 export default function UserRole() {

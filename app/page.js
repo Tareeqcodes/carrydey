@@ -2,7 +2,7 @@
 import { Package, Plane, Wallet, Star, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/Authcontext";
+import { useAuth } from "@/hooks/Authcontext";
 
 export default function Page() {
   const { user } = useAuth();
