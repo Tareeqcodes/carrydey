@@ -17,13 +17,13 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 justify-center p-6 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 items-center justify-center p-6 text-white">
       <div className="flex justify-between items-center mb-12">
-        <Link href="/setting" className="text-white text-xl font-bold">PacMate</Link>
+        <Link href="/setting" className="text-white text-2xl font-bold">Sendr</Link>
          {user && (
            <Link
              href="/dashboard"
-             className="text-white font-semibold hover:text-gray-200"
+             className=" font-semibold text-lg text-gray-200"
            >
              Dashboard
            </Link>

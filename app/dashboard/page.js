@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link"
-import Money from "@/components/Money"
 import PackageFeed from "@/components/PackageFeed"
 import UserRole from "@/components/UserRole"
 import QuickNav from "@/components/QuickNav"
+import Navbar from "@/components/Navbar"
 import { useAuth } from "@/hooks/Authcontext"
 
 
@@ -17,11 +17,10 @@ export default function page() {
       <div>
     <div className="mb-20 bg-gradient-to-br from-gray-50 to-blue-50 px-6">
       <UserRole />
-      <Money />
       <PackageFeed />
       <QuickNav />
       <div className="h-20"></div>
-      {/* <Navbar />  */}
+      <Navbar /> 
     </div>
       </div>
     
