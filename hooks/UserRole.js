@@ -2,14 +2,10 @@
 import { useEffect, useState } from 'react';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-import Main from './Main';
-import Hero from './Hero';
-import ContentLoading from '@/components/ui/ContentLoading';
 
-
-export default function UserRole() {
+export const UserRole = () => {
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
   const { user } = useAuth(); 
 
   useEffect(() => {
@@ -42,13 +38,17 @@ export default function UserRole() {
     fetchUserRole();
   }, [user]);
 
-    if (loading) {
-      return <ContentLoading />;
-    }
-  return (
-    <>   
-     <Main role={userData?.role} name={userData?.userName} />
-      <Hero role={userData?.role} />
-    </> 
-  )
+  if (loading) {
+    return {
+      loading: true,
+      role: null,
+      name: null
+    };
+  }
+
+  return {
+    loading: false,
+    role: userData?.role || null,
+    name: userData?.userName || null
+  };
 }
