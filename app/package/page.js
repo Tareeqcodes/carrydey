@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import Header from '@/components/Header'
+import Header from '@/hooks/Header'
 import { MapPin, Calendar } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion";
 import { databases, ID } from '@/lib/config/Appwriteconfig'
