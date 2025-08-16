@@ -1,5 +1,6 @@
 'use client'
 import { useRef } from 'react';
+import { CloudDownload, CheckCircle, ChevronRight } from 'lucide-react';
 
 const LicenseUpload = ({ 
   uploadedFile, 
@@ -55,17 +56,13 @@ const LicenseUpload = ({
           </>
         ) : uploadedFile ? (
           <>
-            <svg className="w-12 h-12 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+            <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
             <h3 className="font-semibold text-green-600 mb-1">License uploaded successfully</h3>
             <p className="text-sm text-gray-600">{uploadedFile.name}</p>
           </>
         ) : (
           <>
-            <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
+            <CloudDownload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="font-semibold mb-1">Tap to upload photo</h3>
             <p className="text-sm text-gray-600">JPEG, PNG up to 10MB</p>
           </>
@@ -99,9 +96,7 @@ const LicenseUpload = ({
         className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
         Continue
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
-        </svg>
+        <ChevronRight className="w-4 h-4" />
       </button>
     </div>
   );

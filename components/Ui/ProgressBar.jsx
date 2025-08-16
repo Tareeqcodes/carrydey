@@ -1,6 +1,7 @@
 'use client'
 const ProgressBar = ({ currentStep, totalSteps = 4 }) => {
   const steps = [
+    'Start Verification',
     'Upload License',
     'Enter NIN',
     'Accept Terms',
@@ -29,9 +30,9 @@ const ProgressBar = ({ currentStep, totalSteps = 4 }) => {
         ))}
       </div>
       
-      <div className="text-sm text-gray-500 text-center">
+      {/* <div className="text-sm text-gray-500 text-center">
         Step {currentStep} of {totalSteps}
-      </div>
+      </div> */}
     </div>
   );
 };

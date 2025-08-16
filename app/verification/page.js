@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'; // Changed from 'next/router'
 // import { useAuth } from '../../lib/config/Appwriteconfig';
 import { useVerification } from '../../hooks/useVerification';
 import ProgressBar from '../../components/ui/ProgressBar';
+import IntroPage from '@/components/IntroPage';
 import LicenseUpload from '../../components/verification/LicenseUpload';
 import NINInput from '../../components/verification/NINInput';
 import Terms from '../../components/verification/Terms';
@@ -104,33 +105,39 @@ const VerificationPage = () => {
     switch (currentStep) {
       case 1:
         return (
+          <IntroPage
+            onNext={() => goToStep(2)}
+           />
+        );
+      case 2:
+        return (
           <LicenseUpload
             uploadedFile={verificationData.licenseFileId ? { name: 'License uploaded' } : null}
             onFileUpload={handleFileUpload}
             isLoading={isLoading}
             error={error}
-            onNext={() => goToStep(2)}
-          />
-        );
-      case 2:
-        return (
-          <NINInput
-            nin={verificationData.nin}
-            onNINChange={updateNIN}
             onNext={() => goToStep(3)}
           />
         );
       case 3:
         return (
+          <NINInput
+            nin={verificationData.nin}
+            onNINChange={updateNIN}
+            onNext={() => goToStep(4)}
+          />
+        );
+      case 4:
+        return (
           <Terms
             verificationData={verificationData}
             updateVerificationData={updateVerificationData}
-            onNext={() => goToStep(4)}
+            onNext={() => goToStep(5)}
             loading={isLoading}
             error={error}
           />
         );
-      case 4:
+      case 5:
         return (
           <SubmitVerification
             verificationData={verificationData}
