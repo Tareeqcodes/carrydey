@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; // Changed from 'next/router'
-import { useAuth } from '../../lib/config/Appwriteconfig';
+// import { useAuth } from '../../lib/config/Appwriteconfig';
 import { useVerification } from '../../hooks/useVerification';
 import ProgressBar from '../../components/ui/ProgressBar';
 import LicenseUpload from '../../components/verification/LicenseUpload';
@@ -11,7 +11,7 @@ import SubmitVerification from '../../components/verification/SubmitVerification
 
 const VerificationPage = () => {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  // const { user, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [stepHistory, setStepHistory] = useState([]);
   
@@ -26,18 +26,18 @@ const VerificationPage = () => {
   } = useVerification();
 
   // Redirect if not authenticated
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
+  //     </div>
+  //   );
+  // }
 
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  // if (!user) {
+  //   router.push('/login');
+  //   return null;
+  // }
 
   const goToStep = (step) => {
     setStepHistory(prev => [...prev, currentStep]);
@@ -64,9 +64,17 @@ const VerificationPage = () => {
   const handleSubmit = async () => {
     const result = await submitVerification();
     if (result.success) {
-      // Redirect to pending page or dashboard
-      router.push('/verification/pending');
+     router.push('/pending');
     }
+  };
+
+  // Helper function to update verification data
+  const updateVerificationData = (updates) => {
+    // Since acceptTerms expects a boolean, we need to handle this properly
+    if (updates.hasOwnProperty('termsAccepted')) {
+      acceptTerms(updates.termsAccepted);
+    }
+    // Add other update handlers here if needed
   };
 
   const Header = ({ showBack = false }) => (
@@ -115,9 +123,11 @@ const VerificationPage = () => {
       case 3:
         return (
           <Terms
-            termsAccepted={verificationData.termsAccepted}
-            onTermsChange={acceptTerms}
+            verificationData={verificationData}
+            updateVerificationData={updateVerificationData}
             onNext={() => goToStep(4)}
+            loading={isLoading}
+            error={error}
           />
         );
       case 4:

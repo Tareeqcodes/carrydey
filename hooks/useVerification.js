@@ -1,6 +1,5 @@
-
 import { useState, useCallback } from 'react';
-import { verificationData } from '../utils/verificationData';
+import { verificationData as verificationService } from '../utils/verificationData';
 import { useAuth } from '../hooks/Authcontext';
 
 export const useVerification = () => {
@@ -21,7 +20,7 @@ export const useVerification = () => {
     setIsLoading(true);
     setError(null);
 
-    const result = await verificationData.uploadLicense(file);
+    const result = await verificationService.uploadLicense(file);
     
     if (result.success) {
       setVerificationData(prev => ({
@@ -68,7 +67,7 @@ export const useVerification = () => {
       status: 'pending'
     };
 
-    const result = await verificationData.createVerification(submissionData);
+    const result = await verificationService.createVerification(submissionData);
     
     if (result.success) {
       setVerificationData(prev => ({

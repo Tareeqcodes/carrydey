@@ -7,8 +7,7 @@ import { UserRole } from "@/hooks/UserRole";
 import QuickNav from "@/components/QuickNav"
 import Navbar from "@/components/Navbar"
 import { useAuth } from "@/hooks/Authcontext"
-import ContentLoading from "@/components/ui/ContentLoading";
-import TravelerDashboard from "@/components/TravelerDashboard"; 
+import ContentLoading from "@/components/ui/ContentLoading"; 
 import VerificationPage from "../verification/page";
 
 export default function page() {

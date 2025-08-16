@@ -1,9 +1,8 @@
-
-import { databases, storage, ID } from '../lib/config/Appwriteconfig';
+import { databases, storage, Query, ID } from '../lib/config/Appwriteconfig';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_VERIFICATION_COLLECTION_ID;
-const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_LICENSE_BUCKET_ID;
+const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_LISENCE_BUCKET_ID;
 
 export const verificationData = { 
   // Upload license image to storage
