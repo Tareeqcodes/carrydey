@@ -14,6 +14,7 @@ export default function Main({ role, name }) {
           <div className="flex items-center space-x-3">
             {/* User Type Badge */}
             <div className='px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium'>
+              
               {role.charAt(0).toUpperCase() + role.slice(1) || 'Guest'}
             </div>
 

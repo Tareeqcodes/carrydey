@@ -5,19 +5,19 @@ import Main from "@/components/Main";
 import Hero from "@/components/Hero";
 import { UserRole } from "@/hooks/UserRole";
 import QuickNav from "@/components/QuickNav"
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/Authcontext"
-import ContentLoading from "@/components/ui/ContentLoading"; 
+import ContentLoading from "@/components/ui/ContentLoading";
 import PendingVerification from "../travelerdashboard/page";
 
 export default function page() {
   const { user } = useAuth();
   const { loading, role, name } = UserRole();
-  
-  if (loading) {
+
+  if (loading && role === "sender") {
     return <ContentLoading />;
   }
-  
+ 
   return (
     <>
       {user ? (
@@ -30,13 +30,13 @@ export default function page() {
               <PackageFeed />
               <QuickNav />
               <div className="h-20"></div>
-              <Navbar />
             </div>
           ) : (
             <div>
               <PendingVerification />
             </div>
           )}
+          <Navbar />
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-screen">

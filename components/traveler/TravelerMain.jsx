@@ -6,12 +6,12 @@ import { formatDistanceToNow } from "date-fns";
 import { usePackages } from "@/hooks/usePackages";
 
 export default function TravelerMain() {
-  const { data, loading } = usePackages();
+  const { data } = usePackages();
 
   // Sort packages by creation date (most recent first) and take first 4
   const recentPackages = useMemo(() => {
     if (!data || data.length === 0) return [];
-    
+
     return [...data]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 2);
@@ -82,71 +82,55 @@ export default function TravelerMain() {
 
   const headerVariants = {
     hidden: { opacity: 0, y: -20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className='flex items-center justify-center py-12'>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className='w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full'
-          />
-          <span className='ml-3 text-gray-600 font-medium'>
-            Loading latest packages...
-          </span>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header Section */}
-      <motion.div
-        variants={headerVariants}
-        initial="hidden"
-        animate="visible"
-        className="mb-8">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-          Packages Near You
-        </h1>
-      </motion.div>
-
-      {/* Stats Bar */}
+    <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 mb-8 border border-blue-100">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{data?.length || 0}</div>
-              <div className="text-sm text-gray-600">Total Packages</div>
+        className='bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 mb-8 border border-blue-100'>
+        <div className='flex flex-wrap items-center justify-between gap-4'>
+          <div className='flex items-center gap-6'>
+            <div className='text-center'>
+              <div className='text-2xl font-bold text-blue-600'>
+                {data?.length || 0}
+              </div>
+              <div className='text-sm text-gray-600'>Total Packages</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{recentPackages.length}</div>
-              <div className="text-sm text-gray-600">Latest Available</div>
+            <div className='text-center'>
+              <div className='text-2xl font-bold text-green-600'>
+                {recentPackages.length}
+              </div>
+              <div className='text-sm text-gray-600'>Latest Available</div>
             </div>
           </div>
           <motion.button
             whileHover={{ scale: 1.05, x: 5 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors">
+            className='flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors'>
             View All Packages
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className='w-4 h-4' />
           </motion.button>
         </div>
       </motion.div>
 
-      {/* Packages List */}
+      <motion.div
+        variants={headerVariants}
+        initial='hidden'
+        animate='visible'
+        className='mb-5'>
+        <h1 className='text-xl md:text-2xl font-bold text-gray-900 mb-2'>
+          Packages Near You
+        </h1>
+      </motion.div>
+
       <AnimatePresence>
         <motion.div
           variants={containerVariants}
@@ -176,15 +160,15 @@ export default function TravelerMain() {
                 style={{
                   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
                 }}>
-                
                 {/* New Badge for very recent packages */}
-                {new Date() - new Date(item.createdAt) < 24 * 60 * 60 * 1000 && (
+                {new Date() - new Date(item.createdAt) <
+                  24 * 60 * 60 * 1000 && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: index * 0.1 + 0.3 }}
-                    className="absolute top-4 right-5 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
-                    NEW
+                    className='absolute top-4 right-5 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10'>
+                    New
                   </motion.div>
                 )}
 
@@ -251,7 +235,10 @@ export default function TravelerMain() {
                     transition={{ delay: index * 0.1 + 0.6 }}>
                     <div className='flex items-center text-gray-500 text-sm'>
                       <Clock className='w-4 h-4 mr-1' />
-                      <span>Posted {formatDistanceToNow(new Date(item.createdAt))} ago</span>
+                      <span>
+                        Posted {formatDistanceToNow(new Date(item.createdAt))}{" "}
+                        ago
+                      </span>
                     </div>
 
                     <motion.span
@@ -292,7 +279,7 @@ export default function TravelerMain() {
           </motion.button>
         </motion.div>
       )} */}
-      <div className="h-20"></div>
+      <div className='h-20'></div>
     </div>
   );
 }
