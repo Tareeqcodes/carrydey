@@ -1,11 +1,9 @@
-'use client'
-import Header from '@/components/ui/Header';
+import Header from "../ui/Header"
 
-
-export default function PendingVerification() {
+export default function Pending() {
   return (
     <>
-     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white px-6 py-5">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white px-6 py-5">
       <div className="max-w-md mx-auto">
         <Header />
         

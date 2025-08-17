@@ -8,7 +8,7 @@ import QuickNav from "@/components/QuickNav"
 import Navbar from "@/components/Navbar"
 import { useAuth } from "@/hooks/Authcontext"
 import ContentLoading from "@/components/ui/ContentLoading"; 
-import VerificationPage from "../verification/page";
+import PendingVerification from "../travelerdashboard/page";
 
 export default function page() {
   const { user } = useAuth();
@@ -34,7 +34,7 @@ export default function page() {
             </div>
           ) : (
             <div>
-              <VerificationPage />
+              <PendingVerification />
             </div>
           )}
         </div>

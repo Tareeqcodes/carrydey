@@ -110,7 +110,6 @@ export default function Confirm() {
         role: userRole,
         createdAt: new Date().toISOString(),
         phone: '',
-        imageId: '',
       };
 
       await databases.createDocument(
