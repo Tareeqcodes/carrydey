@@ -18,7 +18,7 @@ export default function UnifiedNavbar() {
         {role === 'traveler' ? (
           // Traveler Navigation
           <>
-            <button className="flex flex-col items-center space-y-1 p-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+            <button className="flex flex-col items-center space-y-1 p-2 rounded-lg text-white hover:text-black bg-black hover:bg-gray-100 cursor-pointer transition-colors">
               <Package size={24} />
               <span className="text-xs font-medium">Match</span>
             </button>

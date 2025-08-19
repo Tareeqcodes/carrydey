@@ -32,9 +32,6 @@ export default function PackagesPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className='mb-8'>
-          <h1 className='text-3xl font-bold text-gray-600 mb-2'>
-            Packages Near You
-          </h1>
           <p className='text-gray-500 text-lg'>
             Discover delivery opportunities in your area
           </p>

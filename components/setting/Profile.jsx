@@ -19,7 +19,6 @@ const Profile = () => {
     userName: '',
     phone: '',
     email: '',
-    avatar: ''
   });
 
   const containerVariants = {
@@ -55,14 +54,14 @@ const Profile = () => {
           userName: profileDoc.userName || authUser.name || '',
           phone: profileDoc.phone || '',
           email: profileDoc.email || authUser.email || '',
-          avatar: profileDoc.avatar || ''
+
         });
       } else {
         setProfileData({
           userName: authUser.name || '',
           phone: '',
           email: authUser.email || '',
-          avatar: ''
+         
         });
       }
     } catch (error) {
@@ -76,33 +75,33 @@ const Profile = () => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAvatarUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleAvatarUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    try {
-      const response = await storage.createFile(profileBucket, ID.unique(), file);
-      const fileUrl = storage.getFileView(profileBucket, response.$id).href;
+  //   try {
+  //     const response = await storage.createFile(profileBucket, ID.unique(), file);
+  //     const fileUrl = storage.getFileView(profileBucket, response.$id).href;
 
-      setProfileData((prev) => ({ ...prev, avatar: fileUrl }));
+  //     setProfileData((prev) => ({ ...prev, avatar: fileUrl }));
 
-      if (docId) {
-        await databases.updateDocument(db, usercll, docId, { avatar: fileUrl });
-      } else {
-        const payload = {
-          userId: authUser.$id,
-          userName: profileData.userName,
-          phone: profileData.phone,
-          email: profileData.email,
-          avatar: fileUrl
-        };
-        const newDoc = await databases.createDocument(db, usercll, ID.unique(), payload);
-        setDocId(newDoc.$id);
-      }
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-    }
-  };
+  //     if (docId) {
+  //       await databases.updateDocument(db, usercll, docId, { avatar: fileUrl });
+  //     } else {
+  //       const payload = {
+  //         userId: authUser.$id,
+  //         userName: profileData.userName,
+  //         phone: profileData.phone,
+  //         email: profileData.email,
+  //         avatar: fileUrl
+  //       };
+  //       const newDoc = await databases.createDocument(db, usercll, ID.unique(), payload);
+  //       setDocId(newDoc.$id);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error uploading avatar:', error);
+  //   }
+  // };
 
   const handleSaveProfile = async () => {
     try {
@@ -112,8 +111,8 @@ const Profile = () => {
         userName: profileData.userName,
         phone: profileData.phone,
         email: profileData.email,
-        avatar: profileData.avatar,
-        // updatedAt: new Date().toISOString()
+        // avatar: profileData.avatar,
+      
       };
 
       if (docId) {
@@ -162,11 +161,11 @@ const Profile = () => {
                 whileHover={{ scale: 1.05 }}
                 className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden"
               >
-                {profileData.avatar ? (
+                {/* {profileData.avatar ? (
                   <img src={profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   profileData.userName.charAt(0).toUpperCase()
-                )}
+                )} */}
               </motion.div>
               <motion.label
                 whileHover={{ scale: 1.1 }}
@@ -176,8 +175,8 @@ const Profile = () => {
                 <Camera size={14} className="text-white" />
                 <input
                   type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
+                  // accept="image/*"
+                  // onChange={handleAvatarUpload}
                   className="hidden"
                 />
               </motion.label>
