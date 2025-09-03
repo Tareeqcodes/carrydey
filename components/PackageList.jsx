@@ -1,11 +1,12 @@
-
 "use client";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Package, Filter, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function PackagesList({ data, loading }) {
+  const router = useRouter();
   const [activeFilters, setActiveFilters] = useState({
     status: "all",
     timePosted: "all",
@@ -13,6 +14,11 @@ export default function PackagesList({ data, loading }) {
     size: "all"
   });
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Handle package click navigation
+  const handlePackageClick = (packageId) => {
+    router.push(`/singlepackage/${packageId}`);
+  };
 
   // Filter options
   const filterOptions = {
@@ -236,7 +242,7 @@ export default function PackagesList({ data, loading }) {
             className='flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors'>
             <Filter className='w-4 h-4' />
             <span className='text-sm font-medium'>
-              {showAdvancedFilters} Filters
+              {showAdvancedFilters ? 'Hide' : 'Show'} Filters
             </span>
           </motion.button>
 
@@ -334,14 +340,6 @@ export default function PackagesList({ data, loading }) {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Results Counter
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className='mt-4 text-sm text-gray-600'>
-          Showing {filteredData.length} of {data.length} packages
-        </motion.div> */}
       </motion.div>
 
       {/* Packages List */}
@@ -375,6 +373,7 @@ export default function PackagesList({ data, loading }) {
                 key={item.$id}
                 variants={itemVariants}
                 whileHover='hover'
+                onClick={() => handlePackageClick(item.$id)}
                 className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer'
                 style={{
                   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",

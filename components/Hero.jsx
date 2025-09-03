@@ -16,7 +16,7 @@ export default function Hero() {
           Connect with verified travelers going your way
         </p> 
         <Link 
-        href="/package"
+        href="/uploadpackage"
         prefetch={false}
           className="bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors flex items-center space-x-2"
         >
