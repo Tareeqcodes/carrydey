@@ -343,7 +343,7 @@ export default function CombinedPackageDetails({ packageData }) {
           ) : isAccepted ? (
             <span>✓ Accepted!</span>
           ) : (
-            <span>Accept Package</span>
+            <span>Request Delivery</span>
           )}
         </button>
         <p className="text-center text-xs text-gray-500 mt-2">

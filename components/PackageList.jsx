@@ -24,7 +24,6 @@ export default function PackagesList({ data, loading }) {
   const filterOptions = {
     status: [
       { value: "all", label: "All Status", count: data.length },
-      { value: "urgent", label: "Urgent", count: data.filter(item => item.status?.toLowerCase() === "urgent").length },
       { value: "express", label: "Express", count: data.filter(item => item.status?.toLowerCase() === "express").length },
       { value: "standard", label: "Standard", count: data.filter(item => item.status?.toLowerCase() === "standard" || !item.status).length }
     ],
@@ -32,13 +31,12 @@ export default function PackagesList({ data, loading }) {
       { value: "all", label: "All Time" },
       { value: "today", label: "Today" },
       { value: "week", label: "This Week" },
-      { value: "month", label: "This Month" }
     ],
     rewardRange: [
       { value: "all", label: "All Rewards" },
       { value: "low", label: "₦0 - ₦5,000" },
       { value: "medium", label: "₦5,001 - ₦15,000" },
-      { value: "high", label: "₦15,001+" }
+      { value: "high", label: "₦15,000+" }
     ],
     size: [
       { value: "all", label: "All Sizes" },
@@ -70,9 +68,6 @@ export default function PackagesList({ data, loading }) {
             break;
           case "week":
             if (diffDays > 7) return false;
-            break;
-          case "month":
-            if (diffDays > 30) return false;
             break;
         }
       }
@@ -132,8 +127,6 @@ export default function PackagesList({ data, loading }) {
 
   const getPriorityColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "urgent":
-        return "text-red-500 bg-red-50 border-red-200";
       case "standard":
         return "text-gray-600 bg-gray-50 border-gray-200";
       case "express":
@@ -395,7 +388,7 @@ export default function PackagesList({ data, loading }) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 + 0.3 }}>
                         <span className='text-sm font-medium'>
-                          {item.size} • {item.weight}kg
+                          {item.size}
                         </span>
                       </motion.div>
                     </div>
