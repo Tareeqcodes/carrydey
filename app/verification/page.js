@@ -1,9 +1,8 @@
 'use client'
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Changed from 'next/router'
-// import { useAuth } from '../../lib/config/Appwriteconfig';
+import { useRouter } from 'next/navigation'; 
 import { useVerification } from '../../hooks/useVerification';
-import ProgressBar from '../../components/ui/ProgressBar';
+import ProgressBar from '../../components/verification/ProgressBar';
 import IntroPage from '@/components/IntroPage';
 import LicenseUpload from '../../components/verification/LicenseUpload';
 import NINInput from '../../components/verification/NINInput';
@@ -12,7 +11,6 @@ import SubmitVerification from '../../components/verification/SubmitVerification
 
 const VerificationPage = () => {
   const router = useRouter();
-  // const { user, loading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [stepHistory, setStepHistory] = useState([]);
   
@@ -56,7 +54,6 @@ const VerificationPage = () => {
   const handleFileUpload = async (file) => {
     const result = await uploadLicense(file);
     if (result.success) {
-      // File uploaded successfully, the hook will update the state
       return result;
     }
     return result;

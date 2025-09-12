@@ -1,12 +1,15 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { databases, ID } from '@/lib/config/Appwriteconfig';
+import { useAuth } from '@/hooks/Authcontext';
 
 export default function CombinedPackageDetails({ packageData }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
+  const { user } = useAuth();
 
   const handleGoBack = () => {
     router.back();
@@ -18,7 +21,20 @@ export default function CombinedPackageDetails({ packageData }) {
 
   const handleAcceptPackage = async () => {
     setIsLoading(true);
-    
+     try {
+      const application = await databases.createDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS,
+      ID.unique(),
+      {
+        packageId: packageData.$id,
+        travelerId: user.$id,
+        status: 'pending',
+      }
+     ) 
+     } catch (error) {
+      console.error('Error creating application:', error);
+     }
     setTimeout(() => {
       setIsAccepted(true);
       setIsLoading(false);

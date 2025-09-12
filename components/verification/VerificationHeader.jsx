@@ -1,7 +1,7 @@
 'use client'
 import { ChevronLeft } from "lucide-react";
 
-const Header = ({ showBack = false, onGoBack }) => (
+const VerificationHeader = ({ showBack = false, onGoBack }) => (
     <div className="flex items-center justify-between mb-8 pt-5">
         {showBack ? (
             <button
@@ -22,4 +22,4 @@ const Header = ({ showBack = false, onGoBack }) => (
     </div>
 );
 
-export default Header;
+export default VerificationHeader;

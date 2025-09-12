@@ -1,11 +1,11 @@
-import Header from "../ui/Header"
+import VerificationHeader from "./VerificationHeader"
 
 export default function Pending() {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white px-6 py-5">
       <div className="max-w-md mx-auto">
-        <Header />
+        <VerificationHeader />
         
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
           <div className="text-center mb-6">
