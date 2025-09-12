@@ -1,7 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import GetSinglePackage from "@/hooks/GetSinglePackage";
+import usesinglePackage from "@/hooks/usesinglePackage";
 import CombinedPackageDetails from "@/components/CombinedPackageDetails";
 
 export default function PackageDetailPage() {
@@ -16,7 +16,7 @@ export default function PackageDetailPage() {
       try {
         setLoading(true);
         setError(null);
-        const result = await GetSinglePackage(id);
+        const result = await usesinglePackage(id);
         setData(result);
       } catch (error) {
         console.error("Error fetching package data:", error);

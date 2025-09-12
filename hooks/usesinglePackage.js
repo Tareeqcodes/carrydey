@@ -4,7 +4,7 @@ import { databases } from "@/lib/config/Appwriteconfig"
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const collection = process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
 
-const GetSinglePackage = async (id) => {
+const usesinglePackage = async (id) => {
   try {
     const response = await databases.getDocument(db, collection, id);
     return response;
@@ -14,4 +14,4 @@ const GetSinglePackage = async (id) => {
   }
 };
 
-export default GetSinglePackage;
+export default usesinglePackage;

@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { Search, Settings, Package, Info, User } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, Package, Info, User, MessageCircle } from 'lucide-react';
 import { UserRole } from '@/hooks/UserRole';
 
 export default function UnifiedNavbar() {
@@ -40,7 +41,7 @@ export default function UnifiedNavbar() {
             </Link>
           </>
         ) : role === 'sender' ? (
-          // Sender Navigation
+         
           <>
             <Link href="/dashboard">
               <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors">
@@ -52,14 +53,21 @@ export default function UnifiedNavbar() {
             </Link>
             <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors">
               <div className="relative">
+                <MessageCircle size={24} className="relative z-10" />
+              </div>
+              <span className="text-xs font-medium">Requests</span>
+            </button>
+            <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors">
+              <div className="relative">
                 <Info size={24} className="relative z-10" />
               </div>
               <span className="text-xs font-medium">Transit</span>
             </button>
+            
             <Link href="/setting">
               <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors cursor-pointer">
                 <div className="relative">
-                  <Settings size={24} className="relative z-10" />
+                  <User size={24} className="relative z-10" />
                 </div>
                 <span className="text-xs font-medium">Profile</span>
               </button>
