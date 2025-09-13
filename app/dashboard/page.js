@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Main from "@/components/Main";
 import Hero from "@/components/Hero";
-import { UserRole } from "@/hooks/UserRole";
+import { useUserRole } from "@/hooks/useUserRole";
 import QuickNav from "@/components/QuickNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/Authcontext";
@@ -11,7 +11,7 @@ import PendingVerification from "../travelerdashboard/page";
 
 export default function page() {
   const { user } = useAuth();
-  const { loading, role, name } = UserRole();
+  const { loading, role, name } = useUserRole();
 
   if (loading && role === "sender") {
     return <ContentLoading />;

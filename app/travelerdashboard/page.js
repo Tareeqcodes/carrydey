@@ -2,11 +2,11 @@
 import { motion } from "framer-motion";
 import TravelerMain from "@/components/traveler/TravelerMain";
 import Pending from "@/components/verification/Pending";
-import { UserRole } from "@/hooks/UserRole";
+import { useUserRole } from "@/hooks/useUserRole";
 import Main from "@/components/Main";
 
 export default function PendingVerification() {
-  const { role, name, loading } = UserRole();
+  const { role, name, loading } = useUserRole();
 
   if (loading) {
     return (

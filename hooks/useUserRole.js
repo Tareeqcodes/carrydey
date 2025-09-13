@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 
-export const UserRole = () => {
+export const useUserRole = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true); 
   const { user } = useAuth(); 

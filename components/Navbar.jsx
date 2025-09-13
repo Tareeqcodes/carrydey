@@ -1,11 +1,10 @@
 'use client';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Search, Package, Info, User, MessageCircle } from 'lucide-react';
-import { UserRole } from '@/hooks/UserRole';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function UnifiedNavbar() {
-  const { role, loading } = UserRole();
+  const { role, loading } = useUserRole();
   
   // Don't render anything while loading
   if (loading) return null;
@@ -24,7 +23,7 @@ export default function UnifiedNavbar() {
               <span className="text-xs font-medium">Match</span>
             </button>
             <Link href="/browse">
-              <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors">
+              <button className="flex flex-col items-center cursor-pointer space-y-1 p-2 rounded-lg transition-colors">
                 <div className="relative">
                   <Search size={24} className="relative z-10" />
                 </div>
@@ -51,13 +50,15 @@ export default function UnifiedNavbar() {
                 <span className="text-xs font-medium">Home</span>
               </button>
             </Link>
-            <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors">
+            <Link href="/deliveryRequest">
+            <button className="flex flex-col cursor-pointer items-center space-y-1 p-2 rounded-lg transition-colors">
               <div className="relative">
                 <MessageCircle size={24} className="relative z-10" />
               </div>
               <span className="text-xs font-medium">Requests</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors">
+            </Link>
+            <button className="flex flex-col items-center cursor-pointer space-y-1 p-2 rounded-lg transition-colors">
               <div className="relative">
                 <Info size={24} className="relative z-10" />
               </div>
@@ -65,7 +66,7 @@ export default function UnifiedNavbar() {
             </button>
             
             <Link href="/setting">
-              <button className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-colors cursor-pointer">
+              <button className="flex flex-col  items-center space-y-1 p-2 rounded-lg transition-colors cursor-pointer">
                 <div className="relative">
                   <User size={24} className="relative z-10" />
                 </div>
