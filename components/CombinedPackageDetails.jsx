@@ -9,7 +9,7 @@ export default function CombinedPackageDetails({ packageData }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuth(); 
 
   const handleGoBack = () => {
     router.back();
@@ -22,7 +22,7 @@ export default function CombinedPackageDetails({ packageData }) {
   const handleAcceptPackage = async () => {
     setIsLoading(true);
      try {
-      const application = await databases.createDocument(
+      await databases.createDocument(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
       process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS,
       ID.unique(),

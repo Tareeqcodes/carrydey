@@ -1,11 +1,13 @@
+'use client';
+import { motion } from "framer-motion";
 import { CheckCircle, Send } from "lucide-react";
 
-const SubmitVerification = ({
+export function SubmitVerification({
   verificationData,
   onSubmit,
   isLoading,
   error,
-}) => {
+}) {
   const verificationItems = [
     {
       completed: !!verificationData.licenseFileId,
@@ -24,77 +26,119 @@ const SubmitVerification = ({
   const allItemsCompleted = verificationItems.every((item) => item.completed);
 
   return (
-    <div className='bg-white rounded-2xl p-6 shadow-lg border border-gray-100'>
-      <div className='text-center mb-6'>
-        <CheckCircle className='w-14 h-14 mx-auto mb-2 text-orange-600' />
-        <h1 className='text-2xl font-semibold text-gray-900 mb-2'>
-          Ready to Submit
-        </h1>
-        <p className='text-gray-600'>
-          Review your information and submit for verification
-        </p>
-      </div>
+    <motion.div 
+      className="max-w-md mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <CheckCircle className="w-16 h-16 mx-auto mb-6 text-gray-700" />
+          <h1 className="text-3xl font-light text-gray-900 mb-4 tracking-tight">
+            Ready to Submit
+          </h1>
+          <p className="text-gray-500 leading-relaxed">
+            Review your information and submit for verification
+          </p>
+        </motion.div>
 
-      <div className='bg-gray-50 rounded-lg p-4 mb-5'>
-        <h4 className='font-semibold text-gray-800 mb-3'>
-          Verification Summary
-        </h4>
-        <div className='space-y-2'>
-          {verificationItems.map((item, index) => (
-            <div key={index} className='flex items-center gap-2'>
-              <CheckCircle
-                className={`w-3 h-3 ${
-                  item.completed ? "text-green-500" : "text-gray-300"
-                }`}
-                
-              />
-              <span
-                className={`text-sm ${
+        <motion.div 
+          className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-6"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <h4 className="font-medium text-gray-800 mb-4 text-sm tracking-wide uppercase">
+            Verification Summary
+          </h4>
+          <div className="space-y-4">
+            {verificationItems.map((item, index) => (
+              <motion.div 
+                key={index} 
+                className="flex items-center gap-3"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + (index * 0.1), duration: 0.3 }}
+              >
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                  item.completed ? "bg-gray-900" : "bg-gray-300"
+                }`}>
+                  <CheckCircle className="w-3 h-3 text-white" />
+                </div>
+                <span className={`text-sm ${
                   item.completed ? "text-gray-700" : "text-gray-400"
                 }`}>
-                {item.text}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {error && (
-        <div className='bg-red-50 p-4 rounded-lg mb-4'>
-          <p className='text-sm text-red-700 font-medium'>Error: {error}</p>
-        </div>
-      )}
-
-      <div className='bg-orange-50 p-4 rounded-lg mb-6'>
-        <h4 className='font-semibold text-orange-600 mb-2'>
-          What happens next?
-        </h4>
-        <ul className='text-sm text-gray-700 space-y-1'>
-          <li>• Our team will review your documents</li>
-          <li>• You'll receive an email with the verification status</li>
-          <li>• Verification typically takes 12-24 hours</li>
-          <li>• Once approved, you can start accepting deliveries</li>
-        </ul>
-      </div>
-
-      <button
-        onClick={onSubmit}
-        disabled={!allItemsCompleted || isLoading}
-        className='w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 rounded-xl font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'>
-        {isLoading ? (
-          <>
-            <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white'></div>
-            Submitting...
-          </>
-        ) : (
-          <div className="flex gap-3 items-center">
-            Submit for Review
-            <Send className="w-4 h-3.5" />
+                  {item.text}
+                </span>
+              </motion.div>
+            ))}
           </div>
-        )}
-      </button>
-    </div>
-  );
-};
+        </motion.div>
 
-export default SubmitVerification;
+        {error && (
+          <motion.div 
+            className="bg-gray-50 border border-gray-200 p-4 rounded-2xl mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="text-sm text-gray-700 font-medium">Error: {error}</p>
+          </motion.div>
+        )}
+
+        <motion.div 
+          className="bg-gray-50 border border-gray-100 rounded-2xl p-6 mb-8"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        >
+          <h4 className="font-medium text-gray-800 mb-4 text-sm tracking-wide uppercase">
+            What Happens Next
+          </h4>
+          <ul className="text-sm text-gray-600 space-y-3 leading-relaxed">
+            <li className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+              Our team will review your documents
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+              You'll receive an email with verification status
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+              Verification typically takes 12-24 hours
+            </li>
+          </ul>
+        </motion.div>
+
+        <motion.button
+          onClick={onSubmit}
+          disabled={!allItemsCompleted || isLoading}
+          className="w-full bg-gray-900 text-white py-4 rounded-2xl font-medium text-sm tracking-wide uppercase hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          whileHover={!isLoading && allItemsCompleted ? { y: -2 } : {}}
+          whileTap={!isLoading && allItemsCompleted ? { scale: 0.98 } : {}}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.4 }}
+        >
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              Processing...
+            </>
+          ) : (
+            <>
+              Submit for Review
+              <Send className="w-4 h-4" />
+            </>
+          )}
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+}

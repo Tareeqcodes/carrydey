@@ -1,13 +1,14 @@
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; 
+import { motion } from 'framer-motion';
 import { useVerification } from '../../hooks/useVerification';
 import ProgressBar from '../../components/verification/ProgressBar';
-import IntroPage from '@/components/IntroPage';
-import LicenseUpload from '../../components/verification/LicenseUpload';
+import {IntroPage} from '@/components/verification/IntroPage';
+import {LicenseUpload} from '../../components/verification/LicenseUpload';
 import NINInput from '../../components/verification/NINInput';
 import Terms from '../../components/verification/Terms';
-import SubmitVerification from '../../components/verification/SubmitVerification';
+import {SubmitVerification} from '../../components/verification/SubmitVerification';
 
 const VerificationPage = () => {
   const router = useRouter();
@@ -23,20 +24,6 @@ const VerificationPage = () => {
     acceptTerms,
     submitVerification
   } = useVerification();
-
-  // Redirect if not authenticated
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!user) {
-  //   router.push('/login');
-  //   return null;
-  // }
 
   const goToStep = (step) => {
     setStepHistory(prev => [...prev, currentStep]);
@@ -66,94 +53,175 @@ const VerificationPage = () => {
     }
   };
 
-  // Helper function to update verification data
   const updateVerificationData = (updates) => {
-    // Since acceptTerms expects a boolean, we need to handle this properly
     if (updates.hasOwnProperty('termsAccepted')) {
       acceptTerms(updates.termsAccepted);
     }
-    // Add other update handlers here if needed
   };
 
   const Header = ({ showBack = false }) => (
-    <div className="flex items-center justify-between mb-8 pt-5">
+    <motion.div 
+      className="flex items-center justify-between mb-12 pt-8"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
       {showBack ? (
-        <button
+        <motion.button
           onClick={goBack}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-all"
+          className="group p-3 rounded-full hover:bg-gray-50 text-gray-400 hover:text-gray-700 transition-all duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth="2" 
+              d="M15 19l-7-7 7-7"
+              className="group-hover:stroke-2"
+            />
           </svg>
-        </button>
+        </motion.button>
       ) : (
-        <div className="w-9"></div>
+        <div className="w-12"></div>
       )}
-      <div className='flex-1 text-center'>
-        <div className="text-3xl font-bold text-orange-600">Sendr</div>
-        <p>Send Smarter.</p>
-        <p>Travel Richer.</p>
-      </div>
-      <div className="w-9"></div>
-    </div>
+      
+      <motion.div 
+        className='flex-1 text-center'
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <motion.h1 
+          className="text-4xl font-light text-gray-900 tracking-tight mb-1"
+          initial={{ letterSpacing: '0.5em', opacity: 0 }}
+          animate={{ letterSpacing: '-0.025em', opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          Sendr
+        </motion.h1>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <p className="text-sm font-medium text-gray-600 tracking-wide">SEND SMARTER</p>
+          <p className="text-sm font-medium text-gray-400 tracking-wide">TRAVEL RICHER</p>
+        </motion.div>
+      </motion.div>
+      
+      <div className="w-12"></div>
+    </motion.div>
+  );
+
+  const PageContainer = ({ children }) => (
+    <motion.div
+      key={currentStep}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className="min-h-[400px]"
+    >
+      {children}
+    </motion.div>
   );
 
   const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <IntroPage
-            onNext={() => goToStep(2)}
-           />
-        );
-      case 2:
-        return (
-          <LicenseUpload
-            uploadedFile={verificationData.licenseFileId ? { name: 'License uploaded' } : null}
-            onFileUpload={handleFileUpload}
-            isLoading={isLoading}
-            error={error}
-            onNext={() => goToStep(3)}
-          />
-        );
-      case 3:
-        return (
-          <NINInput
-            nin={verificationData.nin}
-            onNINChange={updateNIN}
-            onNext={() => goToStep(4)}
-          />
-        );
-      case 4:
-        return (
-          <Terms
-            verificationData={verificationData}
-            updateVerificationData={updateVerificationData}
-            onNext={() => goToStep(5)}
-            loading={isLoading}
-            error={error}
-          />
-        );
-      case 5:
-        return (
-          <SubmitVerification
-            verificationData={verificationData}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            error={error}
-          />
-        );
-      default:
-        return null;
-    }
+    const stepComponents = {
+      1: (
+        <IntroPage onNext={() => goToStep(2)} />
+      ),
+      2: (
+        <LicenseUpload
+          uploadedFile={verificationData.licenseFileId ? { name: 'License uploaded' } : null}
+          onFileUpload={handleFileUpload}
+          isLoading={isLoading}
+          error={error}
+          onNext={() => goToStep(3)}
+        />
+      ),
+      3: (
+        <NINInput
+          nin={verificationData.nin}
+          onNINChange={updateNIN}
+          onNext={() => goToStep(4)}
+        />
+      ),
+      4: (
+        <Terms
+          verificationData={verificationData}
+          updateVerificationData={updateVerificationData}
+          onNext={() => goToStep(5)}
+          loading={isLoading}
+          error={error}
+        />
+      ),
+      5: (
+        <SubmitVerification
+          verificationData={verificationData}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          error={error}
+        />
+      )
+    };
+
+    return (
+      <PageContainer>
+        {stepComponents[currentStep] || null}
+      </PageContainer>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white px-6 py-5">
-      <div className="max-w-md mx-auto">
-        <Header showBack={currentStep > 1} />
-        <ProgressBar currentStep={currentStep} />
-        {renderStep()}
+    <div className="min-h-screen bg-white">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50/30 via-white to-gray-50/20"></div>
+      
+      {/* Grid pattern overlay */}
+      <div 
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, gray 1px, transparent 0)`,
+          backgroundSize: '20px 20px'
+        }}
+      ></div>
+
+      <div className="relative z-10 px-8 py-6">
+        <div className="max-w-lg mx-auto">
+          <Header showBack={currentStep > 1} />
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <ProgressBar currentStep={currentStep} />
+          </motion.div>
+          
+          <motion.main
+            className="mt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            {renderStep()}
+          </motion.main>
+
+          {/* Footer */}
+          <motion.footer 
+            className="mt-16 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1 }}
+          >
+            <p className="text-xs text-gray-400 tracking-widest uppercase font-medium">
+              Secure Verification Process
+            </p>
+          </motion.footer>
+        </div>
       </div>
     </div>
   );
