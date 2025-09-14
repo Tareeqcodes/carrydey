@@ -115,19 +115,6 @@ const VerificationPage = () => {
     </motion.div>
   );
 
-  const PageContainer = ({ children }) => (
-    <motion.div
-      key={currentStep}
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
-      className="min-h-[400px]"
-    >
-      {children}
-    </motion.div>
-  );
-
   const renderStep = () => {
     const stepComponents = {
       1: (
@@ -168,11 +155,7 @@ const VerificationPage = () => {
       )
     };
 
-    return (
-      <PageContainer>
-        {stepComponents[currentStep] || null}
-      </PageContainer>
-    );
+    return stepComponents[currentStep] || null;
   };
 
   return (
@@ -201,16 +184,10 @@ const VerificationPage = () => {
             <ProgressBar currentStep={currentStep} />
           </motion.div>
           
-          <motion.main
-            className="mt-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+          <main className="mt-8 min-h-[400px]">
             {renderStep()}
-          </motion.main>
+          </main>
 
-          {/* Footer */}
           <motion.footer 
             className="mt-16 text-center"
             initial={{ opacity: 0 }}

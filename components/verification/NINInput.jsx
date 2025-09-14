@@ -14,7 +14,6 @@ const NINInput = ({ nin, onNINChange, onNext }) => {
   };
 
   const isValid = localNIN.length === 11;
-  const progress = (localNIN.length / 11) * 100;
 
   return (
     <motion.div 
@@ -41,7 +40,7 @@ const NINInput = ({ nin, onNINChange, onNext }) => {
             National Identity
           </h1>
           <p className="text-gray-500 leading-relaxed">
-            Enter your 11-digit National Identification Number for verification
+            Enter your National Identification Number for verification
           </p>
         </motion.div>
         
@@ -54,24 +53,6 @@ const NINInput = ({ nin, onNINChange, onNext }) => {
           <label className="block text-sm font-medium text-gray-700 mb-3 tracking-wide uppercase">
             NIN Number
           </label>
-          
-          {/* Progress bar */}
-          <div className="mb-4">
-            <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gray-900 rounded-full"
-                initial={{ width: '0%' }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>{localNIN.length}/11 digits</span>
-              <span className={isValid ? 'text-gray-700 font-medium' : ''}>
-                {isValid ? 'Complete' : 'In progress'}
-              </span>
-            </div>
-          </div>
 
           <motion.div
             className={`relative transition-all duration-300 ${
@@ -94,8 +75,15 @@ const NINInput = ({ nin, onNINChange, onNext }) => {
               } ${isValid ? 'text-gray-900' : 'text-gray-600'}`}
               maxLength={11}
             />
-            
-            
+
+            <motion.div 
+              className="absolute -bottom-2 left-1/2 transform -translate-x-1/2"
+              initial={{ scale: 0 }}
+              animate={{ scale: isValid ? 1 : 0 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+             
+            </motion.div>
           </motion.div>
         </motion.div>
         
@@ -139,15 +127,6 @@ const NINInput = ({ nin, onNINChange, onNext }) => {
           <ChevronRight className="w-4 h-4" />
         </motion.button>
 
-        {/* Subtle helper text */}
-        <motion.p 
-          className="text-center text-xs text-gray-400 mt-4 tracking-wide uppercase"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.4 }}
-        >
-          Step 3 of 5
-        </motion.p>
       </div>
     </motion.div>
   );
