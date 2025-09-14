@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Search, Package, Info, User, MessageCircle } from 'lucide-react';
+import { Search, Settings, Package, Info, User, MessageCircle } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
 
 export default function UnifiedNavbar() {
