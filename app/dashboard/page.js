@@ -6,7 +6,6 @@ import { useUserRole } from "@/hooks/useUserRole";
 import QuickNav from "@/components/QuickNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/Authcontext";
-import ContentLoading from "@/components/ui/ContentLoading";
 import PendingVerification from "../travelerdashboard/page";
 
 export default function page() {

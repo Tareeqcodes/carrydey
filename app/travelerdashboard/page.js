@@ -4,6 +4,7 @@ import TravelerMain from "@/components/traveler/TravelerMain";
 import Pending from "@/components/verification/Pending";
 import { useUserRole } from "@/hooks/useUserRole";
 import Main from "@/components/Main";
+import Navbar from "@/components/Navbar";
 
 export default function PendingVerification() {
   const { role, name, loading } = useUserRole();
