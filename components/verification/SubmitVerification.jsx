@@ -1,6 +1,8 @@
 'use client';
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Send } from "lucide-react";
+import { Pending } from "./Pending";
 
 export function SubmitVerification({
   verificationData,
@@ -8,6 +10,8 @@ export function SubmitVerification({
   isLoading,
   error,
 }) {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const verificationItems = [
     {
       completed: !!verificationData.licenseFileId,
@@ -24,6 +28,20 @@ export function SubmitVerification({
   ];
 
   const allItemsCompleted = verificationItems.every((item) => item.completed);
+
+  const handleSubmit = async () => {
+    try {
+      await onSubmit();
+      // After successful submission, show pending page
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Submission failed:', error);
+    }
+  };
+
+  if (isSubmitted) {
+    return <Pending />;
+  }
 
   return (
     <motion.div 
@@ -117,7 +135,7 @@ export function SubmitVerification({
         </motion.div>
 
         <motion.button
-          onClick={onSubmit}
+          onClick={handleSubmit}
           disabled={!allItemsCompleted || isLoading}
           className="w-full bg-gray-900 text-white py-4 rounded-2xl font-medium text-sm tracking-wide uppercase hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
           whileHover={!isLoading && allItemsCompleted ? { y: -2 } : {}}

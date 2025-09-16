@@ -114,6 +114,7 @@ export default function Page() {
         </main>
 
         <footer className="p-8">
+          <Link href="/setting">
           <div className="text-center max-w-6xl mx-auto">
             <div className="relative inline-block">
               <div className="absolute -inset-1 bg-gradient-to-r from-gray-200/50 via-blue-200/50 to-slate-200/50 rounded-full blur opacity-30"></div>
@@ -124,6 +125,7 @@ export default function Page() {
               </div>
             </div>
           </div>
+          </Link>
         </footer>
       </div>
     </div>

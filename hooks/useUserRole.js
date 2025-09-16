@@ -5,12 +5,12 @@ import { useAuth } from '@/hooks/Authcontext';
 
 export const useUserRole = () => {
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true); 
-  const { user } = useAuth(); 
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchUserRole = async () => {
-       if (!user) {
+      if (!user) {
         setLoading(false);
         return;
       }
@@ -42,13 +42,21 @@ export const useUserRole = () => {
     return {
       loading: true,
       role: null,
-      name: null
+      name: null,
+      status: null,
+      userData: null,
+      isVerified: false
     };
   }
+
+  const status = userData?.status || 'pending';
 
   return {
     loading: false,
     role: userData?.role || null,
-    name: userData?.userName || null
+    name: userData?.userName || null,
+    status: status,
+    userData: userData,
+    isVerified: status === 'verified'
   };
 }

@@ -5,11 +5,9 @@ import { useUserRole } from '@/hooks/useUserRole';
 
 export default function UnifiedNavbar() {
   const { role, loading } = useUserRole();
-  
-  // Don't render anything while loading
+ 
   if (loading) return null;
   
-  // Don't render navbar if no role (user not logged in or verified)
   if (!role) return null;
 
   return (

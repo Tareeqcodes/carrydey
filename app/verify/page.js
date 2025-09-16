@@ -123,6 +123,7 @@ export default function Confirm() {
         role: userRole,
         createdAt: new Date().toISOString(),
         phone: '',
+        status: userRole === 'traveler' ? 'pending' : 'verified',
       };
 
       await databases.createDocument(

@@ -1,15 +1,15 @@
 "use client";
 import { motion } from "framer-motion";
 import TravelerMain from "@/components/traveler/TravelerMain";
-import Pending from "@/components/verification/Pending";
 import { useUserRole } from "@/hooks/useUserRole";
 import Main from "@/components/Main";
 import Navbar from "@/components/Navbar";
+import VerificationPage from "../verification/page";
 
 export default function PendingVerification() {
-  const { role, name, loading } = useUserRole();
+  const { role, name, isVerified, loading } = useUserRole();
 
-  if (loading) {
+  if (loading && role === 'traveler') {
     return (
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         <div className='flex items-center justify-center py-12'>
@@ -26,16 +26,21 @@ export default function PendingVerification() {
     );
   }
 
+    if (!isVerified) {
+    return (
+      <div>
+        <VerificationPage />
+      </div>
+    );
+  }
+
   return (
     <>
-      {role === "traveler" ? (
-        <>
-          <Main role={role} name={name} />
-          <TravelerMain />
-        </>
-      ) : (
-        <Pending />
-      )}
+     <div>
+      <Main role={role} name={name} />
+      <TravelerMain />
+      <Navbar />
+    </div>
     </>
   );
 }

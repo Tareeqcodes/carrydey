@@ -13,11 +13,6 @@ const VerificationHeader = ({ showBack = false, onGoBack }) => (
         ) : (
             <div className="w-9"></div>
         )}
-        <div className='flex-1 text-center'>
-            <div className="text-3xl font-bold text-orange-600">Sendr</div>
-            <p>Send Smarter.</p>
-            <p>Travel Richer.</p>
-        </div>
         <div className="w-9"></div>
     </div>
 );

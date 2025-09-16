@@ -1,13 +1,21 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Edit3, Save, CheckCircle, User, Mail, Phone, Calendar } from 'lucide-react';
-import { account, databases, ID, Query } from '@/lib/config/Appwriteconfig';
-import { useAuth } from '@/hooks/Authcontext';
+"use client";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Edit3,
+  Save,
+  CheckCircle,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+} from "lucide-react";
+import { account, databases, ID, Query } from "@/lib/config/Appwriteconfig";
+import { useAuth } from "@/hooks/Authcontext";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const usercll = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
-// const profileBucket = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_BUCKET_ID;
 
 const Profile = () => {
   const { user: authUser } = useAuth();
@@ -15,10 +23,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const { status } = useUserRole();
   const [profileData, setProfileData] = useState({
-    userName: '',
-    phone: '',
-    email: '',
+    userName: "",
+    phone: "",
+    email: "",
   });
 
   const containerVariants = {
@@ -26,13 +35,13 @@ const Profile = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, staggerChildren: 0.1 }
-    }
+      transition: { duration: 0.6, staggerChildren: 0.1 },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
   useEffect(() => {
@@ -44,28 +53,26 @@ const Profile = () => {
     try {
       setLoading(true);
       const response = await databases.listDocuments(db, usercll, [
-        Query.equal('userId', authUser.$id)
+        Query.equal("userId", authUser.$id),
       ]);
 
       if (response.documents.length > 0) {
         const profileDoc = response.documents[0];
         setDocId(profileDoc.$id);
         setProfileData({
-          userName: profileDoc.userName || authUser.name || '',
-          phone: profileDoc.phone || '',
-          email: profileDoc.email || authUser.email || '',
-
+          userName: profileDoc.userName || authUser.name || "",
+          phone: profileDoc.phone || "",
+          email: profileDoc.email || authUser.email || "",
         });
       } else {
         setProfileData({
-          userName: authUser.name || '',
-          phone: '',
-          email: authUser.email || '',
-         
+          userName: authUser.name || "",
+          phone: "",
+          email: authUser.email || "",
         });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
     }
@@ -75,7 +82,6 @@ const Profile = () => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
@@ -84,14 +90,17 @@ const Profile = () => {
         userName: profileData.userName,
         phone: profileData.phone,
         email: profileData.email,
-        // avatar: profileData.avatar,
-      
       };
 
       if (docId) {
         await databases.updateDocument(db, usercll, docId, payload);
       } else {
-        const newDoc = await databases.createDocument(db, usercll, ID.unique(), payload);
+        const newDoc = await databases.createDocument(
+          db,
+          usercll,
+          ID.unique(),
+          payload
+        );
         setDocId(newDoc.$id);
       }
 
@@ -100,10 +109,10 @@ const Profile = () => {
       }
 
       setEditMode(false);
-      alert('Profile saved successfully');
+      alert("Profile saved successfully");
     } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Error saving profile');
+      console.error("Error saving profile:", error);
+      alert("Error saving profile");
     } finally {
       setSaving(false);
     }
@@ -113,7 +122,7 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <motion.div
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"
         />
       </div>
@@ -126,27 +135,37 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-md mx-auto">
-        <motion.div variants={itemVariants} className="bg-white p-4 m-2 shadow-sm">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-md mx-auto"
+      >
+        <motion.div
+          variants={itemVariants}
+          className="bg-white p-4 m-2 shadow-sm"
+        >
           <div className="flex items-center mb-6">
             <div className="relative mr-5">
               <motion.div
                 whileHover={{ scale: 1.05 }}
-                className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden"
+                className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-black text-2xl font-bold overflow-hidden"
               >
-                {profileData.userName ? profileData.userName.charAt(0).toUpperCase() : 'U'}
+                {profileData.userName
+                  ? profileData.userName.charAt(0).toUpperCase()
+                  : "U"}
               </motion.div>
-
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-semibold mb-1">{profileData.userName}</h2>
+              <h2 className="text-xl font-semibold mb-1">
+                {profileData.userName}
+              </h2>
               <p className="text-gray-600 text-sm mb-2 flex items-center">
                 <Calendar size={14} className="mr-1" />
                 Member since Dec 2023
               </p>
-              <div className="flex items-center text-red-600 text-sm">
-                <CheckCircle size={14} className="mr-1" />
-                Unverified Account
+              <div className="flex items-center text-green-600 text-sm">
+                {status.charAt(0).toUpperCase() + status.slice(1) || "Unverified Account"}
               </div>
             </div>
           </div>
@@ -161,12 +180,12 @@ const Profile = () => {
                 whileFocus={{ scale: 1.01 }}
                 type="text"
                 value={profileData.userName}
-                onChange={(e) => handleInputChange('userName', e.target.value)}
+                onChange={(e) => handleInputChange("userName", e.target.value)}
                 disabled={!editMode}
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
                   editMode
-                    ? 'border-blue-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
-                    : 'border-gray-200 bg-gray-50'
+                    ? "border-blue-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    : "border-gray-200 bg-gray-50"
                 } focus:outline-none`}
               />
             </div>
@@ -191,12 +210,12 @@ const Profile = () => {
                 whileFocus={{ scale: 1.01 }}
                 type="tel"
                 value={profileData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
                 disabled={!editMode}
-                className={`w-full px-4 py-3 border rounded-lg transition-all ${
+                className={`w-full px-4 cursor-pointer py-3 border rounded-lg transition-all ${
                   editMode
-                    ? 'border-blue-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
-                    : 'border-gray-200 bg-gray-50'
+                    ? "border-blue-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    : "border-gray-200 bg-gray-50"
                 } focus:outline-none`}
               />
             </div>
@@ -209,10 +228,10 @@ const Profile = () => {
             whileTap={{ scale: 0.98 }}
             onClick={editMode ? handleSaveProfile : () => setEditMode(true)}
             disabled={saving}
-            className={`w-full py-4 rounded-xl font-medium transition-all ${
+            className={`w-full py-4 cursor-pointer rounded-xl font-medium transition-all ${
               editMode
-                ? 'bg-green-500 hover:bg-green-600 text-white'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                ? "bg-green-500 hover:bg-green-600 text-white"
+                : "bg-gray-200 hover:bg-blue-200 text-black"
             } disabled:opacity-50`}
           >
             <AnimatePresence mode="wait">
@@ -226,7 +245,11 @@ const Profile = () => {
                 >
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
                   />
                   Saving...
