@@ -15,9 +15,11 @@ import {
   LogOut,
 } from "lucide-react";
 import Profile from "@/components/setting/Profile";
+import { useAuth } from "@/hooks/Authcontext";
 
 const page = () => {
   const [activeSection, setActiveSection] = useState(null);
+  const { logout } = useAuth();
 
   const menuItems = [
     { id: "profile", label: "Profile", icon: User },
@@ -50,33 +52,7 @@ const page = () => {
       },
     },
   };
-
-  // const modalVariants = {
-  //   hidden: {
-  //     opacity: 0,
-  //     scale: 0.8,
-  //     y: 20
-  //   },
-  //   visible: {
-  //     opacity: 1,
-  //     scale: 1,
-  //     y: 0,
-  //     transition: {
-  //       type: 'spring',
-  //       stiffness: 400,
-  //       damping: 25
-  //     }
-  //   },
-  //   exit: {
-  //     opacity: 0,
-  //     scale: 0.8,
-  //     y: 20,
-  //     transition: {
-  //       duration: 0.2
-  //     }
-  //   }
-  // };
-
+   
   const renderSectionContent = (sectionId) => {
     const content = {
       profile: (
@@ -277,19 +253,9 @@ const page = () => {
           })}
         </div>
 
-        <div className='bg-gray-50 p-4 rounded-xl'>
-          <h3 className='font-medium mb-3'>Account Type</h3>
-          <div className='flex space-x-2'>
-            <button className='flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium'>
-              Sender
-            </button>
-            <button className='flex-1 bg-green-200 text-green-800 py-2 rounded-lg font-medium'>
-              Traveler
-            </button>
-          </div>
-        </div>
-
-        <button className='w-full bg-red-600 text-white py-3 rounded-lg font-medium flex items-center justify-center space-x-2'>
+        <button
+        onClick={logout}
+         className='w-full cursor-pointer bg-red-600 text-white py-3 rounded-lg font-medium flex items-center justify-center space-x-2'>
           <LogOut className='w-5 h-5' />
           <span>Logout</span>
         </button>

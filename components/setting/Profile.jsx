@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Edit3, Save, CheckCircle, User, Mail, Phone, Calendar } from 'lucide-react';
-import { account, databases, ID, Query, storage } from '@/lib/config/Appwriteconfig';
+import { account, databases, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const usercll = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
-const profileBucket = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_BUCKET_ID;
+// const profileBucket = process.env.NEXT_PUBLIC_APPWRITE_PROFILE_BUCKET_ID;
 
 const Profile = () => {
   const { user: authUser } = useAuth();
@@ -75,33 +75,6 @@ const Profile = () => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // const handleAvatarUpload = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (!file) return;
-
-  //   try {
-  //     const response = await storage.createFile(profileBucket, ID.unique(), file);
-  //     const fileUrl = storage.getFileView(profileBucket, response.$id).href;
-
-  //     setProfileData((prev) => ({ ...prev, avatar: fileUrl }));
-
-  //     if (docId) {
-  //       await databases.updateDocument(db, usercll, docId, { avatar: fileUrl });
-  //     } else {
-  //       const payload = {
-  //         userId: authUser.$id,
-  //         userName: profileData.userName,
-  //         phone: profileData.phone,
-  //         email: profileData.email,
-  //         avatar: fileUrl
-  //       };
-  //       const newDoc = await databases.createDocument(db, usercll, ID.unique(), payload);
-  //       setDocId(newDoc.$id);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error uploading avatar:', error);
-  //   }
-  // };
 
   const handleSaveProfile = async () => {
     try {
@@ -161,25 +134,9 @@ const Profile = () => {
                 whileHover={{ scale: 1.05 }}
                 className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden"
               >
-                {/* {profileData.avatar ? (
-                  <img src={profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  profileData.userName.charAt(0).toUpperCase()
-                )} */}
+                {profileData.userName ? profileData.userName.charAt(0).toUpperCase() : 'U'}
               </motion.div>
-              <motion.label
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg"
-              >
-                <Camera size={14} className="text-white" />
-                <input
-                  type="file"
-                  // accept="image/*"
-                  // onChange={handleAvatarUpload}
-                  className="hidden"
-                />
-              </motion.label>
+
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-semibold mb-1">{profileData.userName}</h2>
@@ -187,9 +144,9 @@ const Profile = () => {
                 <Calendar size={14} className="mr-1" />
                 Member since Dec 2023
               </p>
-              <div className="flex items-center text-green-600 text-sm">
+              <div className="flex items-center text-red-600 text-sm">
                 <CheckCircle size={14} className="mr-1" />
-                Verified Account
+                Unverified Account
               </div>
             </div>
           </div>

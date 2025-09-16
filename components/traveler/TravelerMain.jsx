@@ -96,14 +96,9 @@ export default function TravelerMain() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className='bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 mb-8 border border-blue-100'>
-        <div className='flex flex-wrap items-center justify-between gap-4'>
+        <div className='flex flex-col items-center justify-between gap-4'>
           <div className='flex items-center gap-6'>
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-blue-600'>
-                {data?.length || 0}
-              </div>
-              <div className='text-sm text-gray-600'>Total Packages</div>
-            </div>
+            
             <div className='text-center'>
               <div className='text-2xl font-bold text-green-600'>
                 {recentPackages.length}
@@ -260,25 +255,6 @@ export default function TravelerMain() {
           )}
         </motion.div>
       </AnimatePresence>
-
-      {/* Call to Action */}
-      {/* {recentPackages.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          className="text-center mt-12">
-          <motion.button
-            whileHover={{ 
-              scale: 1.05,
-              boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)"
-            }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg">
-            Explore More Opportunities
-          </motion.button>
-        </motion.div>
-      )} */}
       <div className='h-20'></div>
     </div>
   );
