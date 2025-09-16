@@ -13,14 +13,14 @@ export default function page() {
   const { user } = useAuth();
   const { loading, role, name } = useUserRole();
 
-  if (loading && role === "sender") {
-    return <ContentLoading />;
+  if (loading ) {
+    return <div>Loading</div>
   }
 
   return (
     <>
       {user ? (
-        <div>
+        <div> 
           {role === "sender" ? (
             // Sender Dashboard
             <div className='mb-20 bg-gradient-to-br from-gray-50 to-blue-50 px-6'>

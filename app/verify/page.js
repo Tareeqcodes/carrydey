@@ -11,18 +11,17 @@ export default function Confirm() {
 
   useEffect(() => {
     // Prevent multiple executions
-    if (Processed.current) 
-      return;
-    
+    if (Processed.current) return;
+   
     const verifySession = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const userId = urlParams.get('userId');
       const secret = urlParams.get('secret');
       const role = urlParams.get('role');
       const name = urlParams.get('name');
-
+      
       console.log('Params:', { userId, secret, role, name });
-
+      
       if (!userId || !secret) {
         console.warn('Missing credentials from URL');
         router.push('/login');
@@ -30,8 +29,7 @@ export default function Confirm() {
       }
 
       try {
-        Processed.current = true; 
-
+        Processed.current = true;
         let sessionExists = false;
         let userName = name;
 
@@ -51,8 +49,8 @@ export default function Confirm() {
         }
 
         await checkSession();
-
-           if (!userName) {
+           
+        if (!userName) {
           try {
             const user = await account.get();
             userName = user.name;
@@ -60,13 +58,15 @@ export default function Confirm() {
             console.log('Could not get user name from account:', error.message);
           }
         }
-        
+       
         // Store user role with duplicate check
         if (role) {
           await storeUserRole(userId, role, userName);
         }
 
-        router.push('/dashboard');
+        // Role-based routing after successful verification
+        redirectBasedOnRole(role);
+        
       } catch (error) {
         console.error('Verification failed:', error.message);
         Processed.current = false;
@@ -75,15 +75,28 @@ export default function Confirm() {
     };
 
     verifySession();
-  }, []); // Remove dependencies to prevent re-runs
+  }, []);
+
+  const redirectBasedOnRole = (userRole) => {
+    switch (userRole) {
+      case 'sender':
+        router.push('/dashboard');
+        break;
+      case 'traveler':
+        router.push('/travelerdashboard');
+        break;
+      default:
+        // Fallback to general dashboard
+        router.push('/dashboard');
+    }
+  };
 
   const storeUserRole = async (userId, userRole, userName) => {
     try {
       console.log('Storing user role:', { userId, userRole, userName });
-
       const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
       const collectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
-
+      
       if (!databaseId || !collectionId) {
         console.error('Database configuration missing. Please set your environment variables.');
         return;
@@ -95,7 +108,7 @@ export default function Confirm() {
           collectionId,
           [Query.equal('userId', userId)]
         );
-
+        
         if (existingUser.documents.length > 0) {
           console.log('User role already exists, skipping creation');
           return;
@@ -118,7 +131,7 @@ export default function Confirm() {
         ID.unique(),
         userData
       );
-      
+     
       console.log('User role stored successfully');
     } catch (error) {
       console.error('Error storing user role:', error);
