@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Edit3,
   Save,
-  CheckCircle,
   User,
   Mail,
   Phone,

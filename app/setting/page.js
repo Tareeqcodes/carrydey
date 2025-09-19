@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -214,12 +215,14 @@ const SettingsComponent = () => {
       <div className="relative z-10 p-6 space-y-8">
         {/* Header */}
         <div className="bg-white/30 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/20">
+        <Link href="/dashboard">
           <button className="flex items-center space-x-3 text-gray-700 hover:text-gray-900 transition-colors">
             <div className="p-2 bg-white/50 rounded-xl shadow-md">
               <ArrowLeft className="w-5 h-5" />
             </div>
             <span className="text-lg font-medium">Back to Dashboard</span>
           </button>
+        </Link>
         </div>
 
         {/* Profile Header */}
