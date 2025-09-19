@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 💳 Node.js Lemon Squeezy Payments Function
 
-## Getting Started
+Appwrite Function to receive payments in Lemon Squeezy and store paid orders.
 
-First, run the development server:
+## 🧰 Usage
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### `POST /checkout`
+
+This endpoint creates a Lemon Squeezy checkout. The user ID is fetched from the headers of the request. If the user ID is not found or a Lemon Squeezy checkout fails, the request will be redirected to a failure URL.
+
+**Parameters**
+
+| Name               | Description                                               | Location | Type               | Sample Value                |
+| ------------------ | --------------------------------------------------------- | -------- | ------------------ | --------------------------- |
+| x-appwrite-user-id | User ID from Appwrite.                                    | Header   | String             | 642...7cd                   |
+| Content-Type       | The content type of the request body                      | Header   | `application/json` | N/A                         |
+| failureUrl         | The URL to redirect to after a cancelled payment attempt. | Body     | String             | https://example.com/failure |
+
+**Response**
+
+Sample `303` Response:
+
+The response is a redirect to the Lemon Squeezy checkout URL or to the failure URL if an error occurs
+
+```text
+Location: https://ap...re.lemonsqueezy.com/checkout/custom/7576abf3-...e2fb
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```text
+Location: https://mywebapp.com/cancel
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### `POST /webhook`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This endpoint is a webhook that handles Lemon Squeezy event `order_created`. It validates the incoming request using the `X-Signature` header from the Lemon Squeezy webhook. If the validation fails, a `401` response is sent.
 
-## Learn More
+**Parameters**
 
-To learn more about Next.js, take a look at the following resources:
+| Name        | Description                         | Location | Type   | Sample Value                                                                                                                    |
+| ----------- | ----------------------------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| None        | Webhook payload from Lemon Squeezy. | Body     | Object | [See Lemon Squeezy docs](https://docs.lemonsqueezy.com/api/orders#the-order-object)                                             |
+| x-signature | Signature from Lemon Squeezy.       | Headers  | String | [See Lemon Squeezy docs](https://docs.lemonsqueezy.com/guides/developer-guide/webhooks#signing-and-validating-webhook-requests) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Response**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sample `200` Response:
 
-## Deploy on Vercel
+In case of `order_created` event, document for the order is created in Appwrite Database.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{ "success": true }
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Sample `401` Response:
+
+```json
+{ "success": false }
+```
+
+## ⚙️ Configuration
+
+| Setting           | Value                          |
+| ----------------- | ------------------------------ |
+| Runtime           | Node (18.0)                    |
+| Entrypoint        | `src/main.js`                  |
+| Build Commands    | `npm install && npm run setup` |
+| Permissions       | `any`                          |
+| Timeout (Seconds) | 15                             |
+
+> If using a demo web app to create order, make sure to add your function domain as a web platform to your Appwrite project. Doing this fixes CORS errors and allows proper functionality.
+
+## 🔒 Environment Variables
+
+### APPWRITE_DATABASE_ID
+
+The ID of the database to store the orders.
+
+| Question     | Answer   |
+| ------------ | -------- |
+| Required     | No       |
+| Sample Value | `orders` |
+
+### APPWRITE_COLLECTION_ID
+
+The ID of the collection to store the orders.
+
+| Question     | Answer   |
+| ------------ | -------- |
+| Required     | No       |
+| Sample Value | `orders` |
+
+### LEMON_SQUEEZY_API_KEY
+
+API key for sending requests to the Lemon Squeezy API.
+
+| Question      | Answer                                                                      |
+| ------------- | --------------------------------------------------------------------------- |
+| Required      | Yes                                                                         |
+| Sample Value  | `eyJ0eXAiOiJ...`                                                            |
+| Documentation | [Lemon Squeezy: API Keys](https://docs.lemonsqueezy.com/api#authentication) |
+
+### LEMON_SQUEEZY_WEBHOOK_SECRET
+
+Secret used to validate the Lemon Squuezy Webhook signature.
+
+| Question      | Answer                                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Required      | Yes                                                                                                         |
+| Sample Value  | `abcd...`                                                                                                   |
+| Documentation | [Lemon Squeezy: Webhooks](https://docs.lemonsqueezy.com/guides/developer-guide/webhooks#from-the-dashboard) |
+
+### LEMON_SQUEEZY_STORE_ID
+
+Store ID required to create a checkout using the Lemon Squeezy API.
+
+| Question      | Answer                                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Required      | Yes                                                                                                                              |
+| Sample Value  | `123456`                                                                                                                         |
+| Documentation | [Lemon Squeezy: Checkouts](https://docs.lemonsqueezy.com/guides/developer-guide/taking-payments#creating-checkouts-with-the-api) |
+
+### LEMON_SQUEEZY_VARIANT_ID
+
+Variant ID of a product required to create a checkout using the Lemon Squeezy API.
+
+| Question      | Answer                                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Required      | Yes                                                                                                                              |
+| Sample Value  | `123456`                                                                                                                         |
+| Documentation | [Lemon Squeezy: Checkouts](https://docs.lemonsqueezy.com/guides/developer-guide/taking-payments#creating-checkouts-with-the-api) |
