@@ -11,7 +11,6 @@
     "prettier": "^3.2.5"
   },
   "dependencies": {
-    "@lemonsqueezy/lemonsqueezy.js": "^3.0.0",
     "node-appwrite": "^14.1.0"
   }
 }

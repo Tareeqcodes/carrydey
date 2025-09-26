@@ -1,43 +1,57 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 
-/**
- * Throws an error if any of the keys are missing from the object
- * @param {*} obj
- * @param {string[]} keys
- * @throws {Error}
- */
-export function throwIfMissing(obj, keys) {
-  const missing = [];
-  for (let key of keys) {
-    if (!(key in obj) || !obj[key]) {
-      missing.push(key);
+import crypto from 'crypto';
+
+export function createResponse(res, status, data) {
+  return res.json(data, status);
+}
+
+export function validateWebhook(body, signature, secret) {
+  const hash = crypto.createHmac('sha512', secret)
+    .update(body)
+    .digest('hex');
+  return hash === signature;
+}
+
+export function calculatePlatformFee(amount, feePercentage = 0.05) {
+  return Math.round(amount * feePercentage);
+}
+
+export function calculateTravelerAmount(amount, platformFee) {
+  return amount - platformFee;
+}
+
+// Input validation function
+export function validateInput(data, schema) {
+  const errors = [];
+  
+  for (const [key, rules] of Object.entries(schema)) {
+    if (rules.required && (data[key] === undefined || data[key] === null || data[key] === '')) {
+      errors.push(`${key} is required`);
+    }
+    
+    if (data[key] !== undefined && data[key] !== null && rules.type && typeof data[key] !== rules.type) {
+      errors.push(`${key} must be of type ${rules.type}`);
+    }
+    
+    if (data[key] !== undefined && data[key] !== null && rules.min !== undefined && data[key] < rules.min) {
+      errors.push(`${key} must be at least ${rules.min}`);
+    }
+    
+    if (data[key] !== undefined && data[key] !== null && rules.max !== undefined && data[key] > rules.max) {
+      errors.push(`${key} must be at most ${rules.max}`);
     }
   }
-  if (missing.length > 0) {
-    throw new Error(`Missing required fields: ${missing.join(', ')}`);
-  }
+  
+  return errors;
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const staticFolder = path.join(__dirname, '../static');
-
-/**
- * Returns the contents of a file in the static folder
- * @param {string} fileName
- * @returns {string} Contents of static/{fileName}
- */
-export function getStaticFile(fileName) {
-  return fs.readFileSync(path.join(staticFolder, fileName)).toString();
+// Email validation
+export function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
-/**
- * @param {string} template
- * @param {Record<string, string | undefined>} values
- * @returns {string}
- */
-export function interpolate(template, values) {
-  return template.replace(/{{([^}]+)}}/g, (_, key) => values[key] || '');
+// Amount validation (in kobo)
+export function isValidAmount(amount) {
+  return Number.isInteger(amount) && amount > 0;
 }
