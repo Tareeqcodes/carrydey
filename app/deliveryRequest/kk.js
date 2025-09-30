@@ -1,53 +1,36 @@
 'use client';
 import { useState } from 'react';
-import { ArrowLeft, MessageCircle, Star, Shield, Package, Phone, MapPin, Clock} from 'lucide-react';
+import { ArrowLeft, MessageCircle, Star, Shield, Package, Phone, MapPin, Clock, DollarSign } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useRequest from '@/hooks/useRequest';
-import { useAuth } from '@/hooks/Authcontext';
 
 export default function SenderRequests() {
   const router = useRouter();
-  const { requests, groupedRequests, loading, error, updateStatus, totalRequests, pendingCount, acceptedCount, packagesWithRequests } = useRequest();
+  const { 
+    requests,
+    groupedRequests, 
+    loading, 
+    error, 
+    updateStatus, 
+    totalRequests,
+    pendingCount, 
+    acceptedCount,
+    packagesWithRequests 
+  } = useRequest();
+  
   const [processingId, setProcessingId] = useState(null);
-  const [viewMode, setViewMode] = useState('grouped');
-  const { user } =useAuth()
+  const [viewMode, setViewMode] = useState('grouped'); // 'grouped' or 'list'
 
   const handleAccept = async (applicationId) => {
     setProcessingId(applicationId);
+    
     try {
-      // Update application status
       const result = await updateStatus(applicationId, 'accepted');
-      if (!result.success) {
-        console.error('Failed to accept request:', result.error);
-        return;
-      }
-
-      // Get request details (assuming useRequest provides request details)
-      const request = requests.find((req) => req.applicationId === applicationId);
-      if (!request) {
-        console.error('Request not found');
-        return;
-      }
-
-      // Create contract
-      const response = await fetch('/api/paystack/create-contract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderId: user.$id,
-          travelerId: request.travelerId,
-          packageId: request.packageId,
-          amount: request.reward * 100, // Convert to kobo
-          platformFeePercentage: 0.05,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Redirect to payment page
-        router.push(`/contracts/${data.contract.$id}/fund`);
+      
+      if (result.success) {
+        console.log('Request accepted successfully');
       } else {
-        console.error('Failed to create contract:', data.error);
+        console.error('Failed to accept request:', result.error);
       }
     } catch (err) {
       console.error('Error accepting request:', err);
@@ -58,8 +41,10 @@ export default function SenderRequests() {
 
   const handleDecline = async (applicationId) => {
     setProcessingId(applicationId);
+    
     try {
       const result = await updateStatus(applicationId, 'declined');
+      
       if (result.success) {
         console.log('Request declined successfully');
       } else {
@@ -86,13 +71,8 @@ export default function SenderRequests() {
   };
 
   const getInitials = (name) => {
-    if (!name || name === 'Unknown Traveler') return '??';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    if (!name || name === "Unknown Traveler") return "??";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const getStatusBadge = (status) => {
@@ -123,11 +103,16 @@ export default function SenderRequests() {
 
   const RequestCard = ({ request }) => (
     <div className="border border-gray-100 rounded-2xl p-4 hover:border-gray-200 transition-colors bg-white">
+      {/* Request Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="relative">
             {request.profileImage ? (
-              <img src={request.profileImage} alt={request.traveler} className="w-12 h-12 rounded-full object-cover" />
+              <img 
+                src={request.profileImage} 
+                alt={request.traveler}
+                className="w-12 h-12 rounded-full object-cover"
+              />
             ) : (
               <div className="w-12 h-12 rounded-full bg-gray-900 text-white flex items-center justify-center font-medium text-sm">
                 {getInitials(request.traveler)}
@@ -141,23 +126,37 @@ export default function SenderRequests() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-gray-900 text-sm">{request.traveler}</h3>
+              <h3 className="font-medium text-gray-900 text-sm">
+                {request.traveler}
+              </h3>
             </div>
             <div className="flex items-center gap-3 mt-1">
               <div className="flex items-center gap-1">
                 <Star size={12} className="text-amber-400 fill-current" />
-                <span className="text-xs text-gray-600 font-medium">{request.rating}</span>
+                <span className="text-xs text-gray-600 font-medium">
+                  {request.rating}
+                </span>
               </div>
-              <span className="text-xs text-gray-500">{request.completedTrips} deliveries</span>
+              <span className="text-xs text-gray-500">
+                {request.completedTrips} deliveries
+              </span>
             </div>
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span className="text-xs text-gray-400">{request.appliedAt}</span>
+          <span className="text-xs text-gray-400">
+            {request.appliedAt}
+          </span>
           {getStatusBadge(request.status)}
         </div>
       </div>
-      <p className="text-sm text-gray-600 leading-relaxed mb-4 bg-gray-50 rounded-lg p-3">{request.message}</p>
+
+      {/* Message */}
+      <p className="text-sm text-gray-600 leading-relaxed mb-4 bg-gray-50 rounded-lg p-3">
+        {request.message}
+      </p>
+
+      {/* Actions */}
       <div className="flex items-center gap-2">
         {request.status === 'pending' ? (
           <>
@@ -177,19 +176,25 @@ export default function SenderRequests() {
             </button>
           </>
         ) : request.status === 'accepted' ? (
-          <div className="flex-1 py-2 text-center text-sm text-green-600 font-medium">Request Accepted</div>
+          <div className="flex-1 py-2 text-center text-sm text-green-600 font-medium">
+            Request Accepted
+          </div>
         ) : (
-          <div className="flex-1 py-2 text-center text-sm text-gray-500">Request Declined</div>
+          <div className="flex-1 py-2 text-center text-sm text-gray-500">
+            Request Declined
+          </div>
         )}
-        <button
+        
+        <button 
           onClick={() => handleMessage(request.travelerId, request.traveler)}
           className="p-2 text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
           title="Send message"
         >
           <MessageCircle size={16} />
         </button>
+        
         {request.phoneNumber && (
-          <button
+          <button 
             onClick={() => handleCall(request.phoneNumber, request.traveler)}
             className="p-2 text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             title="Call traveler"
@@ -216,9 +221,13 @@ export default function SenderRequests() {
 
   return (
     <div className="max-w-sm mx-auto bg-gray-50 min-h-screen">
+      {/* Header */}
       <div className="bg-white">
         <div className="flex items-center pt-12 pb-6 px-5 border-b border-gray-100">
-          <button onClick={() => router.back()} className="mr-4 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+          <button 
+            onClick={() => router.back()}
+            className="mr-4 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+          >
             <ArrowLeft size={20} className="text-gray-700" />
           </button>
           <div className="flex-1">
@@ -228,20 +237,26 @@ export default function SenderRequests() {
             </p>
           </div>
         </div>
+
+        {/* View Toggle */}
         <div className="px-5 py-4 border-b border-gray-100">
           <div className="flex gap-2">
-            <button
+            <button 
               onClick={() => setViewMode('grouped')}
               className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
-                viewMode === 'grouped' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                viewMode === 'grouped' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               By Package ({packagesWithRequests})
             </button>
-            <button
+            <button 
               onClick={() => setViewMode('list')}
               className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
-                viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                viewMode === 'list' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               All Requests ({totalRequests})
@@ -249,47 +264,57 @@ export default function SenderRequests() {
           </div>
         </div>
       </div>
+
+      {/* Content */}
       <div className="px-5 py-6">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
+
         {viewMode === 'grouped' ? (
+          // Grouped by Package View
           <div className="space-y-6">
             {Object.entries(groupedRequests).map(([packageId, { packageInfo, requests: packageRequests }]) => (
               <div key={packageId} className="bg-white rounded-2xl p-4 shadow-sm">
+                {/* Package Header */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
                   <div className="flex items-start justify-between mb-2">
-                    <h2 className="text-lg font-semibold text-gray-900 leading-tight">{packageInfo.title}</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 leading-tight">
+                      {packageInfo.title}
+                    </h2>
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-gray-900">₦{packageInfo.reward?.toLocaleString() || '0'}</div>
+                      <div className="text-lg font-semibold text-gray-900">
+                        ₦{packageInfo.reward?.toLocaleString() || '0'}
+                      </div>
                     </div>
                   </div>
+                  
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                     <MapPin size={14} className="text-gray-400" />
-                    <span>
-                      {packageInfo.pickupLocation} → {packageInfo.deliveryLocation}
-                    </span>
+                    <span>{packageInfo.pickupLocation} → {packageInfo.deliveryLocation}</span>
                   </div>
+                  
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
                       <Package size={12} className="text-gray-400" />
-                      <span>
-                        {packageInfo.size} • {packageInfo.weight}kg
-                      </span>
+                      <span>{packageInfo.size} • {packageInfo.weight}kg</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock size={12} className="text-gray-400" />
                       <span>by {packageInfo.deadline}</span>
                     </div>
                   </div>
+                  
                   <div className="mt-2">
                     <span className="text-xs text-gray-500">
                       {packageRequests.length} request{packageRequests.length !== 1 ? 's' : ''}
                     </span>
                   </div>
                 </div>
+
+                {/* Package Requests */}
                 <div className="space-y-3">
                   {packageRequests.map((request) => (
                     <RequestCard key={request.id} request={request} />
@@ -299,33 +324,44 @@ export default function SenderRequests() {
             ))}
           </div>
         ) : (
+          // List View
           <div className="space-y-4">
             {requests.map((request) => (
               <div key={request.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                {/* Package Context */}
                 <div className="mb-3 pb-3 border-b border-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Package size={14} className="text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700">{request.packageTitle}</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {request.packageTitle}
+                      </span>
                     </div>
-                    <div className="text-sm font-semibold text-gray-900">₦{request.reward?.toLocaleString() || '0'}</div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      ₦{request.reward?.toLocaleString() || '0'}
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {request.pickupLocation} → {request.deliveryLocation}
                   </p>
                 </div>
+                
                 <RequestCard request={request} />
               </div>
             ))}
           </div>
         )}
+
+        {/* Empty State */}
         {totalRequests === 0 && !loading && !error && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="font-medium text-gray-900 mb-2">No requests yet</h3>
-            <p className="text-sm text-gray-500">We'll notify you when travelers apply for your packages.</p>
+            <p className="text-sm text-gray-500">
+              We'll notify you when travelers apply for your packages.
+            </p>
           </div>
         )}
       </div>
