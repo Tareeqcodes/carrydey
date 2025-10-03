@@ -1,5 +1,8 @@
+import { useAuth } from "./Authcontext";
+
 
 export const useEscrow = () => {
+  const { user } = useAuth();
   const initializeEscrowPayment = async (packageId, travelerId, amount) => {
     try {
       const response = await fetch('/api/appwrite/function', {
@@ -8,7 +11,7 @@ export const useEscrow = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          functionId: process.env.NEXT_PUBLIC_APPWRITE_ESCROW_FUNCTION_ID,
+          functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/initialize-payment',
           data: {
             packageId,
@@ -42,7 +45,7 @@ export const useEscrow = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          functionId: process.env.NEXT_PUBLIC_APPWRITE_ESCROW_FUNCTION_ID,
+          functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/confirm-delivery',
           data: { escrowId },
         }),
@@ -69,7 +72,7 @@ export const useEscrow = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          functionId: process.env.NEXT_PUBLIC_APPWRITE_ESCROW_FUNCTION_ID,
+          functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/initiate-refund',
           data: { escrowId, reason },
         }),

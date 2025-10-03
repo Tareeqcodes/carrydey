@@ -4,7 +4,7 @@ class DatabaseService {
   constructor(database, databaseId) {
     this.database = database;
     this.databaseId = databaseId;
-    this.escrowCollectionId = 'escrow_transactions';
+    this.escrowCollectionId = 'contracts';
     this.packagesCollectionId = 'packages';
     this.usersCollectionId = 'users';
   }
@@ -12,12 +12,12 @@ class DatabaseService {
   async createEscrowRecord(escrowData) {
     try {
       const {
-        packageId,
         senderId,
         travelerId,
+        packageId,
         amount,
+        status = 'pending',
         paystackReference,
-        status = 'pending'
       } = escrowData;
 
       const escrowId = ID.unique();
@@ -27,12 +27,12 @@ class DatabaseService {
         this.escrowCollectionId,
         escrowId,
         {
-          packageId,
           senderId,
           travelerId,
+          packageId,
           amount,
-          paystackReference,
           status,
+          paystackReference,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
