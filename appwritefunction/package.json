@@ -11,6 +11,7 @@
     "prettier": "^3.2.5"
   },
   "dependencies": {
-    "node-appwrite": "^14.1.0"
+    "node-appwrite": "^14.1.0",
+    "node-fetch": "^3.3.2"
   }
 }
