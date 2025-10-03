@@ -1,568 +1,307 @@
-import { Client, Databases, Users } from 'node-appwrite';
-import { PaystackService } from './paystack.js';
-import { DatabaseService } from './database.js';
-import { createResponse, validateWebhook, validateInput, isValidEmail, isValidAmount } from './utils.js';
+import { Client, Databases } from 'node-appwrite';
+import PaystackService from './paystack.js';
+import DatabaseService from './database.js';
+import Utils from './utils.js';
 
 export default async ({ req, res, log, error }) => {
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT)
-    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(process.env.APPWRITE_API_KEY);
-
-  const databases = new Databases(client);
-  const users = new Users(client);
-  const paystack = new PaystackService(process.env.PAYSTACK_SECRET_KEY);
-  const db = new DatabaseService(databases, process.env.APPWRITE_DATABASE_ID);
-
   try {
-    const { action } = req.query;
-    const body = req.body ? JSON.parse(req.body) : {};
+    // Initialize clients
+    const client = new Client();
+    const paystack = new PaystackService(process.env.PAYSTACK_SECRET_KEY);
+    
+    client
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
 
-    log(`Processing action: ${action}`);
+    const databases = new Databases(client);
+    const dbService = new DatabaseService(
+      databases, 
+      process.env.APPWRITE_DATABASE_ID
+    );
 
-    switch (action) {
-      case 'create-contract':
-        return await createContract(req, res, { db, users, log, error });
-      case 'initiate':
-        return await initiatePayment(req, res, { paystack, db, users, log, error });
-      case 'verify':
-        return await verifyPayment(req, res, { paystack, db, log, error });
-      case 'webhook':
-        return await handleWebhook(req, res, { paystack, db, log, error });
-      case 'release':
-        return await releaseEscrow(req, res, { paystack, db, users, log, error });
-      case 'refund':
-        return await processRefund(req, res, { paystack, db, log, error });
-      default:
-        return createResponse(res, 400, { error: 'Invalid action' });
+    const { method, path, headers } = req;
+    const body = JSON.parse(req.body || '{}');
+
+    log(`Received ${method} request to ${path}`);
+
+    // Route requests
+    if (path === '/initialize-payment' && method === 'POST') {
+      return await handleInitializePayment(body, dbService, paystack);
+    } else if (path === '/verify-payment' && method === 'POST') {
+      return await handleVerifyPayment(body, dbService, paystack);
+    } else if (path === '/confirm-delivery' && method === 'POST') {
+      return await handleConfirmDelivery(body, dbService, paystack);
+    } else if (path === '/initiate-refund' && method === 'POST') {
+      return await handleInitiateRefund(body, dbService, paystack);
+    } else if (path === '/resolve-dispute' && method === 'POST') {
+      return await handleResolveDispute(body, dbService, paystack);
+    } else {
+      return res.json(Utils.formatResponse(false, null, 'Endpoint not found', 404));
     }
+
   } catch (err) {
-    error(`Function error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Internal server error' });
+    error('Unhandled error in main function:', err);
+    return res.json(Utils.handleError(err, 'main function'));
   }
 };
 
-async function getUserEmail(userId, users) {
+// Handler functions
+async function handleInitializePayment(body, dbService, paystack) {
   try {
-    const user = await users.get(userId);
-    return user.email;
-  } catch (error) {
-    throw new Error(`Failed to get user email: ${error.message}`);
-  }
-}
+    Utils.validateRequiredFields(body, [
+      'packageId', 
+      'senderId', 
+      'travelerId', 
+      'amount', 
+      'senderEmail'
+    ]);
 
-async function createContract(req, res, { db, users, log, error }) {
-  const { senderId, travelerId, packageId, amount, platformFeePercentage = 0.05 } = JSON.parse(req.body);
+    const { packageId, senderId, travelerId, amount, senderEmail } = body;
+    const sanitizedAmount = Utils.sanitizeAmount(amount);
 
-  try {
-    const validationErrors = validateInput({ senderId, travelerId, packageId, amount }, {
-      senderId: { required: true, type: 'string' },
-      travelerId: { required: true, type: 'string' },
-      packageId: { required: true, type: 'string' },
-      amount: { required: true, type: 'number', min: 1000 },
-    });
-
-    if (validationErrors.length > 0) {
-      return createResponse(res, 400, { errors: validationErrors });
+    // Check if escrow already exists for this package
+    const existingEscrow = await dbService.getEscrowByPackage(packageId);
+    if (existingEscrow.success && existingEscrow.data) {
+      throw new Error('Escrow already exists for this package');
     }
 
-    if (!isValidAmount(amount)) {
-      return createResponse(res, 400, { error: 'Invalid amount' });
+    // Initialize Paystack transaction
+    const paystackResult = await paystack.initializeTransaction(
+      senderEmail,
+      sanitizedAmount,
+      {
+        packageId,
+        senderId,
+        travelerId,
+        type: 'escrow',
+      }
+    );
+
+    if (!paystackResult.success) {
+      throw new Error(paystackResult.error);
     }
 
-    // Calculate Paystack fees (1.5% + ₦100 for > ₦2500)
-    const paystackFee = amount > 250000 ? Math.round(amount * 0.015) + 10000 : Math.round(amount * 0.015);
-    const platformFee = Math.round(amount * platformFeePercentage);
-    const travelerAmount = amount - platformFee - paystackFee;
-
-    if (travelerAmount <= 0) {
-      return createResponse(res, 400, { error: 'Invalid amount: Traveler amount must be positive' });
-    }
-
-    const contract = await db.createContract({
+    // Create escrow record
+    const escrowResult = await dbService.createEscrowRecord({
+      packageId,
       senderId,
       travelerId,
-      packageId,
-      amount,
-      platformFee,
-      paystackFee,
-      travelerAmount,
-      status: 'AWAITING_PAYMENT',
+      amount: sanitizedAmount,
+      paystackReference: paystackResult.reference,
     });
 
-    log(`Contract created: ${contract.$id}`);
+    if (!escrowResult.success) {
+      throw new Error(escrowResult.error);
+    }
 
-    return createResponse(res, 200, {
-      success: true,
-      contract: {
-        ...contract,
-        amountNGN: (amount / 100).toFixed(2),
-        platformFeeNGN: (platformFee / 100).toFixed(2),
-        travelerAmountNGN: (travelerAmount / 100).toFixed(2),
-        paystackFeeNGN: (paystackFee / 100).toFixed(2),
-      },
+    // Update package status
+    await dbService.updatePackageStatus(packageId, 'payment_pending');
+
+    return Utils.formatResponse(true, {
+      authorizationUrl: paystackResult.authorizationUrl,
+      reference: paystackResult.reference,
+      escrowId: escrowResult.escrowId,
     });
+
   } catch (err) {
-    error(`Contract creation error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Failed to create contract' });
+    return Utils.handleError(err, 'initialize payment');
   }
 }
 
-async function initiatePayment(req, res, { paystack, db, users, log, error }) {
-  const { contractId, userId } = JSON.parse(req.body);
-
+async function handleVerifyPayment(body, dbService, paystack) {
   try {
-    const validationErrors = validateInput({ contractId, userId }, {
-      contractId: { required: true, type: 'string' },
-      userId: { required: true, type: 'string' },
-    });
+    Utils.validateRequiredFields(body, ['reference']);
 
-    if (validationErrors.length > 0) {
-      return createResponse(res, 400, { errors: validationErrors });
-    }
+    const { reference } = body;
 
-    const contract = await db.getContract(contractId);
-    if (!contract) {
-      return createResponse(res, 404, { error: 'Contract not found' });
-    }
-
-    if (contract.senderId !== userId) {
-      return createResponse(res, 403, { error: 'Unauthorized' });
-    }
-
-    if (contract.status !== 'AWAITING_PAYMENT') {
-      return createResponse(res, 400, { error: `Contract not in AWAITING_PAYMENT status. Current status: ${contract.status}` });
-    }
-
-    const senderEmail = await getUserEmail(contract.senderId, users);
-    if (!isValidEmail(senderEmail)) {
-      return createResponse(res, 400, { error: 'Invalid sender email' });
-    }
-
-    // Check for existing payment
-    const existingPayment = await db.getPaymentByContract(contractId);
-    if (existingPayment && existingPayment.status !== 'FAILED') {
-      return createResponse(res, 400, { error: 'Payment already exists for this contract' });
-    }
-
-    const paystackData = {
-      email: senderEmail,
-      amount: contract.amount,
-      reference: `sendr_${contractId}_${Date.now()}`,
-      callback_url: `${process.env.FRONTEND_URL}/contracts/${contractId}/callback`,
-      metadata: {
-        contractId,
-        senderId: contract.senderId,
-        travelerId: contract.travelerId,
-        custom_fields: [{ display_name: 'Contract ID', variable_name: 'contract_id', value: contractId }],
-      },
-      channels: ['card', 'bank', 'ussd', 'mobile_money'],
-    };
-
-    const transaction = await paystack.initializeTransaction(paystackData);
-
-    const payment = await db.createPayment({
-      contractId,
-      paystackReference: transaction.data.reference,
-      paystackAccessCode: transaction.data.access_code,
-      amount: contract.amount,
-      status: 'PENDING',
-      metadata: { authorization_url: transaction.data.authorization_url, created_at: new Date().toISOString() },
-    });
-
-    log(`Payment initiated for contract ${contractId}`);
-
-    return createResponse(res, 200, {
-      success: true,
-      payment: {
-        ...payment,
-        amountNGN: (contract.amount / 100).toFixed(2),
-      },
-      authorization_url: transaction.data.authorization_url,
-      access_code: transaction.data.access_code,
-      reference: transaction.data.reference,
-    });
-  } catch (err) {
-    error(`Payment initiation error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Failed to initiate payment' });
-  }
-}
-
-async function verifyPayment(req, res, { paystack, db, log, error }) {
-  const { reference } = JSON.parse(req.body);
-
-  try {
-    const validationErrors = validateInput({ reference }, { reference: { required: true, type: 'string' } });
-    if (validationErrors.length > 0) {
-      return createResponse(res, 400, { errors: validationErrors });
-    }
-
+    // Verify Paystack transaction
     const verification = await paystack.verifyTransaction(reference);
-    if (verification.data.status === 'success') {
-      const payment = await db.getPaymentByReference(reference);
-      if (!payment) {
-        return createResponse(res, 404, { error: 'Payment not found' });
-      }
+    if (!verification.success) {
+      throw new Error(verification.error);
+    }
 
-      await db.updatePayment(payment.$id, {
-        status: 'ESCROWED',
-        metadata: { ...payment.metadata, verification: verification.data, escrowed_at: new Date().toISOString() },
+    // Get escrow record
+    const escrowRecord = await dbService.getEscrowByReference(reference);
+    if (!escrowRecord.success || !escrowRecord.data) {
+      throw new Error('Escrow record not found');
+    }
+
+    const escrow = escrowRecord.data;
+
+    if (verification.verified) {
+      // Update escrow status to funded
+      await dbService.updateEscrowStatus(escrow.$id, 'funded', {
+        paidAt: verification.transaction.paidAt,
+        paymentChannel: verification.transaction.channel,
       });
 
-      await db.updateContract(payment.contractId, {
-        status: 'FUNDED',
-        updatedAt: new Date().toISOString(),
-      });
+      // Update package status
+      await dbService.updatePackageStatus(escrow.packageId, 'in_transit');
 
-      log(`Payment verified and escrowed for reference ${reference}`);
-
-      return createResponse(res, 200, {
-        success: true,
-        status: 'verified',
-        data: verification.data,
+      return Utils.formatResponse(true, {
+        status: 'funded',
+        escrowId: escrow.$id,
+        amount: verification.transaction.amount,
       });
     } else {
-      const payment = await db.getPaymentByReference(reference);
-      if (payment) {
-        await db.updatePayment(payment.$id, {
-          status: 'FAILED',
-          metadata: { ...payment.metadata, verification: verification.data, failed_at: new Date().toISOString() },
-        });
+      // Payment failed
+      await dbService.updateEscrowStatus(escrow.$id, 'failed');
+      await dbService.updatePackageStatus(escrow.packageId, 'payment_failed');
+
+      return Utils.formatResponse(false, null, 'Payment verification failed');
+    }
+
+  } catch (err) {
+    return Utils.handleError(err, 'verify payment');
+  }
+}
+
+async function handleConfirmDelivery(body, dbService, paystack) {
+  try {
+    Utils.validateRequiredFields(body, ['escrowId']);
+
+    const { escrowId } = body;
+
+    // Get escrow record
+    const escrowRecord = await dbService.getEscrowById(escrowId);
+    if (!escrowRecord.success || !escrowRecord.data) {
+      throw new Error('Escrow record not found');
+    }
+
+    const escrow = escrowRecord.data;
+
+    if (escrow.status !== 'funded') {
+      throw new Error('Escrow must be funded to confirm delivery');
+    }
+
+    // Get traveler's bank details
+    const bankDetails = await dbService.getUserBankDetails(escrow.travelerId);
+    if (!bankDetails.success) {
+      throw new Error('Failed to get traveler bank details');
+    }
+
+    // Create transfer recipient if not exists
+    let recipientCode = escrow.travelerRecipientCode;
+    if (!recipientCode) {
+      const recipientResult = await paystack.createTransferRecipient(
+        bankDetails.data.accountNumber,
+        bankDetails.data.bankCode,
+        bankDetails.data.accountName
+      );
+
+      if (!recipientResult.success) {
+        throw new Error(recipientResult.error);
       }
-      return createResponse(res, 400, {
-        success: false,
-        status: 'failed',
-        message: 'Payment verification failed',
-        data: verification.data,
-      });
-    }
-  } catch (err) {
-    error(`Payment verification error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Verification failed' });
-  }
-}
 
-async function handleWebhook(req, res, { paystack, db, log, error }) {
-  const body = req.body;
-  const signature = req.headers['x-paystack-signature'];
-
-  try {
-    if (!validateWebhook(body, signature, process.env.PAYSTACK_SECRET_KEY)) {
-      error('Invalid webhook signature');
-      return createResponse(res, 400, { error: 'Invalid signature' });
+      recipientCode = recipientResult.recipientCode;
     }
 
-    const event = JSON.parse(body);
-    const eventId = event.data.id;
-
-    const existingEvent = await db.listDocuments(
-      process.env.APPWRITE_DATABASE_ID,
-      'delivery_events',
-      [Query.equal('paystackEventId', eventId)]
+    // Transfer funds to traveler
+    const transferResult = await paystack.transferToTraveler(
+      recipientCode,
+      escrow.amount,
+      escrow.paystackReference
     );
-    if (existingEvent.documents.length > 0) {
-      log(`Duplicate webhook event received: ${eventId}`);
-      return createResponse(res, 200, { received: true });
+
+    if (!transferResult.success) {
+      throw new Error(transferResult.error);
     }
 
-    await db.createDeliveryEvent({
-      contractId: event.data.metadata?.contractId || 'unknown',
-      eventType: event.event,
-      paystackEventId: eventId,
-      triggeredBy: 'paystack',
-      metadata: event.data,
+    // Update escrow status
+    await dbService.updateEscrowStatus(escrowId, 'completed', {
+      travelerRecipientCode: recipientCode,
+      transferReference: transferResult.reference,
+      transferCode: transferResult.transferCode,
+      completedAt: new Date().toISOString(),
     });
 
-    switch (event.event) {
-      case 'charge.success':
-        await handleChargeSuccess(event.data, { db, log, error });
-        break;
-      case 'transfer.success':
-        await handleTransferSuccess(event.data, { db, log, error });
-        break;
-      case 'transfer.failed':
-        await handleTransferFailed(event.data, { db, log, error });
-        break;
-      case 'charge.failed':
-        await handleChargeFailed(event.data, { db, log, error });
-        break;
-      default:
-        log(`Unhandled webhook event: ${event.event}`);
-    }
+    // Update package status
+    await dbService.updatePackageStatus(escrow.packageId, 'delivered');
 
-    return createResponse(res, 200, { received: true });
+    return Utils.formatResponse(true, {
+      status: 'completed',
+      transferReference: transferResult.reference,
+    });
+
   } catch (err) {
-    error(`Webhook error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Webhook processing failed' });
+    return Utils.handleError(err, 'confirm delivery');
   }
 }
 
-async function handleChargeSuccess(data, { db, log, error }) {
+async function handleInitiateRefund(body, dbService, paystack) {
   try {
-    const reference = data.reference;
-    const payment = await db.getPaymentByReference(reference);
-    if (payment && payment.status === 'PENDING') {
-      await db.updatePayment(payment.$id, {
-        status: 'ESCROWED',
-        metadata: { ...payment.metadata, charge_data: data, escrowed_at: new Date().toISOString() },
-      });
-      await db.updateContract(payment.contractId, {
-        status: 'FUNDED',
-        updatedAt: new Date().toISOString(),
-      });
-      log(`Charge success processed for ${reference}`);
+    Utils.validateRequiredFields(body, ['escrowId', 'reason']);
+
+    const { escrowId, reason } = body;
+
+    // Get escrow record
+    const escrowRecord = await dbService.getEscrowById(escrowId);
+    if (!escrowRecord.success || !escrowRecord.data) {
+      throw new Error('Escrow record not found');
     }
+
+    const escrow = escrowRecord.data;
+
+    if (escrow.status !== 'funded') {
+      throw new Error('Only funded escrow can be refunded');
+    }
+
+    // Update escrow status to refunding
+    await dbService.updateEscrowStatus(escrowId, 'refunding', {
+      refundReason: reason,
+      refundInitiatedAt: new Date().toISOString(),
+    });
+
+    // Update package status
+    await dbService.updatePackageStatus(escrow.packageId, 'refunding');
+
+    // Note: Actual refund would be processed manually or via Paystack's refund API
+    // This implementation marks it for manual processing
+
+    return Utils.formatResponse(true, {
+      status: 'refunding',
+      message: 'Refund initiated and pending processing',
+    });
+
   } catch (err) {
-    error(`Charge success handler error: ${err.message}`);
+    return Utils.handleError(err, 'initiate refund');
   }
 }
 
-async function handleChargeFailed(data, { db, log, error }) {
+async function handleResolveDispute(body, dbService, paystack) {
   try {
-    const reference = data.reference;
-    const payment = await db.getPaymentByReference(reference);
-    if (payment && payment.status === 'PENDING') {
-      await db.updatePayment(payment.$id, {
-        status: 'FAILED',
-        metadata: { ...payment.metadata, charge_data: data, failed_at: new Date().toISOString() },
-      });
-      log(`Charge failed processed for ${reference}`);
+    Utils.validateRequiredFields(body, ['escrowId', 'resolution']);
+
+    const { escrowId, resolution } = body;
+
+    // Get escrow record
+    const escrowRecord = await dbService.getEscrowById(escrowId);
+    if (!escrowRecord.success || !escrowRecord.data) {
+      throw new Error('Escrow record not found');
     }
+
+    const escrow = escrowRecord.data;
+
+    if (escrow.status !== 'disputed') {
+      throw new Error('Only disputed escrow can be resolved');
+    }
+
+    if (resolution === 'release_to_traveler') {
+      // Proceed with payment to traveler
+      return await handleConfirmDelivery(body, dbService, paystack);
+    } else if (resolution === 'refund_to_sender') {
+      // Initiate refund
+      return await handleInitiateRefund(
+        { ...body, reason: 'Dispute resolution - refund to sender' },
+        dbService,
+        paystack
+      );
+    } else {
+      throw new Error('Invalid resolution type');
+    }
+
   } catch (err) {
-    error(`Charge failed handler error: ${err.message}`);
-  }
-}
-
-async function handleTransferSuccess(data, { db, log, error }) {
-  try {
-    const payment = await db.getPaymentByReference(data.reference);
-    if (payment) {
-      await db.updatePayment(payment.$id, {
-        metadata: { ...payment.metadata, transfer_success: data, transferred_at: new Date().toISOString() },
-      });
-      log(`Transfer success processed for ${data.reference}`);
-    }
-  } catch (err) {
-    error(`Transfer success handler error: ${err.message}`);
-  }
-}
-
-async function handleTransferFailed(data, { db, log, error }) {
-  try {
-    const payment = await db.getPaymentByReference(data.reference);
-    if (payment) {
-      await db.updatePayment(payment.$id, {
-        metadata: { ...payment.metadata, transfer_failed: data, transfer_failed_at: new Date().toISOString() },
-      });
-      await db.updateContract(payment.contractId, {
-        status: 'DISPUTED',
-        updatedAt: new Date().toISOString(),
-      });
-      log(`Transfer failed for ${data.reference}`);
-    }
-  } catch (err) {
-    error(`Transfer failed handler error: ${err.message}`);
-  }
-}
-
-async function releaseEscrow(req, res, { paystack, db, users, log, error }) {
-  const { contractId, eventType, triggeredBy } = JSON.parse(req.body);
-
-  try {
-    const validationErrors = validateInput({ contractId, eventType, triggeredBy }, {
-      contractId: { required: true, type: 'string' },
-      eventType: { required: true, type: 'string' },
-      triggeredBy: { required: true, type: 'string' },
-    });
-    if (validationErrors.length > 0) {
-      return createResponse(res, 400, { errors: validationErrors });
-    }
-
-    const contract = await db.getContract(contractId);
-    if (!contract) {
-      return createResponse(res, 404, { error: 'Contract not found' });
-    }
-    if (contract.status !== 'IN_TRANSIT') {
-      return createResponse(res, 400, { error: `Contract must be IN_TRANSIT. Current status: ${contract.status}` });
-    }
-    if (eventType !== 'DELIVERY_CONFIRMED') {
-      return createResponse(res, 400, { error: 'Only delivery confirmation can trigger payout' });
-    }
-
-    const payment = await db.getPaymentByContract(contractId);
-    if (!payment) {
-      return createResponse(res, 404, { error: 'Payment record not found' });
-    }
-    if (payment.status !== 'ESCROWED') {
-      return createResponse(res, 400, { error: `Payment must be ESCROWED. Current status: ${payment.status}` });
-    }
-
-    const balance = await paystack.checkBalance();
-    if (balance.data[0].balance < contract.travelerAmount) {
-      return createResponse(res, 400, { error: 'Insufficient Paystack balance for payout' });
-    }
-
-    const traveler = await users.get(contract.travelerId);
-    const travelerBankDetails = traveler.prefs?.bankDetails;
-    if (!travelerBankDetails?.account_number || !travelerBankDetails?.bank_code) {
-      return createResponse(res, 400, { error: 'Traveler bank details incomplete' });
-    }
-
-    const accountVerification = await paystack.verifyAccount(travelerBankDetails.account_number, travelerBankDetails.bank_code);
-    if (!accountVerification.status) {
-      return createResponse(res, 400, { error: 'Invalid traveler bank details' });
-    }
-
-    let recipient = traveler.prefs?.paystackRecipient;
-    if (!recipient) {
-      const recipientData = await paystack.createTransferRecipient({
-        type: 'nuban',
-        name: traveler.name || traveler.email,
-        account_number: travelerBankDetails.account_number,
-        bank_code: travelerBankDetails.bank_code,
-        currency: 'NGN',
-      });
-      recipient = recipientData.data.recipient_code;
-      await users.updatePrefs(contract.travelerId, {
-        ...traveler.prefs,
-        paystackRecipient: recipient,
-      });
-    }
-
-    const transfer = await paystack.initiateTransfer({
-      source: 'balance',
-      amount: contract.travelerAmount,
-      recipient,
-      reason: `Payment for delivery - Contract ${contractId}`,
-      reference: `payout_${contractId}_${Date.now()}`,
-    });
-
-    if (transfer.data.status === 'otp_required') {
-      await db.updatePayment(payment.$id, {
-        status: 'PENDING_OTP',
-        metadata: { ...payment.metadata, transfer_code: transfer.data.transfer_code },
-      });
-      return createResponse(res, 200, {
-        success: false,
-        status: 'otp_required',
-        transfer_code: transfer.data.transfer_code,
-      });
-    }
-
-    await db.updatePayment(payment.$id, {
-      status: 'RELEASED',
-      metadata: {
-        ...payment.metadata,
-        payout: {
-          transfer_code: transfer.data.transfer_code,
-          recipient_code: recipient,
-          amount: contract.travelerAmount,
-          released_at: new Date().toISOString(),
-        },
-      },
-    });
-
-    await db.updateContract(contractId, {
-      status: 'DELIVERED',
-      updatedAt: new Date().toISOString(),
-    });
-
-    await db.createDeliveryEvent({
-      contractId,
-      eventType: 'DELIVERY_CONFIRMED',
-      triggeredBy,
-      metadata: {
-        payoutReference: transfer.data.reference,
-        transferCode: transfer.data.transfer_code,
-        travelerAmount: contract.travelerAmount,
-      },
-    });
-
-    log(`Escrow released for contract ${contractId}`);
-    return createResponse(res, 200, {
-      success: true,
-      transfer: {
-        reference: transfer.data.reference,
-        amount: contract.travelerAmount,
-        amountNGN: (contract.travelerAmount / 100).toFixed(2),
-        status: transfer.data.status,
-      },
-    });
-  } catch (err) {
-    error(`Escrow release error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Failed to release escrow' });
-  }
-}
-
-async function processRefund(req, res, { paystack, db, log, error }) {
-  const { contractId, reason, triggeredBy } = JSON.parse(req.body);
-
-  try {
-    const validationErrors = validateInput({ contractId, reason, triggeredBy }, {
-      contractId: { required: true, type: 'string' },
-      reason: { required: true, type: 'string' },
-      triggeredBy: { required: true, type: 'string' },
-    });
-    if (validationErrors.length > 0) {
-      return createResponse(res, 400, { errors: validationErrors });
-    }
-
-    const contract = await db.getContract(contractId);
-    if (!contract) {
-      return createResponse(res, 404, { error: 'Contract not found' });
-    }
-
-    const payment = await db.getPaymentByContract(contractId);
-    if (!payment) {
-      return createResponse(res, 404, { error: 'Payment record not found' });
-    }
-
-    if (payment.status !== 'ESCROWED') {
-      return createResponse(res, 400, { error: `Payment must be ESCROWED to refund. Current status: ${payment.status}` });
-    }
-
-    const refund = await paystack.refundTransaction({
-      transaction: payment.paystackReference,
-      amount: contract.amount,
-    });
-
-    await db.updatePayment(payment.$id, {
-      status: 'REFUNDED',
-      metadata: {
-        ...payment.metadata,
-        refund: {
-          refund_reference: refund.data.reference,
-          refunded_at: new Date().toISOString(),
-          reason,
-        },
-      },
-    });
-
-    await db.updateContract(contractId, {
-      status: 'CANCELLED',
-      updatedAt: new Date().toISOString(),
-    });
-
-    await db.createDeliveryEvent({
-      contractId,
-      eventType: 'CANCELLED',
-      triggeredBy,
-      metadata: { reason, refund_reference: refund.data.reference, refund_amount: contract.amount },
-    });
-
-    log(`Refund processed for contract ${contractId}`);
-
-    return createResponse(res, 200, {
-      success: true,
-      refund: {
-        reference: refund.data.reference,
-        amount: contract.amount,
-        amountNGN: (contract.amount / 100).toFixed(2),
-        status: refund.data.status,
-      },
-    });
-  } catch (err) {
-    error(`Refund error: ${err.message}`);
-    return createResponse(res, 500, { error: 'Refund processing failed' });
+    return Utils.handleError(err, 'resolve dispute');
   }
 }

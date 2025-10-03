@@ -43,10 +43,6 @@ export default function FundDelivery() {
   }, [contractId, authLoading, user, router]);
 
   const initializePayment = async () => {
-    if (!user) {
-      setError('Please log in to make a payment');
-      return;
-    }
 
     setPaymentLoading(true);
     try {
@@ -105,7 +101,7 @@ export default function FundDelivery() {
   }
 
   if (!user) {
-    return null; // Redirect handled in useEffect
+    return null; 
   }
 
   if (error || !contract) {

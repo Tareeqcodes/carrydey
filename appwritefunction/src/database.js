@@ -1,72 +1,197 @@
 import { ID, Query } from 'node-appwrite';
 
-export class DatabaseService {
-  constructor(databases, databaseId) {
-    this.db = databases;
+class DatabaseService {
+  constructor(database, databaseId) {
+    this.database = database;
     this.databaseId = databaseId;
-    this.collections = {
-      contracts: 'contracts',
-      payments: 'payments',
-      delivery_events: 'delivery_events',
-    };
+    this.escrowCollectionId = 'escrow_transactions';
+    this.packagesCollectionId = 'packages';
+    this.usersCollectionId = 'users';
   }
 
-  async getContract(contractId) {
-    return await this.db.getDocument(this.databaseId, this.collections.contracts, contractId);
+  async createEscrowRecord(escrowData) {
+    try {
+      const {
+        packageId,
+        senderId,
+        travelerId,
+        amount,
+        paystackReference,
+        status = 'pending'
+      } = escrowData;
+
+      const escrowId = ID.unique();
+
+      const result = await this.database.createDocument(
+        this.databaseId,
+        this.escrowCollectionId,
+        escrowId,
+        {
+          packageId,
+          senderId,
+          travelerId,
+          amount,
+          paystackReference,
+          status,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      );
+
+      return {
+        success: true,
+        escrowId: result.$id,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Database create escrow error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async createContract(data) {
-    return await this.db.createDocument(
-      this.databaseId,
-      this.collections.contracts,
-      ID.unique(),
-      { ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    );
+  async updateEscrowStatus(escrowId, status, additionalData = {}) {
+    try {
+      const updateData = {
+        status,
+        updatedAt: new Date().toISOString(),
+        ...additionalData,
+      };
+
+      const result = await this.database.updateDocument(
+        this.databaseId,
+        this.escrowCollectionId,
+        escrowId,
+        updateData
+      );
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Database update escrow error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async updateContract(contractId, data) {
-    return await this.db.updateDocument(this.databaseId, this.collections.contracts, contractId, {
-      ...data,
-      updatedAt: new Date().toISOString(),
-    });
+  async getEscrowById(escrowId) {
+    try {
+      const result = await this.database.getDocument(
+        this.databaseId,
+        this.escrowCollectionId,
+        escrowId
+      );
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Database get escrow error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async createPayment(data) {
-    return await this.db.createDocument(this.databaseId, this.collections.payments, ID.unique(), {
-      ...data,
-      createdAt: new Date().toISOString(),
-    });
+  async getEscrowByPackage(packageId) {
+    try {
+      const result = await this.database.listDocuments(
+        this.databaseId,
+        this.escrowCollectionId,
+        [Query.equal('packageId', packageId)]
+      );
+
+      return {
+        success: true,
+        data: result.documents[0] || null,
+      };
+    } catch (error) {
+      console.error('Database get escrow by package error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async updatePayment(paymentId, data) {
-    return await this.db.updateDocument(this.databaseId, this.collections.payments, paymentId, {
-      ...data,
-      updatedAt: new Date().toISOString(),
-    });
+  async getEscrowByReference(paystackReference) {
+    try {
+      const result = await this.database.listDocuments(
+        this.databaseId,
+        this.escrowCollectionId,
+        [Query.equal('paystackReference', paystackReference)]
+      );
+
+      return {
+        success: true,
+        data: result.documents[0] || null,
+      };
+    } catch (error) {
+      console.error('Database get escrow by reference error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async getPaymentByReference(reference) {
-    const response = await this.db.listDocuments(this.databaseId, this.collections.payments, [
-      Query.equal('paystackReference', reference),
-    ]);
-    return response.documents[0] || null;
+  async updatePackageStatus(packageId, status) {
+    try {
+      const result = await this.database.updateDocument(
+        this.databaseId,
+        this.packagesCollectionId,
+        packageId,
+        {
+          status,
+          updatedAt: new Date().toISOString(),
+        }
+      );
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Database update package error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async getPaymentByContract(contractId) {
-    const response = await this.db.listDocuments(this.databaseId, this.collections.payments, [
-      Query.equal('contractId', contractId),
-    ]);
-    return response.documents[0] || null;
-  }
+  async getUserBankDetails(userId) {
+    try {
+      const result = await this.database.getDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId
+      );
 
-  async createDeliveryEvent(data) {
-    return await this.db.createDocument(this.databaseId, this.collections.delivery_events, ID.unique(), {
-      ...data,
-      createdAt: new Date().toISOString(),
-    });
-  }
-
-  async listDocuments(databaseId, collectionId, queries) {
-    return await this.db.listDocuments(databaseId, collectionId, queries);
+      return {
+        success: true,
+        data: {
+          accountNumber: result.bankAccountNumber,
+          bankCode: result.bankCode,
+          accountName: result.bankAccountName,
+        },
+      };
+    } catch (error) {
+      console.error('Database get user bank details error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 }
+
+export default DatabaseService;

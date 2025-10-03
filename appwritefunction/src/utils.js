@@ -1,62 +1,74 @@
-import crypto from 'crypto';
-
-export function createResponse(res, status, data) {
-  return res.json(data, status);
-}
-
-export function validateWebhook(body, signature, secret) {
-  const hash = crypto.createHmac('sha512', secret).update(body).digest('hex');
-  return hash === signature;
-}
-
-export function validateInput(data, schema) {
-  const errors = [];
-  for (const [key, rules] of Object.entries(schema)) {
-    if (rules.required && (data[key] === undefined || data[key] === null || data[key] === '')) {
-      errors.push(`${key} is required`);
-    }
-    if (data[key] !== undefined && data[key] !== null && rules.type && typeof data[key] !== rules.type) {
-      errors.push(`${key} must be of type ${rules.type}`);
-    }
-    if (data[key] !== undefined && data[key] !== null && rules.min !== undefined && data[key] < rules.min) {
-      errors.push(`${key} must be at least ${rules.min}`);
-    }
-  }
-  return errors;
-}
-
-export function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-export function isValidAmount(amount) {
-  return Number.isInteger(amount) && amount > 0;
-}
-
-export class RateLimiter {
-  constructor(maxRequests, timeWindow) {
-    this.maxRequests = maxRequests;
-    this.timeWindow = timeWindow;
-    this.requests = [];
+class Utils {
+  static formatResponse(success, data = null, error = null, statusCode = 200) {
+    return {
+      success,
+      data,
+      error,
+      statusCode,
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  canMakeRequest() {
-    const now = Date.now();
-    this.requests = this.requests.filter((time) => now - time < this.timeWindow);
-    if (this.requests.length < this.maxRequests) {
-      this.requests.push(now);
-      return true;
-    }
-    return false;
+  static handleError(error, context = 'Unknown context') {
+    console.error(`Error in ${context}:`, error);
+    
+    return this.formatResponse(
+      false,
+      null,
+      {
+        message: error.message || 'An unexpected error occurred',
+        context,
+        code: error.code || 'UNKNOWN_ERROR',
+      },
+      500
+    );
   }
 
-  getWaitTime() {
-    const now = Date.now();
-    this.requests = this.requests.filter((time) => now - time < this.timeWindow);
-    if (this.requests.length < this.maxRequests) {
-      return 0;
+  static validateRequiredFields(fields, required) {
+    const missing = required.filter(field => !fields[field]);
+    
+    if (missing.length > 0) {
+      throw new Error(`Missing required fields: ${missing.join(', ')}`);
     }
-    return this.timeWindow - (now - this.requests[0]);
+  }
+
+  static generateReference(prefix = 'sendr') {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
+    return `${prefix}_${timestamp}_${random}`.toUpperCase();
+  }
+
+  static sanitizeAmount(amount) {
+    const sanitized = parseFloat(amount);
+    if (isNaN(sanitized) || sanitized <= 0) {
+      throw new Error('Invalid amount provided');
+    }
+    return sanitized;
+  }
+
+  static getEscrowStatusFlow(currentStatus, action) {
+    const statusFlow = {
+      pending: {
+        payment_success: 'funded',
+        payment_failed: 'failed',
+        cancel: 'cancelled',
+      },
+      funded: {
+        confirm_delivery: 'completed',
+        dispute: 'disputed',
+        refund: 'refunding',
+      },
+      disputed: {
+        resolve_traveler: 'completed',
+        resolve_sender: 'refunding',
+      },
+      refunding: {
+        refund_complete: 'refunded',
+      },
+    };
+
+    return statusFlow[currentStatus]?.[action] || currentStatus;
   }
 }
+
+export default Utils;

@@ -1,65 +1,160 @@
 import fetch from 'node-fetch';
-import { RateLimiter } from './utils.js';
 
-export class PaystackService {
+class PaystackService {
   constructor(secretKey) {
     this.secretKey = secretKey;
     this.baseURL = 'https://api.paystack.co';
-    this.rateLimiter = new RateLimiter(100, 60000); // 100 requests per minute
   }
 
-  async makeRequest(endpoint, method = 'GET', data = null) {
-    if (!this.rateLimiter.canMakeRequest()) {
-      throw new Error(`Rate limit exceeded. Try again in ${this.rateLimiter.getWaitTime()}ms`);
-    }
-
-    const url = `${this.baseURL}${endpoint}`;
+  async initializeTransaction(email, amount, metadata = {}) {
     try {
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`${this.baseURL}/transaction/initialize`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.secretKey}`,
+          'Authorization': `Bearer ${this.secretKey}`,
           'Content-Type': 'application/json',
         },
-        body: data ? JSON.stringify(data) : null,
+        body: JSON.stringify({
+          email,
+          amount: amount * 100, // Convert to kobo
+          metadata,
+          callback_url: `${process.env.APP_URL}/payment/verify`,
+        }),
       });
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || `Paystack API error: ${response.status}`);
-      }
-      return result;
-    } catch (error) {
-      throw new Error(`Paystack API request failed: ${error.message}`);
-    }
-  }
+      const data = await response.json();
 
-  async initializeTransaction(data) {
-    return await this.makeRequest('/transaction/initialize', 'POST', data);
+      if (!data.status) {
+        throw new Error(data.message || 'Failed to initialize transaction');
+      }
+
+      return {
+        success: true,
+        authorizationUrl: data.data.authorization_url,
+        reference: data.data.reference,
+      };
+    } catch (error) {
+      console.error('Paystack initialization error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
   async verifyTransaction(reference) {
-    return await this.makeRequest(`/transaction/verify/${reference}`);
+    try {
+      const response = await fetch(`${this.baseURL}/transaction/verify/${reference}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!data.status) {
+        throw new Error(data.message || 'Failed to verify transaction');
+      }
+
+      const transaction = data.data;
+
+      return {
+        success: true,
+        verified: transaction.status === 'success',
+        transaction: {
+          id: transaction.id,
+          reference: transaction.reference,
+          amount: transaction.amount / 100, // Convert back to naira
+          currency: transaction.currency,
+          paidAt: transaction.paid_at,
+          channel: transaction.channel,
+          metadata: transaction.metadata,
+        },
+      };
+    } catch (error) {
+      console.error('Paystack verification error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async createTransferRecipient(data) {
-    return await this.makeRequest('/transferrecipient', 'POST', data);
+  async transferToTraveler(recipientCode, amount, reference) {
+    try {
+      const response = await fetch(`${this.baseURL}/transfer`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source: 'balance',
+          reason: 'Package delivery payment',
+          amount: amount * 100, // Convert to kobo
+          recipient: recipientCode,
+          reference: `sendr_${reference}_${Date.now()}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.status) {
+        throw new Error(data.message || 'Failed to process transfer');
+      }
+
+      return {
+        success: true,
+        transferCode: data.data.transfer_code,
+        reference: data.data.reference,
+        status: data.data.status,
+      };
+    } catch (error) {
+      console.error('Paystack transfer error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 
-  async initiateTransfer(data) {
-    return await this.makeRequest('/transfer', 'POST', data);
-  }
+  async createTransferRecipient(accountNumber, bankCode, accountName) {
+    try {
+      const response = await fetch(`${this.baseURL}/transferrecipient`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'nuban',
+          name: accountName,
+          account_number: accountNumber,
+          bank_code: bankCode,
+          currency: 'NGN',
+        }),
+      });
 
-  async refundTransaction(data) {
-    return await this.makeRequest('/refund', 'POST', data);
-  }
+      const data = await response.json();
 
-  async checkBalance() {
-    return await this.makeRequest('/balance');
-  }
+      if (!data.status) {
+        throw new Error(data.message || 'Failed to create transfer recipient');
+      }
 
-  async verifyAccount(accountNumber, bankCode) {
-    const params = new URLSearchParams({ account_number: accountNumber, bank_code: bankCode });
-    return await this.makeRequest(`/bank/resolve?${params}`);
+      return {
+        success: true,
+        recipientCode: data.data.recipient_code,
+      };
+    } catch (error) {
+      console.error('Paystack recipient creation error:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   }
 }
+
+export default PaystackService;
