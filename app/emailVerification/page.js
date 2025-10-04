@@ -44,7 +44,7 @@ export default function Confirm() {
         }
 
         if (!sessionExists) {
-          const session = await account.createSession(userId, secret);
+          const session = await account.createSession({userId, secret});
           console.log('Session created:', session);
         }
 

@@ -5,7 +5,7 @@ import Utils from './utils.js';
 
 export default async ({ req, res, log, error }) => {
   try {
-    // Initialize clients
+   
     const client = new Client();
     const paystack = new PaystackService(process.env.PAYSTACK_SECRET_KEY);
     
@@ -20,22 +20,33 @@ export default async ({ req, res, log, error }) => {
       process.env.APPWRITE_DATABASE_ID
     );
 
-    const { method, path, headers } = req;
-    const body = JSON.parse(req.body || '{}');
+    
+    const { method, path } = req;
+    
+    const body = typeof req.body === 'string' 
+      ? JSON.parse(req.body) 
+      : req.body;
 
     log(`Received ${method} request to ${path}`);
+    log(`Body: ${JSON.stringify(body)}`);
+
 
     // Route requests
     if (path === '/initialize-payment' && method === 'POST') {
-      return await handleInitializePayment(body, dbService, paystack);
+      const result = await handleInitializePayment(body, dbService, paystack);
+      return res.json(result);
     } else if (path === '/verify-payment' && method === 'POST') {
-      return await handleVerifyPayment(body, dbService, paystack);
+      const result = await handleVerifyPayment(body, dbService, paystack);
+      return res.json(result);
     } else if (path === '/confirm-delivery' && method === 'POST') {
-      return await handleConfirmDelivery(body, dbService, paystack);
+      const result = await handleConfirmDelivery(body, dbService, paystack);
+      return res.json(result);
     } else if (path === '/initiate-refund' && method === 'POST') {
-      return await handleInitiateRefund(body, dbService, paystack);
+      const result = await handleInitiateRefund(body, dbService, paystack);
+      return res.json(result);
     } else if (path === '/resolve-dispute' && method === 'POST') {
-      return await handleResolveDispute(body, dbService, paystack);
+      const result = await handleResolveDispute(body, dbService, paystack);
+      return res.json(result);
     } else {
       return res.json(Utils.formatResponse(false, null, 'Endpoint not found', 404));
     }
@@ -66,7 +77,7 @@ async function handleInitializePayment(body, dbService, paystack) {
       throw new Error('Escrow already exists for this package');
     }
 
-    // Initialize Paystack transaction
+    // Paystack transaction
     const paystackResult = await paystack.initializeTransaction(
       senderEmail,
       sanitizedAmount,

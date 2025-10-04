@@ -1,4 +1,5 @@
-import { Client, Functions } from 'node-appwrite';
+
+import { Client, Functions, ExecutionMethod } from 'appwrite';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
@@ -11,15 +12,16 @@ export async function POST(request) {
 
     const functions = new Functions(client);
 
-    const result = await functions.createExecution(
-      functionId,
-      JSON.stringify({
-        path,
-        method: 'POST',
-        body: JSON.stringify(data),
-      })
-    );
+    const result = await functions.createExecution({
+      functionId: functionId,
+      body: JSON.stringify(data), // Pass data directly, not wrapped
+      async: false, // Wait for response
+      path: path || '/', // Your custom path
+      method: ExecutionMethod.POST,
+      headers: {} // optional headers
+    });
 
+    // Parse the response body
     const response = JSON.parse(result.responseBody);
     return NextResponse.json(response);
 

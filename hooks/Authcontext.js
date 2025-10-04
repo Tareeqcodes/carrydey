@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, role = null) => {
     try {
-      const baseUrl = 'http://localhost:3000/verify';
+      const baseUrl = 'http://localhost:3000/emailVerification';
       const verifyUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
       
       await account.createMagicURLToken(
@@ -43,12 +43,12 @@ export const AuthProvider = ({ children }) => {
       );    
     } catch (error) {
       alert(error.message);
-    }
+    } 
   };
 
   const loginWithGoogle = async (role = null) => {
     try {
-      const baseUrl = 'http://localhost:3000/verify';
+      const baseUrl = 'http://localhost:3000/emailVerification';
       const redirectUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
       
       account.createOAuth2Session('google', "http://localhost:3000", redirectUrl);
