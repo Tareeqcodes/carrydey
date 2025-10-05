@@ -69,8 +69,8 @@ async function handleInitializePayment(body, dbService, paystack) {
     ]);
 
     const { packageId, senderId, travelerId, amount, senderEmail } = body;
-    const sanitizedAmount = Utils.sanitizeAmount(amount);
 
+    log(`Initializing payment: ${amount} kobo`);
     // Check if escrow already exists for this package
     const existingEscrow = await dbService.getEscrowByPackage(packageId);
     if (existingEscrow.success && existingEscrow.data) {
@@ -80,7 +80,7 @@ async function handleInitializePayment(body, dbService, paystack) {
     // Paystack transaction
     const paystackResult = await paystack.initializeTransaction(
       senderEmail,
-      sanitizedAmount,
+      amount,
       {
         packageId,
         senderId,
@@ -98,7 +98,7 @@ async function handleInitializePayment(body, dbService, paystack) {
       packageId,
       senderId,
       travelerId,
-      amount: sanitizedAmount,
+      amount: amount,
       paystackReference: paystackResult.reference,
     });
 

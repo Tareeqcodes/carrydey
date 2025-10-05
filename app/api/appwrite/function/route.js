@@ -12,15 +12,13 @@ export async function POST(request) {
 
     const functions = new Functions(client);
 
-    const result = await functions.createExecution({
+   const result = await functions.createExecution({
       functionId: functionId,
-      body: JSON.stringify(data), // Pass data directly, not wrapped
-      async: false, // Wait for response
-      path: path || '/', // Your custom path
+      body: JSON.stringify(data), // Keep this, Appwrite will parse it
+      async: false,
+      path: path || '/',
       method: ExecutionMethod.POST,
-      headers: {} // optional headers
     });
-
     // Parse the response body
     const response = JSON.parse(result.responseBody);
     return NextResponse.json(response);

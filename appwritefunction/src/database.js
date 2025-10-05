@@ -4,9 +4,9 @@ class DatabaseService {
   constructor(database, databaseId) {
     this.database = database;
     this.databaseId = databaseId;
-    this.escrowCollectionId = 'contracts';
-    this.packagesCollectionId = 'packages';
-    this.usersCollectionId = 'users';
+    this.escrowCollectionId = process.env.APPWRITE_CONTRACTS_COLLECTION_ID;
+    this.packagesCollectionId = process.env.APPWRITE_PACKAGE_COLLECTION_ID;
+    this.usersCollectionId = process.env.APPWRITE_USERS_COLLECTION_ID;
   }
 
   async createEscrowRecord(escrowData) {

@@ -11,12 +11,12 @@ class PaystackService {
       const response = await fetch(`${this.baseURL}/transaction/initialize`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.secretKey}`,
+          'Authorization': `Bearer ${this.secretKey}`, 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email,
-          amount: amount * 100, // Convert to kobo
+          amount: amount,
           metadata,
           callback_url: `${process.env.APP_URL}/payment/verify`,
         }),
@@ -66,7 +66,7 @@ class PaystackService {
         transaction: {
           id: transaction.id,
           reference: transaction.reference,
-          amount: transaction.amount / 100, // Convert back to naira
+          amount: transaction.amount,
           currency: transaction.currency,
           paidAt: transaction.paid_at,
           channel: transaction.channel,
@@ -93,7 +93,7 @@ class PaystackService {
         body: JSON.stringify({
           source: 'balance',
           reason: 'Package delivery payment',
-          amount: amount * 100, // Convert to kobo
+          amount: amount,
           recipient: recipientCode,
           reference: `sendr_${reference}_${Date.now()}`,
         }),

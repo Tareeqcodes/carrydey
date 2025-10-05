@@ -1,9 +1,12 @@
+'use client';
 import { useAuth } from "./Authcontext";
-
 
 export const useEscrow = () => {
   const { user } = useAuth();
+
   const initializeEscrowPayment = async (packageId, travelerId, amount) => {
+    const amountInKobo = amount * 100;
+    
     try {
       const response = await fetch('/api/appwrite/function', {
         method: 'POST',
@@ -13,12 +16,13 @@ export const useEscrow = () => {
         body: JSON.stringify({
           functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/initialize-payment',
+          method: 'POST',
           data: {
             packageId,
             travelerId,
-            amount,
-            senderId: user?.$id, // from your auth context
-            senderEmail: user?.email, // from your auth context
+            amount: amountInKobo,
+            senderId: user?.$id,
+            senderEmail: user?.email,
           },
         }),
       });
@@ -26,7 +30,6 @@ export const useEscrow = () => {
       const result = await response.json();
 
       if (result.success) {
-        // Redirect to Paystack payment page
         window.location.href = result.data.authorizationUrl;
       } else {
         throw new Error(result.error?.message || 'Failed to initialize payment');
@@ -47,6 +50,7 @@ export const useEscrow = () => {
         body: JSON.stringify({
           functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/confirm-delivery',
+          method: 'POST',
           data: { escrowId },
         }),
       });
@@ -74,6 +78,7 @@ export const useEscrow = () => {
         body: JSON.stringify({
           functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/initiate-refund',
+          method: 'POST',
           data: { escrowId, reason },
         }),
       });

@@ -64,7 +64,7 @@ const Navbar = () => {
                 </NavButton>
                 <NavButton href="/">
                   <div className="relative">
-                    <Search size={24} className="relative z-10" />
+                    <Package size={24} className="relative z-10" />
                   </div>
                   <span className="text-xs font-semibold">Package</span>
                 </NavButton>
