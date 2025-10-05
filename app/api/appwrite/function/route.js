@@ -7,8 +7,8 @@ export async function POST(request) {
     const { functionId, path, data } = await request.json();
 
     const client = new Client()
-      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
+      .setEndpoint(process.env.APPWRITE_ENDPOINT_ID)
+      .setProject(process.env.APPWRITE_PROJECT_ID);
 
     const functions = new Functions(client);
 
@@ -31,6 +31,6 @@ export async function POST(request) {
         error: error.message || 'Failed to execute function'
       },
       { status: 500 }
-    );
+    ); 
   }
 }

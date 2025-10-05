@@ -14,7 +14,7 @@ export const useEscrow = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
+          functionId: process.env.APPWRITE_FUNCTION_ID,
           path: '/initialize-payment',
           method: 'POST',
           data: {
@@ -28,10 +28,13 @@ export const useEscrow = () => {
       });
 
       const result = await response.json();
+      console.log('Full API response:', result);
+    console.log('Response status:', response.status);
 
       if (result.success) {
         window.location.href = result.data.authorizationUrl;
       } else {
+        console.error('Error details:', result);
         throw new Error(result.error?.message || 'Failed to initialize payment');
       }
     } catch (error) {
