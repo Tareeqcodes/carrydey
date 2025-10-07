@@ -2,7 +2,7 @@ import { Client, Databases } from 'node-appwrite';
 import PaystackService from './paystack.js';
 import DatabaseService from './database.js';
 import Utils from './utils.js';
-
+ 
 export default async ({ req, res, log, error }) => {
   try {
    
@@ -57,11 +57,11 @@ export default async ({ req, res, log, error }) => {
   }
 };
 
-// Handler functions
+
 async function handleInitializePayment(body, dbService, paystack) {
   try {
     Utils.validateRequiredFields(body, [
-      'packageId', 
+      'packageId',  
       'senderId', 
       'travelerId', 
       'amount', 
@@ -71,7 +71,7 @@ async function handleInitializePayment(body, dbService, paystack) {
     const { packageId, senderId, travelerId, amount, senderEmail } = body;
 
     log(`Initializing payment: ${amount} kobo`);
-    // Check if escrow already exists for this package
+    
     const existingEscrow = await dbService.getEscrowByPackage(packageId);
     if (existingEscrow.success && existingEscrow.data) {
       throw new Error('Escrow already exists for this package');
@@ -313,6 +313,6 @@ async function handleResolveDispute(body, dbService, paystack) {
     }
 
   } catch (err) {
-    return Utils.handleError(err, 'resolve dispute');
+    return Utils.handleError(err, 'resolve dispute'); 
   }
 }

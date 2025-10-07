@@ -1,8 +1,9 @@
 import fetch from 'node-fetch';
+import crypto from 'crypto'; 
 
 class PaystackService {
   constructor(secretKey) {
-    this.secretKey = secretKey;
+    this.secretKey = secretKey; 
     this.baseURL = 'https://api.paystack.co';
   }
 
@@ -32,6 +33,7 @@ class PaystackService {
         success: true,
         authorizationUrl: data.data.authorization_url,
         reference: data.data.reference,
+        accessCode: data.data.access_code,
       };
     } catch (error) {
       console.error('Paystack initialization error:', error);
@@ -154,6 +156,14 @@ class PaystackService {
         error: error.message,
       };
     }
+  }
+
+   verifyWebhookSignature(requestBody, signature) {
+    const hash = crypto
+      .createHmac('sha512', this.secretKey)
+      .update(JSON.stringify(requestBody))
+      .digest('hex');
+    return hash === signature;
   }
 }
 
