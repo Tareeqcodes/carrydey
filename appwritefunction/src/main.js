@@ -21,35 +21,31 @@ export default async ({ req, res, log, error }) => {
     );
 
     
-     let requestData = {};
-    try {
-      requestData = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    } catch (parseError) {
-      error('Error parsing request body:', parseError);
-      return res.json(Utils.formatResponse(false, null, 'Invalid request body', 400));
-    }
-
-    // Extract path and method from the request data
-    const { path = '/', method = 'POST', body = {} } = requestData;
+    const { method, path } = req;
     
+    const body = typeof req.body === 'string' 
+      ? JSON.parse(req.body) 
+      : req.body;
+
     log(`Received ${method} request to ${path}`);
-    log(`Request data: ${JSON.stringify(body)}`);
+    log(`Body: ${JSON.stringify(body)}`);
+
 
     // Route requests
-    if (path.startsWith('/initialize-payment') && method === 'POST') {
-      const result = await handleInitializePayment(body, dbService, paystack, log);
+    if (path === '/initialize-payment' && method === 'POST') {
+      const result = await handleInitializePayment(body, dbService, paystack);
       return res.json(result);
-    } else if (path.startsWith('/verify-payment') && method === 'POST') {
-      const result = await handleVerifyPayment(body, dbService, paystack, log);
+    } else if (path === '/verify-payment' && method === 'POST') {
+      const result = await handleVerifyPayment(body, dbService, paystack);
       return res.json(result);
-    } else if (path.startsWith('/confirm-delivery') && method === 'POST') {
-      const result = await handleConfirmDelivery(body, dbService, paystack, log);
+    } else if (path === '/confirm-delivery' && method === 'POST') {
+      const result = await handleConfirmDelivery(body, dbService, paystack);
       return res.json(result);
-    } else if (path.startsWith('/initiate-refund') && method === 'POST') {
-      const result = await handleInitiateRefund(body, dbService, paystack, log);
+    } else if (path === '/initiate-refund' && method === 'POST') {
+      const result = await handleInitiateRefund(body, dbService, paystack);
       return res.json(result);
-    } else if (path.startsWith('/resolve-dispute') && method === 'POST') {
-      const result = await handleResolveDispute(body, dbService, paystack, log);
+    } else if (path === '/resolve-dispute' && method === 'POST') {
+      const result = await handleResolveDispute(body, dbService, paystack);
       return res.json(result);
     } else {
       return res.json(Utils.formatResponse(false, null, 'Endpoint not found', 404));
