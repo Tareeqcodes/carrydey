@@ -1,48 +1,53 @@
-import { Client, Functions, ExecutionMethod } from 'appwrite';
+import { Client, Functions } from 'appwrite';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { functionId, path, data } = await request.json();
+    const { functionId, path, method = 'POST', data } = await request.json();
 
-    // Validate required fields
     if (!functionId) {
       return NextResponse.json(
-        { success: false, error: 'Function ID is required' },
+        {
+          success: false,
+          error: 'Function ID is required'
+        },
         { status: 400 }
       );
     }
 
     const client = new Client()
-      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT_ID) // Fixed: removed _ID
-      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY); // Add API key if needed
 
     const functions = new Functions(client);
 
-    // Properly structure the execution call
-    const result = await functions.createExecution(
+    const execution = await functions.createExecution(
       functionId,
-      JSON.stringify({ path: path || '/', method: 'POST', ...data }), // Body as string
+      JSON.stringify({
+        path: path || '/initialize-payment',
+        method: method || 'POST',
+        body: data || {}
+      }),
       false, // async
-      path || '/', // path
-      ExecutionMethod.POST // method
+      path || '/initialize-payment', // path
+      'POST' // method
     );
 
-    // Check if execution was successful
-    if (result.status === 'failed') {
-      console.error('Function execution failed:', result.stderr);
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.stderr || 'Function execution failed'
-        },
-        { status: 500 }
-      );
+    // Parse the response safely
+    let responseData;
+    try {
+      responseData = JSON.parse(execution.responseBody);
+    } catch (parseError) {
+      console.error('Error parsing function response:', parseError);
+      responseData = {
+        success: false,
+        error: 'Invalid response from function',
+        rawResponse: execution.responseBody
+      };
     }
 
-    // Parse the response body
-    const response = JSON.parse(result.responseBody);
-    return NextResponse.json(response);
+    return NextResponse.json(responseData);
 
   } catch (error) {
     console.error('Appwrite function error:', error);
