@@ -14,7 +14,7 @@ export const useEscrow = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          functionId: process.env.APPWRITE_FUNCTION_ID,
+          functionId: process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID,
           path: '/initialize-payment',
           method: 'POST',
           data: {
