@@ -1,5 +1,4 @@
-
-import { Client, Functions } from 'appwrite';
+import { Client, Functions, ExecutionMethod } from 'appwrite';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
@@ -10,7 +9,7 @@ export async function POST(request) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Function ID is required',
+          error: 'Function ID is required'
         },
         { status: 400 }
       );
@@ -23,35 +22,81 @@ export async function POST(request) {
 
     const functions = new Functions(client);
 
-    // Call the Appwrite function asynchronously.
-    // The body, path, and method must be passed as the second argument.
+    // Map method string to ExecutionMethod enum
+    const executionMethod = method === 'GET' ? ExecutionMethod.GET : 
+                           method === 'PUT' ? ExecutionMethod.PUT :
+                           method === 'DELETE' ? ExecutionMethod.DELETE :
+                           method === 'PATCH' ? ExecutionMethod.PATCH :
+                           ExecutionMethod.POST;
+
+    console.log('Executing Appwrite function:', {
+      functionId,
+      path: path || '/',
+      method: executionMethod,
+      dataKeys: data ? Object.keys(data) : []
+    });
+
+    // Execute the function synchronously
     const execution = await functions.createExecution(
       functionId,
-      JSON.stringify({
-        path: path || '/',
-        method: method,
-        body: data || {},
-      }),
-      true, // async parameter set to true
-      // The `path` and `method` parameters for createExecution are for internal
-      // Appwrite routing. You are correctly passing them as part of the body.
+      JSON.stringify(data || {}), // Body payload
+      false, // async: false (wait for completion)
+      path || '/', // Path for internal routing
+      executionMethod // HTTP method
     );
 
-    // When the function is executed asynchronously, we don't get the responseBody
-    // immediately. Instead, we return the execution ID.
-    // The frontend must use this ID to poll for the final result or rely on a webhook.
-    return NextResponse.json({
-      success: true,
-      message: 'Function execution initiated asynchronously.',
-      executionId: execution.$id,
+    console.log('Appwrite function execution completed:', {
+      status: execution.status,
+      statusCode: execution.statusCode,
+      responseLength: execution.responseBody?.length || 0
     });
+
+    // Parse the response body
+    let responseData;
+    try {
+      responseData = JSON.parse(execution.responseBody);
+      console.log('Parsed response:', responseData);
+    } catch (parseError) {
+      console.error('Error parsing function response:', parseError);
+      console.error('Raw response body:', execution.responseBody);
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid response from function',
+          details: 'Function returned non-JSON response',
+          rawResponse: execution.responseBody?.substring(0, 500) // First 500 chars
+        },
+        { status: 500 }
+      );
+    }
+
+    // Check if the function execution itself failed
+    if (execution.status === 'failed') {
+      console.error('Function execution failed:', execution.errors);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Function execution failed',
+          details: execution.errors || 'Unknown error',
+          statusCode: execution.statusCode
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(responseData);
+
   } catch (error) {
     console.error('Appwrite function error:', error);
+    
+    // Provide more detailed error information
     return NextResponse.json(
       {
         success: false,
         error: error.message || 'Failed to execute function',
-        trace: error.stack,
+        type: error.type || error.name || 'Unknown',
+        details: error.response?.message || error.toString()
       },
       { status: 500 }
     );

@@ -38,14 +38,6 @@ class Utils {
     return `${prefix}_${timestamp}_${random}`.toUpperCase();
   }
 
-  static sanitizeAmount(amount) {
-    const sanitized = parseFloat(amount);
-    if (isNaN(sanitized) || sanitized <= 0) {
-      throw new Error('Invalid amount provided');
-    }
-    return sanitized;
-  }
-
   static getEscrowStatusFlow(currentStatus, action) {
     const statusFlow = {
       pending: {
