@@ -12,8 +12,8 @@ class PaystackService {
       const response = await fetch(`${this.baseURL}/transaction/initialize`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.secretKey}`, 
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.secretKey}`, 
         },
         body: JSON.stringify({
           email,

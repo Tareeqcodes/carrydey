@@ -29,7 +29,7 @@ export async function POST(request) {
         method: method || 'POST',
         body: data || {}
       }),
-      false, // async
+      true, // async
       path || '/initialize-payment', // path
       'POST' // method
     );
