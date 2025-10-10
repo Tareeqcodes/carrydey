@@ -16,9 +16,9 @@ export async function POST(request) {
     }
 
     const client = new Client()
-      .setEndpoint(process.env.APPWRITE_ENDPOINT)
-      .setProject(process.env.APPWRITE_PROJECT_ID)
-      .setKey(process.env.APPWRITE_API_KEY);
+      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENPOINT_ID)
+      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID)
+      .setKey(process.env.NEXT_PUBLIC_APPWRITE_APPWRITE_API_KEY);
 
     const functions = new Functions(client);
 
@@ -40,7 +40,7 @@ export async function POST(request) {
     const execution = await functions.createExecution(
       functionId,
       JSON.stringify(data || {}), // Body payload
-      false, // async: false (wait for completion)
+      true, // async: false (wait for completion)
       path || '/', // Path for internal routing
       executionMethod // HTTP method
     );

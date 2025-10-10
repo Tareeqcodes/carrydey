@@ -1,3 +1,4 @@
+
 import { useAuth } from "./Authcontext";
 
 export const useEscrow = () => {
@@ -5,17 +6,8 @@ export const useEscrow = () => {
 
   const initializeEscrowPayment = async (packageId, travelerId, amount) => {
     const amountInKobo = amount * 100;
-   
+    
     try {
-      console.log('Initializing payment with:', {
-        packageId,
-        travelerId,
-        amount,
-        amountInKobo,
-        senderId: user?.$id,
-        senderEmail: user?.email,
-      });
-
       const response = await fetch('/api/appwrite/function', {
         method: 'POST',
         headers: {
@@ -36,34 +28,14 @@ export const useEscrow = () => {
       });
 
       const result = await response.json();
-      
-      // DEBUG LOGGING - Remove after testing
-      console.log('=== PAYMENT RESPONSE DEBUG ===');
-      console.log('Full result:', result);
-      console.log('result.success:', result.success);
-      console.log('result.data:', result.data);
-      console.log('result.error:', result.error);
-      console.log('============================');
+      console.log('Full API response:', result);
+    console.log('Response status:', response.status);
 
-      if (!response.ok) {
-        throw new Error(result.error?.message || result.error || 'Failed to initialize payment');
-      }
-
-      // Handle the nested data structure from Utils.formatResponse
-      if (result.success && result.data) {
-        const authUrl = result.data.authorizationUrl;
-        
-        if (authUrl) {
-          console.log('Redirecting to:', authUrl);
-          window.location.href = authUrl;
-        } else {
-          console.error('No authorization URL in response:', result);
-          throw new Error('No authorization URL received from payment provider');
-        }
+      if (result.success) {
+        window.location.href = result.data.authorizationUrl;
       } else {
-        const errorMessage = result.error?.message || result.error || 'Failed to initialize payment';
-        console.error('Payment initialization failed:', result);
-        throw new Error(errorMessage);
+        console.error('Error details:', result);
+        throw new Error(result.error?.message || 'Failed to initialize payment');
       }
     } catch (error) {
       console.error('Escrow initialization error:', error);
@@ -89,7 +61,7 @@ export const useEscrow = () => {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error?.message || result.error || 'Failed to confirm delivery');
+        throw new Error(result.error?.message || 'Failed to confirm delivery');
       }
 
       return result;
@@ -117,7 +89,7 @@ export const useEscrow = () => {
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error?.message || result.error || 'Failed to initiate refund');
+        throw new Error(result.error?.message || 'Failed to initiate refund');
       }
 
       return result;
