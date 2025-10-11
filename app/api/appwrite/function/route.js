@@ -1,4 +1,4 @@
-import { Client, Functions, ExecutionMethod } from 'appwrite';
+import { Client, Functions, ExecutionMethod } from 'node-appwrite';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
@@ -18,7 +18,7 @@ export async function POST(request) {
     const client = new Client()
       .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENPOINT_ID)
       .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID)
- // Add API key if needed
+        .setKey(process.env.NEXT_PUBLIC_APPWRITE_API_KEY);
 
     const functions = new Functions(client);
 

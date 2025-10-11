@@ -33,19 +33,19 @@ export default async ({ req, res, log, error }) => {
 
     // Route requests
     if (path === '/initialize-payment' && method === 'POST') {
-      const result = await handleInitializePayment(body, dbService, paystack);
+      const result = await handleInitializePayment(body, dbService, paystack, log);
       return res.json(result);
     } else if (path === '/verify-payment' && method === 'POST') {
-      const result = await handleVerifyPayment(body, dbService, paystack);
+      const result = await handleVerifyPayment(body, dbService, paystack, log);
       return res.json(result);
     } else if (path === '/confirm-delivery' && method === 'POST') {
-      const result = await handleConfirmDelivery(body, dbService, paystack);
+      const result = await handleConfirmDelivery(body, dbService, paystack, log);
       return res.json(result);
     } else if (path === '/initiate-refund' && method === 'POST') {
-      const result = await handleInitiateRefund(body, dbService, paystack);
+      const result = await handleInitiateRefund(body, dbService, paystack, log);
       return res.json(result);
     } else if (path === '/resolve-dispute' && method === 'POST') {
-      const result = await handleResolveDispute(body, dbService, paystack);
+      const result = await handleResolveDispute(body, dbService, paystack, log);
       return res.json(result);
     } else {
       return res.json(Utils.formatResponse(false, null, 'Endpoint not found', 404));
@@ -173,6 +173,7 @@ async function handleConfirmDelivery(body, dbService, paystack) {
     Utils.validateRequiredFields(body, ['escrowId']);
 
     const { escrowId } = body;
+     log(`Confirming delivery for escrow: ${escrowId}`);
 
     // Get escrow record
     const escrowRecord = await dbService.getEscrowById(escrowId);
@@ -245,6 +246,8 @@ async function handleInitiateRefund(body, dbService, paystack) {
     Utils.validateRequiredFields(body, ['escrowId', 'reason']);
 
     const { escrowId, reason } = body;
+    
+    log(`Initiating refund for escrow: ${escrowId}`);
 
     // Get escrow record
     const escrowRecord = await dbService.getEscrowById(escrowId);
@@ -285,6 +288,7 @@ async function handleResolveDispute(body, dbService, paystack) {
     Utils.validateRequiredFields(body, ['escrowId', 'resolution']);
 
     const { escrowId, resolution } = body;
+     log(`Resolving dispute for escrow: ${escrowId}`);
 
     // Get escrow record
     const escrowRecord = await dbService.getEscrowById(escrowId);
