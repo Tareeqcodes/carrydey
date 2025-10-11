@@ -33,8 +33,6 @@ class DatabaseService {
           amount,
           status,
           paystackReference,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
         }
       );
 
