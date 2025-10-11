@@ -58,7 +58,7 @@ export default async ({ req, res, log, error }) => {
 };
 
 
-async function handleInitializePayment(body, dbService, paystack) {
+async function handleInitializePayment(body, dbService, paystack, log) {
   try {
     Utils.validateRequiredFields(body, [
       'packageId',  
@@ -120,11 +120,13 @@ async function handleInitializePayment(body, dbService, paystack) {
   }
 }
 
-async function handleVerifyPayment(body, dbService, paystack) {
+async function handleVerifyPayment(body, dbService, paystack, log) {
   try {
     Utils.validateRequiredFields(body, ['reference']);
 
     const { reference } = body;
+
+    log(`Verifying payment with reference: ${reference}`);
 
     // Verify Paystack transaction
     const verification = await paystack.verifyTransaction(reference);
@@ -168,12 +170,13 @@ async function handleVerifyPayment(body, dbService, paystack) {
   }
 }
 
-async function handleConfirmDelivery(body, dbService, paystack) {
+async function handleConfirmDelivery(body, dbService, paystack, log) {
   try {
     Utils.validateRequiredFields(body, ['escrowId']);
 
     const { escrowId } = body;
-     log(`Confirming delivery for escrow: ${escrowId}`);
+
+    log(`Confirming delivery for escrow: ${escrowId}`);
 
     // Get escrow record
     const escrowRecord = await dbService.getEscrowById(escrowId);
@@ -241,12 +244,12 @@ async function handleConfirmDelivery(body, dbService, paystack) {
   }
 }
 
-async function handleInitiateRefund(body, dbService, paystack) {
+async function handleInitiateRefund(body, dbService, paystack, log) {
   try {
     Utils.validateRequiredFields(body, ['escrowId', 'reason']);
 
     const { escrowId, reason } = body;
-    
+
     log(`Initiating refund for escrow: ${escrowId}`);
 
     // Get escrow record
@@ -270,9 +273,6 @@ async function handleInitiateRefund(body, dbService, paystack) {
     // Update package status
     await dbService.updatePackageStatus(escrow.packageId, 'refunding');
 
-    // Note: Actual refund would be processed manually or via Paystack's refund API
-    // This implementation marks it for manual processing
-
     return Utils.formatResponse(true, {
       status: 'refunding',
       message: 'Refund initiated and pending processing',
@@ -283,12 +283,13 @@ async function handleInitiateRefund(body, dbService, paystack) {
   }
 }
 
-async function handleResolveDispute(body, dbService, paystack) {
+async function handleResolveDispute(body, dbService, paystack, log) {
   try {
     Utils.validateRequiredFields(body, ['escrowId', 'resolution']);
 
     const { escrowId, resolution } = body;
-     log(`Resolving dispute for escrow: ${escrowId}`);
+
+    log(`Resolving dispute for escrow: ${escrowId}`);
 
     // Get escrow record
     const escrowRecord = await dbService.getEscrowById(escrowId);
@@ -304,19 +305,20 @@ async function handleResolveDispute(body, dbService, paystack) {
 
     if (resolution === 'release_to_traveler') {
       // Proceed with payment to traveler
-      return await handleConfirmDelivery(body, dbService, paystack);
+      return await handleConfirmDelivery(body, dbService, paystack, log);
     } else if (resolution === 'refund_to_sender') {
       // Initiate refund
       return await handleInitiateRefund(
         { ...body, reason: 'Dispute resolution - refund to sender' },
         dbService,
-        paystack
+        paystack,
+        log
       );
     } else {
       throw new Error('Invalid resolution type');
     }
 
   } catch (err) {
-    return Utils.handleError(err, 'resolve dispute'); 
+    return Utils.handleError(err, 'resolve dispute');
   }
 }
