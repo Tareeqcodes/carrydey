@@ -1,4 +1,4 @@
-
+'use client'
 import { useAuth } from "./Authcontext";
 
 export const useEscrow = () => {
