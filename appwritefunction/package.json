@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "node-appwrite": "^14.1.0",
-    "node-fetch": "^3.3.2",
-    "paystack-api": "^2.0.6"
+    "node-fetch": "^3.3.2"
   }
 }
