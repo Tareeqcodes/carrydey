@@ -19,7 +19,7 @@ class PaystackService {
           email,
           amount: amount,
           metadata,
-          callback_url: `${process.env.APP_URL}/payment/verify`,
+          callback_url: `${process.env.APP_URL}/verifypayment`,
         }),
       });
 
