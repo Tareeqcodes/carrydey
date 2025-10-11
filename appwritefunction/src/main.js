@@ -1,7 +1,6 @@
 import * as sdk from 'node-appwrite';
-import Paystack from 'paystack';
-
-const paystack = new Paystack(process.env.PAYSTACK_SECRET_KEY);
+import Paystack from 'paystack-api';
+const paystack = Paystack(process.env.PAYSTACK_SECRET_KEY);
 
 export default async (req, res) => {
   const client = new sdk.Client();
