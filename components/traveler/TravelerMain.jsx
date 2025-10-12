@@ -185,7 +185,7 @@ export default function TravelerMain() {
                         transition={{ delay: index * 0.1 + 0.3 }}>
                         <Package className='w-4 h-4 mr-2 text-gray-500' />
                         <span className='text-sm font-medium'>
-                          {item.size}
+                          {item.size} 
                         </span>
                       </motion.div>
                     </div>

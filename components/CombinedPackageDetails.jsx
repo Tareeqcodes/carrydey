@@ -9,7 +9,7 @@ export default function CombinedPackageDetails({ packageData }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   const handleGoBack = () => {
     router.back();
@@ -21,20 +21,20 @@ export default function CombinedPackageDetails({ packageData }) {
 
   const handleAcceptPackage = async () => {
     setIsLoading(true);
-     try {
+    try {
       await databases.createDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-      process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS,
-      ID.unique(),
-      {
-        packageId: packageData.$id,
-        travelerId: user.$id,
-        status: 'pending',
-      }
-     ) 
-     } catch (error) {
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS,
+        ID.unique(),
+        {
+          packageId: packageData.$id,
+          travelerId: user.$id,
+          status: 'pending',
+        }
+      );
+    } catch (error) {
       console.error('Error creating application:', error);
-     }
+    }
     setTimeout(() => {
       setIsAccepted(true);
       setIsLoading(false);
@@ -42,9 +42,9 @@ export default function CombinedPackageDetails({ packageData }) {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount || 0);
@@ -52,16 +52,16 @@ export default function CombinedPackageDetails({ packageData }) {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "express":
-        return "bg-orange-100 text-orange-700";
+      case 'express':
+        return 'bg-orange-100 text-orange-700';
       default:
-        return "bg-gray-100 text-gray-700";
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
   const getSenderInitials = (name) => {
-    if (!name) return "??";
-    const nameParts = name.trim().split(" ");
+    if (!name) return '??';
+    const nameParts = name.trim().split(' ');
     if (nameParts.length >= 2) {
       return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
     }
@@ -85,7 +85,7 @@ export default function CombinedPackageDetails({ packageData }) {
     <div className="max-w-sm mx-auto bg-white min-h-screen">
       {/* Header */}
       <div className="flex items-center pt-12 pb-6 px-5">
-        <button 
+        <button
           onClick={handleGoBack}
           className="mr-4 p-2 hover:bg-gray-50 rounded-lg transition-colors"
         >
@@ -99,16 +99,21 @@ export default function CombinedPackageDetails({ packageData }) {
         {/* Package Info */}
         <div className="text-center">
           {packageData.status && (
-            <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${getStatusColor(packageData.status)}`}>
+            <div
+              className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${getStatusColor(
+                packageData.status
+              )}`}
+            >
               {packageData.status.toUpperCase()}
             </div>
           )}
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {packageData.title || 'Package Delivery'}
           </h2>
-          <p className="text-gray-500">
-            {packageData.size || 'Medium'} size • {packageData.weight || '3.5'}kg • {packageData.description || 'Handle with care'}
-          </p>
+          <div className="text-gray-500 flex flex-col space-y-1">
+            <span className='text-md font-semibold'>{packageData.size || 'Medium'}</span>
+            <span className='text-sm'>{packageData.description || 'Handle with care'}</span>
+          </div>
         </div>
 
         {/* Price */}
@@ -145,11 +150,15 @@ export default function CombinedPackageDetails({ packageData }) {
         {/* Distance & Time */}
         <div className="flex justify-between py-4 px-5 bg-gray-50 rounded-xl">
           <div className="text-center">
-            <div className="font-semibold text-gray-900">{packageData.distance || 'N/A'}km</div>
+            <div className="font-semibold text-gray-900">
+              {packageData.distance || 'N/A'}km
+            </div>
             <div className="text-xs text-gray-500">Distance</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-gray-900">{packageData.estimatedDuration || '4.5'}hrs</div>
+            <div className="font-semibold text-gray-900">
+              {packageData.estimatedDuration || '4.5'}hrs
+            </div>
             <div className="text-xs text-gray-500">Duration</div>
           </div>
         </div>
@@ -165,11 +174,12 @@ export default function CombinedPackageDetails({ packageData }) {
                 {packageData.senderName || 'Anonymous Sender'}
               </div>
               <div className="text-sm text-gray-500">
-                {packageData.senderRating || '4.9'} rating • {packageData.senderTrips || '127'} trips
+                {packageData.senderRating || '4.9'} rating •{' '}
+                {packageData.senderTrips || '127'} trips
               </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={handleMessage}
             className="w-10 h-10 bg-blue-50 hover:bg-blue-100 rounded-full flex items-center justify-center transition-colors"
           >
@@ -184,14 +194,18 @@ export default function CombinedPackageDetails({ packageData }) {
           onClick={handleAcceptPackage}
           disabled={isLoading || isAccepted}
           className={`w-full h-12 rounded-xl text-base font-semibold transition-all duration-200 ${
-            isAccepted 
-              ? 'bg-green-500 text-white' 
-              : isLoading 
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-gray-900 text-white hover:bg-gray-800 active:scale-95'
+            isAccepted
+              ? 'bg-green-500 text-white'
+              : isLoading
+              ? 'bg-gray-400 text-white cursor-not-allowed'
+              : 'bg-gray-900 text-white hover:bg-gray-800 active:scale-95'
           }`}
         >
-          {isLoading ? 'Processing...' : isAccepted ? 'Request Sent!' : 'Request Delivery'}
+          {isLoading
+            ? 'Processing...'
+            : isAccepted
+            ? 'Request Sent!'
+            : 'Request Delivery'}
         </button>
       </div>
     </div>
