@@ -38,7 +38,7 @@ export default function PaymentCallback() {
             </>
           )}
           <button
-            onClick={() => router.push('/deliveryRequests')}
+            onClick={() => router.push('/deliveryRequest')}
             className="w-full py-3 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
           >
             Back to Requests

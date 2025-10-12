@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import {
   Search,
   Settings,
@@ -6,8 +6,8 @@ import {
   Info,
   User,
   MessageCircle,
-} from "lucide-react";
-import { useUserRole } from "@/hooks/useUserRole";
+} from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 const Navbar = () => {
   const { role, loading } = useUserRole();
 
@@ -20,8 +20,8 @@ const Navbar = () => {
       <button
         className={`relative flex flex-col items-center space-y-2 p-3 rounded-xl transition-all duration-300 transform hover:scale-105 cursor-pointer ${
           isActive
-            ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg"
-            : "bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80 hover:text-gray-900 shadow-md border border-white/30"
+            ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
+            : 'bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80 hover:text-gray-900 shadow-md border border-white/30'
         } hover:shadow-xl hover:-translate-y-1`}
       >
         {/* Subtle glow effect for active state */}
@@ -47,7 +47,7 @@ const Navbar = () => {
       <div className="relative">
         <div className="bg-white/40 backdrop-blur-lg border-t border-white/30 p-2 shadow-2xl">
           <div className="relative z-10 flex justify-around">
-            {role === "traveler" ? (
+            {role === 'traveler' ? (
               <>
                 <NavButton href="/dashboard">
                   <div className="relative">
@@ -62,11 +62,11 @@ const Navbar = () => {
                   </div>
                   <span className="text-xs font-semibold">Browse</span>
                 </NavButton>
-                <NavButton href="/">
+                <NavButton>
                   <div className="relative">
-                    <Package size={24} className="relative z-10" />
+                    <Info size={24} className="relative z-10" />
                   </div>
-                  <span className="text-xs font-semibold">Package</span>
+                  <span className="text-xs font-semibold">Transit</span>
                 </NavButton>
 
                 <NavButton href="/setting">
@@ -76,7 +76,7 @@ const Navbar = () => {
                   <span className="text-xs font-semibold">Profile</span>
                 </NavButton>
               </>
-            ) : role === "sender" ? (
+            ) : role === 'sender' ? (
               <>
                 <NavButton href="/dashboard">
                   <div className="relative">
@@ -96,11 +96,11 @@ const Navbar = () => {
                   <span className="text-xs font-semibold">Requests</span>
                 </NavButton>
 
-                <NavButton>
+                <NavButton href="/">
                   <div className="relative">
-                    <Info size={24} className="relative z-10" />
+                    <Package size={24} className="relative z-10" />
                   </div>
-                  <span className="text-xs font-semibold">Transit</span>
+                  <span className="text-xs font-semibold">Package</span>
                 </NavButton>
 
                 <NavButton href="/setting">

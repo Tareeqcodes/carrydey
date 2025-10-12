@@ -447,10 +447,6 @@ export default function SenderRequests() {
             <h1 className="text-xl font-semibold text-gray-900">
               Delivery Requests
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {totalRequests} total • {pendingCount} pending • {acceptedCount}{' '}
-              accepted
-            </p>
           </div>
         </div>
       </div>
