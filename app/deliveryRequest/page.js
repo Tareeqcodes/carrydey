@@ -21,8 +21,6 @@ export default function SenderRequests() {
     error,
     updateStatus,
     totalRequests,
-    pendingCount,
-    acceptedCount,
   } = useRequest();
 
   const [processingId, setProcessingId] = useState(null);
