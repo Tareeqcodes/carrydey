@@ -66,7 +66,7 @@ const Navbar = () => {
                   <div className="relative">
                     <Info size={24} className="relative z-10" />
                   </div>
-                  <span className="text-xs font-semibold">Transit</span>
+                  <span className="text-xs font-semibold">In Transit</span>
                 </NavButton>
 
                 <NavButton href="/setting">
@@ -96,11 +96,11 @@ const Navbar = () => {
                   <span className="text-xs font-semibold">Requests</span>
                 </NavButton>
 
-                <NavButton href="/">
+                <NavButton href="/transit">
                   <div className="relative">
-                    <Package size={24} className="relative z-10" />
+                    <Info size={24} className="relative z-10" />
                   </div>
-                  <span className="text-xs font-semibold">Package</span>
+                  <span className="text-xs font-semibold">In Transit</span>
                 </NavButton>
 
                 <NavButton href="/setting">

@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <main className='max-w-md mx-auto bg-white'>
+          <main className='sm:max-w-md lg:max-w-lg mx-auto bg-white'>
             {children}
           </main>
         </AuthProvider>
