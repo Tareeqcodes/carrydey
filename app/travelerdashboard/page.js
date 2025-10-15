@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import TravelerMain from "@/components/traveler/TravelerMain";
 import { useUserRole } from "@/hooks/useUserRole";
 import Main from "@/components/Main";
@@ -8,8 +9,16 @@ import VerificationPage from "../travelerVerification/page";
 
 export default function PendingVerification() {
   const { role, name, isVerified, loading } = useUserRole();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  if (loading && role === 'traveler') {
+  useEffect(() => {
+    if (!loading) {
+      setIsInitialLoad(false);
+    }
+  }, [loading]);
+
+  // Show loading only on first render when data hasn't arrived yet
+  if (isInitialLoad && loading) {
     return (
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         <div className='flex items-center justify-center py-12'>
@@ -26,7 +35,8 @@ export default function PendingVerification() {
     );
   }
 
-    if (!isVerified) {
+  // Show verification page if not verified
+  if (!isVerified) {
     return (
       <div>
         <VerificationPage />
@@ -34,13 +44,14 @@ export default function PendingVerification() {
     );
   }
 
+
   return (
     <>
-     <div>
-      <Main role={role} name={name} />
-      <TravelerMain />
-      <Navbar />
-    </div>
+      <div>
+        <Main role={role} name={name} />
+        <TravelerMain />
+        <Navbar />
+      </div>
     </>
   );
 }

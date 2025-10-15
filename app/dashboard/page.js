@@ -18,10 +18,10 @@ export default function page() {
 
   return (
     <>
-      {user ? (
-        <div> 
+      {user ? ( 
+        <div>  
           {role === "sender" ? (
-            // Sender Dashboard
+           
             <div className='mb-20 bg-gradient-to-br from-gray-50 to-blue-50 px-6'>
               <Main role={role} name={name} />
               <Hero role={role} />

@@ -5,6 +5,7 @@ import {
   Package,
   Info,
   User,
+  Truck,
   MessageCircle,
 } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -64,7 +65,7 @@ const Navbar = () => {
                 </NavButton>
                 <NavButton>
                   <div className="relative">
-                    <Info size={24} className="relative z-10" />
+                    <Truck size={24} className="relative z-10" />
                   </div>
                   <span className="text-xs font-semibold">In Transit</span>
                 </NavButton>
@@ -98,7 +99,7 @@ const Navbar = () => {
 
                 <NavButton href="/transit">
                   <div className="relative">
-                    <Info size={24} className="relative z-10" />
+                    <Truck size={24} className="relative z-10" />
                   </div>
                   <span className="text-xs font-semibold">In Transit</span>
                 </NavButton>
