@@ -109,7 +109,6 @@ export default function useSenderRequests() {
                 packageData?.to ||
                 'Delivery Location',
               reward: packageData?.reward || packageData?.price || 0,
-              weight: packageData?.weight || '3.5',
               size: packageData?.size || 'Medium',
               deadline: packageData?.deadline
                 ? new Date(packageData.deadline).toLocaleDateString()
@@ -160,7 +159,6 @@ export default function useSenderRequests() {
                 packageData?.to ||
                 'Delivery Location',
               reward: packageData?.reward || packageData?.price || 0,
-              weight: packageData?.weight || '3.5',
               size: packageData?.size || 'Medium',
               deadline: packageData?.deadline
                 ? new Date(packageData.deadline).toLocaleDateString()
@@ -199,7 +197,6 @@ export default function useSenderRequests() {
             pickupLocation: request.pickupLocation,
             deliveryLocation: request.deliveryLocation,
             reward: request.reward,
-            weight: request.weight,
             size: request.size,
             deadline: request.deadline,
             status: request.packageStatus,

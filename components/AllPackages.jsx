@@ -3,10 +3,10 @@ import { motion } from "framer-motion";
 import { usePackages } from "@/hooks/usePackages";
 import PackageList from "@/components/PackageList";
 
-export default function PackagesPage() {
+export default function AllPackages() {
   const { data, loading, error, refetch } = usePackages();
 
-  if (error) {
+  if (error) { 
     return (
       <div className='min-h-screen bg-gray-50 p-6'>
         <div className='max-w-4xl mx-auto'>
@@ -38,8 +38,8 @@ export default function PackagesPage() {
         </motion.div>
 
         <PackageList data={data} loading={loading} />
-      </div>
       <div className="h-20"></div>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,11 @@
 'use client';
+import Header from "@/hooks/Header";
 
-export default function page() {
+export default function page() { 
   return (
+    <>
     <div className="p-5 pb-24">
+      <Header title="Back to Dashboard" showBack />
          <div className="bg-white rounded-2xl p-5 mb-5 text-center">
           <div className="w-25 h-25 bg-gradient-to-r from-teal-500 to-green-400 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-4xl">
             🚗
@@ -14,5 +17,6 @@ export default function page() {
           </div>
         </div>
     </div>
+     </>
   )
 }

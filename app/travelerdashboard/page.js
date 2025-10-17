@@ -1,11 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import TravelerMain from "@/components/traveler/TravelerMain";
 import { useUserRole } from "@/hooks/useUserRole";
 import Main from "@/components/Main";
 import Navbar from "@/components/Navbar";
 import VerificationPage from "../travelerVerification/page";
+import AllPackages from "@/components/AllPackages";
 
 export default function PendingVerification() {
   const { role, name, isVerified, loading } = useUserRole();
@@ -48,8 +48,8 @@ export default function PendingVerification() {
   return (
     <>
       <div>
-        <Main role={role} name={name} />
-        <TravelerMain />
+        <Main role={role} name={name} /> 
+         <AllPackages />
         <Navbar />
       </div>
     </>

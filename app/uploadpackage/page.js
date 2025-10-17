@@ -41,7 +41,6 @@ export default function PostPackage() {
     const requiredFields = [
       'title',
       'description',
-      'weight',
       'pickupLocation',
       'deliveryLocation',
       'deadline',
@@ -107,14 +106,16 @@ export default function PostPackage() {
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-              <h2 className="text-xl font-bold text-gray-900">Package Information</h2>
-            </div>
+            <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
+            <h2 className="text-xl font-bold text-gray-900">
+              Package Information
+            </h2>
+          </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Package Title 
+                Package Title
               </label>
               <input
                 type="text"
@@ -129,7 +130,7 @@ export default function PostPackage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description 
+                Description
               </label>
               <textarea
                 name="description"
@@ -160,7 +161,7 @@ export default function PostPackage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Pickup Location 
+                Pickup Location
               </label>
               <div className="relative">
                 <MapPin
@@ -181,7 +182,7 @@ export default function PostPackage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Location 
+                Delivery Location
               </label>
               <div className="relative">
                 <MapPin
@@ -203,7 +204,7 @@ export default function PostPackage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Deadline 
+                  Deadline
                 </label>
                 <div className="relative">
                   <Calendar
@@ -223,7 +224,7 @@ export default function PostPackage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Reward(₦) 
+                  Payment Reward(₦)
                 </label>
                 <input
                   type="number"

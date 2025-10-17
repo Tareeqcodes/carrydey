@@ -49,7 +49,7 @@ const VerificationPage = () => {
   const handleSubmit = async () => {
     const result = await submitVerification();
     if (result.success) {
-     router.push('/traveler');
+     router.push('/pendingVerification');
     }
   };
 
