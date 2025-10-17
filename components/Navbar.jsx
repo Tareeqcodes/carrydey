@@ -66,7 +66,7 @@ const Navbar = () => {
                 </NavButton>
 
                 
-                <NavButton>
+                <NavButton href="/transit">
                   <div className="relative">
                     <Truck size={24} className="relative z-10" />
                   </div>
