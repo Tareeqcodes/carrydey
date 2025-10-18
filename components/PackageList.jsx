@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Package, Filter, X } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+// import { formatDistanceToNow } from "date-fns";
 
 export default function PackagesList({ data, loading }) {
   const router = useRouter();
@@ -432,7 +432,7 @@ export default function PackagesList({ data, loading }) {
                     transition={{ delay: index * 0.1 + 0.6 }}>
                     <div className='flex items-center text-gray-500 text-sm'>
                       <Clock className='w-4 h-4 mr-1' />
-                      <span>Posted {formatDistanceToNow(item.createdAt)}</span>
+                      {/* <span>Posted {formatDistanceToNow(item.createdAt)}</span> */}
                     </div>
 
                     <motion.span

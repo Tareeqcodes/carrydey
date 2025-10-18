@@ -15,13 +15,8 @@ import { useEscrow } from '@/hooks/useEscrow';
 
 export default function SenderRequests() {
   const router = useRouter();
-  const {
-    groupedRequests,
-    loading,
-    error,
-    updateStatus,
-    totalRequests,
-  } = useRequest();
+  const { groupedRequests, loading, error, updateStatus, totalRequests } =
+    useRequest();
 
   const [processingId, setProcessingId] = useState(null);
   const [escrowStatus, setEscrowStatus] = useState({});
@@ -36,7 +31,10 @@ export default function SenderRequests() {
     setProcessingId(request.applicationId);
 
     try {
-      const result = await updateStatus(request.applicationId, 'Awaiting pickup');
+      const result = await updateStatus(
+        request.applicationId,
+        'Awaiting pickup'
+      );
 
       if (result.success) {
         console.log('Request accepted successfully');
@@ -45,7 +43,7 @@ export default function SenderRequests() {
         setSelectedRequest({
           ...request,
           packageId: request.packageId,
-          packageReward: request.reward, 
+          packageReward: request.reward,
         });
         setShowPaymentModal(true);
       } else {
@@ -140,8 +138,10 @@ export default function SenderRequests() {
     switch (status) {
       case 'Awaiting pickup':
         return (
-          <div className=" bg-yellow-800 p-1 rounded">
-            <span className="text-xs  text-yellow-100 font-light">Awaiting pickup</span>
+          <div className=" bg-yellow-700 p-1 rounded">
+            <span className="text-xs  text-yellow-100 font-light">
+              Awaiting pickup
+            </span>
           </div>
         );
       case 'declined':
@@ -473,25 +473,12 @@ export default function SenderRequests() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                  <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
                     <MapPin size={14} className="text-gray-400" />
                     <span>
                       {packageInfo.pickupLocation} →{' '}
                       {packageInfo.deliveryLocation}
                     </span>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Package size={12} className="text-gray-400" />
-                      <span>
-                        {packageInfo.size} • {packageInfo.weight}kg
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={12} className="text-gray-400" />
-                      <span>by {packageInfo.deadline}</span>
-                    </div>
                   </div>
                 </div>
 

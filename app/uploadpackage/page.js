@@ -68,7 +68,6 @@ export default function PostPackage() {
         reward: parseInt(formData.reward),
         senderId: user.$id,
         status: 'active',
-        createdAt: new Date().toISOString(),
       };
 
       const response = await databases.createDocument(
