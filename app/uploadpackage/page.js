@@ -66,7 +66,7 @@ export default function PostPackage() {
         deliveryLocation: formData.deliveryLocation.trim(),
         deadline: new Date(formData.deadline).toISOString(),
         reward: parseInt(formData.reward),
-        userId: user.$id,
+        senderId: user.$id,
         status: 'active',
         createdAt: new Date().toISOString(),
       };

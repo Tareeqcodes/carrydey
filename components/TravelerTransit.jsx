@@ -5,7 +5,8 @@ import { useAuth } from '@/hooks/Authcontext';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const applicationsCollection = process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS;
-const packagesCollection = process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
+const packagesCollection =
+  process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
 
 export default function TravelerTransit() {
   const [transitPackages, setTransitPackages] = useState([]);
@@ -53,12 +54,17 @@ export default function TravelerTransit() {
             return {
               applicationId: application.$id,
               packageId: packageResponse.$id,
-              title: packageResponse.title || packageResponse.itemName || 'Package',
-              description: packageResponse.description || '',
-              pickupLocation: packageResponse.pickupLocation || packageResponse.from || 'Pickup Location',
-              deliveryLocation: packageResponse.deliveryLocation || packageResponse.to || 'Delivery Location',
+              title:
+                packageResponse.title || packageResponse.itemName || 'Package',
+              pickupLocation:
+                packageResponse.pickupLocation ||
+                packageResponse.from ||
+                'Pickup Location',
+              deliveryLocation:
+                packageResponse.deliveryLocation ||
+                packageResponse.to ||
+                'Delivery Location',
               reward: packageResponse.reward || 0,
-              size: packageResponse.size || 'Medium',
               deadline: packageResponse.deadline
                 ? new Date(packageResponse.deadline).toLocaleDateString()
                 : 'TBD',
@@ -114,8 +120,12 @@ export default function TravelerTransit() {
       <div className="p-5 pb-24">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📭</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Deliveries</h3>
-          <p className="text-gray-600">You don't have any accepted delivery requests yet.</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No Active Deliveries
+          </h3>
+          <p className="text-gray-600">
+            You don't have any accepted delivery requests yet.
+          </p>
         </div>
       </div>
     );
@@ -125,12 +135,17 @@ export default function TravelerTransit() {
     <div className="p-5 pb-24">
       <div className="space-y-4">
         {transitPackages.map((pkg) => (
-          <div key={pkg.applicationId} className="bg-white rounded-2xl p-5 shadow-md">
+          <div
+            key={pkg.applicationId}
+            className="bg-white rounded-2xl p-5 shadow-md"
+          >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{pkg.title}</h3>
-                <p className="text-sm text-gray-600">Reward: ₦{pkg.reward.toLocaleString()}</p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {pkg.title}
+                </h3>
+      
               </div>
               <div className="text-4xl">🚗</div>
             </div>
@@ -139,40 +154,31 @@ export default function TravelerTransit() {
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-green-600 font-bold">●</span>
-                <span className="text-sm text-gray-700">{pkg.pickupLocation}</span>
+                <span className="text-sm text-gray-700">
+                  {pkg.pickupLocation}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-red-600 font-bold">●</span>
-                <span className="text-sm text-gray-700">{pkg.deliveryLocation}</span>
+                <span className="text-sm text-gray-700">
+                  {pkg.deliveryLocation}
+                </span>
               </div>
             </div>
 
             {/* Details Grid */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Weight</p>
-                <p className="font-semibold text-gray-900">3.8kg</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Size</p>
-                <p className="font-semibold text-gray-900">{pkg.size}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">Deadline</p>
                 <p className="font-semibold text-gray-900">{pkg.deadline}</p>
               </div>
               <div className="bg-gray-100 p-3 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">Status</p>
-                <p className="font-semibold text-blue-600 capitalize">{pkg.packageStatus}</p>
+                <p className="font-semibold text-blue-600 capitalize">
+                  {pkg.packageStatus}
+                </p>
               </div>
             </div>
-
-            {/* Description */}
-            {pkg.description && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-700">{pkg.description}</p>
-              </div>
-            )}
 
             {/* Status Card */}
             <div className="bg-gradient-to-r from-teal-500 to-green-400 rounded-xl p-4 text-white">
@@ -180,8 +186,12 @@ export default function TravelerTransit() {
                 <h4 className="font-semibold">In Transit</h4>
                 <span className="text-2xl">✓</span>
               </div>
-              <p className="text-sm text-white/90">Your package is on its way</p>
-              <p className="text-sm font-semibold mt-2">Estimated Arrival: Today, 6:30 PM</p>
+              <p className="text-sm text-white/90">
+                Your package is on its way
+              </p>
+              <p className="text-sm font-semibold mt-2">
+                Estimated Arrival: Today, 6:30 PM
+              </p>
             </div>
           </div>
         ))}

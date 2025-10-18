@@ -36,8 +36,7 @@ export default function SenderRequests() {
     setProcessingId(request.applicationId);
 
     try {
-      // First update the status to accepted in database
-      const result = await updateStatus(request.applicationId, 'accepted');
+      const result = await updateStatus(request.applicationId, 'Awaiting pickup');
 
       if (result.success) {
         console.log('Request accepted successfully');
@@ -45,8 +44,8 @@ export default function SenderRequests() {
         // Store the request data and show payment modal
         setSelectedRequest({
           ...request,
-          packageId: request.packageId, // Make sure this exists in your request object
-          packageReward: request.reward, // The amount to pay
+          packageId: request.packageId,
+          packageReward: request.reward, 
         });
         setShowPaymentModal(true);
       } else {
@@ -73,7 +72,6 @@ export default function SenderRequests() {
         selectedRequest.packageReward
       );
 
-      // Close modal after successful initialization (user will be redirected to Paystack)
       setShowPaymentModal(false);
       setSelectedRequest(null);
     } catch (err) {
@@ -140,11 +138,10 @@ export default function SenderRequests() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'accepted':
+      case 'Awaiting pickup':
         return (
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-xs text-green-700 font-medium">Accepted</span>
+          <div className=" bg-yellow-800 p-1 rounded">
+            <span className="text-xs  text-yellow-100 font-light">Awaiting pickup</span>
           </div>
         );
       case 'declined':
@@ -203,7 +200,7 @@ export default function SenderRequests() {
       escrowStatus[request.escrowId] || request.escrowStatus;
 
     return (
-      <div className="border border-gray-100 rounded-2xl p-4 hover:border-gray-200 transition-colors bg-white">
+      <div className="border border-gray-100 rounded-2xl p-2 hover:border-gray-200 transition-colors bg-white">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -279,7 +276,7 @@ export default function SenderRequests() {
                   : 'Decline'}
               </button>
             </>
-          ) : request.status === 'accepted' ? (
+          ) : request.status === 'Awaiting payment' ? (
             <div className="w-full space-y-3">
               {/* Show payment button if no escrow status or escrow is pending */}
               {(!currentEscrowStatus || currentEscrowStatus === 'pending') && (
@@ -431,7 +428,7 @@ export default function SenderRequests() {
   }
 
   return (
-    <div className="max-w-sm mx-auto bg-gray-50 min-h-screen">
+    <div className="sm:max-w-md lg:max-w-lg mx-auto bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="bg-white">
         <div className="flex items-center pt-12 pb-6 px-5 border-b border-gray-100">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 
@@ -28,7 +29,7 @@ export default function useSenderRequests() {
       const packagesResponse = await databases.listDocuments(
         db,
         packagesCollection,
-        [Query.equal('userId', user.$id), Query.orderDesc('$createdAt')]
+        [Query.equal('senderId', user.$id), Query.orderDesc('$createdAt')]
       );
 
       if (packagesResponse.documents.length === 0) {
@@ -52,7 +53,6 @@ export default function useSenderRequests() {
         return;
       }
 
-      // Step 3: Fetch traveler details for each application and combine with package info
       const requestsWithDetails = await Promise.all(
         applicationsResponse.documents.map(async (application) => {
           try {
@@ -71,7 +71,6 @@ export default function useSenderRequests() {
             const travelerData = travelerResponse.documents[0];
 
             return {
-              // Application info
               id: application.$id,
               applicationId: application.$id,
               travelerId: application.travelerId,
@@ -79,10 +78,11 @@ export default function useSenderRequests() {
                 application.message ||
                 "I'm interested in delivering this package.",
               status: application.status || 'pending',
-              appliedAt: getTimeAgo(application.$createdAt),
+              appliedAt: formatDistanceToNow(new Date(application.$createdAt), {
+                addSuffix: true,
+              }),
               createdAt: application.$createdAt,
 
-              // Traveler info
               traveler:
                 travelerData?.userName ||
                 travelerData?.name ||
@@ -91,14 +91,10 @@ export default function useSenderRequests() {
               completedTrips: travelerData?.completedTrips || 0,
               verified: travelerData?.verified || false,
               phoneNumber: travelerData?.phoneNumber || null,
-              profileImage: travelerData?.profileImage || null,
 
               // Package info
               packageId: application.packageId,
-              packageTitle:
-                packageData?.title ||
-                packageData?.itemName ||
-                'Package Delivery',
+              packageTitle: packageData?.title,
               packageDescription: packageData?.description || '',
               pickupLocation:
                 packageData?.pickupLocation ||
@@ -111,8 +107,10 @@ export default function useSenderRequests() {
               reward: packageData?.reward || packageData?.price || 0,
               size: packageData?.size || 'Medium',
               deadline: packageData?.deadline
-                ? new Date(packageData.deadline).toLocaleDateString()
-                : 'TBD',
+                ? formatDistanceToNow(new Date(packageData.deadline), {
+                    addSuffix: true,
+                  })
+                : 'No deadline',
               packageStatus: packageData?.status || 'active',
             };
           } catch (err) {
@@ -134,30 +132,23 @@ export default function useSenderRequests() {
                 application.message ||
                 "I'm interested in delivering this package.",
               status: application.status || 'pending',
-              appliedAt: getTimeAgo(application.$createdAt),
+              appliedAt: application.$createdAt,
               createdAt: application.$createdAt,
-
               traveler: 'Unknown Traveler',
               rating: 4.5,
               completedTrips: 0,
               verified: false,
               phoneNumber: null,
-              profileImage: null,
 
               packageId: application.packageId,
-              packageTitle:
-                packageData?.title ||
-                packageData?.itemName ||
-                'Package Delivery',
+              packageTitle: packageData?.title,
               packageDescription: packageData?.description || '',
               pickupLocation:
                 packageData?.pickupLocation ||
                 packageData?.from ||
                 'Pickup Location',
               deliveryLocation:
-                packageData?.deliveryLocation ||
-                packageData?.to ||
-                'Delivery Location',
+                packageData?.deliveryLocation || 'Delivery Location',
               reward: packageData?.reward || packageData?.price || 0,
               size: packageData?.size || 'Medium',
               deadline: packageData?.deadline
@@ -173,7 +164,6 @@ export default function useSenderRequests() {
       const groupedRequests = groupRequestsByPackage(requestsWithDetails);
 
       setRequests(requestsWithDetails);
-      console.log('All requests fetched:', requestsWithDetails.length);
       console.log('Grouped by packages:', groupedRequests);
     } catch (err) {
       console.error('Error fetching sender requests:', err);
@@ -239,31 +229,6 @@ export default function useSenderRequests() {
     }
   };
 
-  const getTimeAgo = (dateString) => {
-    try {
-      const now = new Date();
-      const created = new Date(dateString);
-      const diffInMinutes = Math.floor((now - created) / (1000 * 60));
-
-      if (diffInMinutes < 1) return 'Just now';
-      if (diffInMinutes < 60)
-        return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
-
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      if (diffInHours < 24)
-        return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
-
-      const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 7)
-        return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
-
-      return created.toLocaleDateString();
-    } catch (err) {
-      console.error('Error formatting date:', err);
-      return 'Unknown time';
-    }
-  };
-
   useEffect(() => {
     fetchAllRequests();
   }, [user]);
@@ -277,10 +242,5 @@ export default function useSenderRequests() {
     error,
     refetch: fetchAllRequests,
     updateStatus: updateRequestStatus,
-
-    pendingCount: requests.filter((r) => r.status === 'pending').length,
-    acceptedCount: requests.filter((r) => r.status === 'accepted').length,
-    declinedCount: requests.filter((r) => r.status === 'declined').length,
-    packagesWithRequests: Object.keys(groupedRequests).length,
   };
 }

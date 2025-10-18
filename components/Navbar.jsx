@@ -58,7 +58,7 @@ const Navbar = () => {
                   <span className="text-xs font-semibold">Browse</span>
                 </NavButton>
 
-                <NavButton href="/dashboard">
+                <NavButton href="/proposal">
                   <div className="relative">
                     <FileEdit size={24} className="relative z-10" />
                   </div>
