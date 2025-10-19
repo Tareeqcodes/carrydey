@@ -75,7 +75,7 @@ export default function useSenderRequests() {
               applicationId: application.$id,
               travelerId: application.travelerId,
               message:
-                application.message ||
+                application.travelerMessage ||
                 "I'm interested in delivering this package.",
               status: application.status || 'pending',
               appliedAt: formatDistanceToNow(new Date(application.$createdAt), {
@@ -129,7 +129,7 @@ export default function useSenderRequests() {
               applicationId: application.$id,
               travelerId: application.travelerId,
               message:
-                application.message ||
+                application.travelerMessage ||
                 "I'm interested in delivering this package.",
               status: application.status || 'pending',
               appliedAt: application.$createdAt,
