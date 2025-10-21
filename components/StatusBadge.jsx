@@ -56,3 +56,32 @@ export const EscrowBadge = ({ escrowStatus }) => {
     </div>
   );
 };
+
+export const getStatusLabel = (status) => {
+    switch (status) {
+      case 'collected':
+        return 'In_transit';
+      case 'delivered':
+        return 'Delivered';
+      case 'completed':
+        return 'Completed';
+      default:
+        return 'Awaiting Pickup';
+    }
+  };
+
+
+  export const getStatusColor = (status) => {
+    switch (status) {
+      case 'Awaiting pickup':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'collected':
+        return 'bg-blue-100 text-blue-700';
+      case 'delivered':
+        return 'bg-purple-100 text-purple-700';
+      case 'completed':
+        return 'bg-green-100 text-green-700';
+      default:
+        return 'bg-gray-100 text-gray-600';
+    }
+  };

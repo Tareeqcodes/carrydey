@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, MapPin, ArrowLeft, Clock, Truck, Package } from 'lucide-react';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
+import { getStatusLabel, getStatusColor } from '@/components/StatusBadge';
 import { useAuth } from '@/hooks/Authcontext';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
@@ -58,10 +59,10 @@ export default function TravelerDeliveries() {
               packageId: app.packageId,
               status: app.status || 'pending',
               createdAt: app.$createdAt,
-              title: packageData?.title || packageData?.itemName || 'Package Delivery',
-              pickup: packageData?.pickupLocation || packageData?.from || 'Pickup Location',
-              dropoff: packageData?.deliveryLocation || packageData?.to || 'Delivery Location',
-              reward: packageData?.reward || packageData?.price || 0,
+              title: packageData?.title || 'Package Delivery',
+              pickup: packageData?.pickupLocation || 'Pickup Location',
+              dropoff: packageData?.deliveryLocation || 'Delivery Location',
+              reward: packageData?.reward || 0,
               deadline: packageData?.deadline
                 ? new Date(packageData.deadline).toLocaleDateString()
                 : 'TBD',
@@ -132,33 +133,8 @@ export default function TravelerDeliveries() {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Awaiting pickup':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'collected':
-        return 'bg-blue-100 text-blue-700';
-      case 'delivered':
-        return 'bg-purple-100 text-purple-700';
-      case 'completed':
-        return 'bg-green-100 text-green-700';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'collected':
-        return 'Picked Up';
-      case 'delivered':
-        return 'Delivered';
-      case 'completed':
-        return 'Completed';
-      default:
-        return 'Awaiting Pickup';
-    }
-  };
+  
 
   if (loading) {
     return (
@@ -212,6 +188,7 @@ export default function TravelerDeliveries() {
                     delivery.status
                   )}`}
                 >
+                 
                   {getStatusLabel(delivery.status)}
                 </span>
               </div>

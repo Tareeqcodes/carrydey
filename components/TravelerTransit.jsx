@@ -30,7 +30,7 @@ export default function TravelerTransit() {
         applicationsCollection,
         [
           Query.equal('travelerId', user.$id),
-          Query.equal('status', 'accepted'),
+          Query.equal('status', 'Awaiting pickup'),
           Query.orderDesc('$createdAt'),
         ]
       );
@@ -69,7 +69,7 @@ export default function TravelerTransit() {
                 ? new Date(packageResponse.deadline).toLocaleDateString()
                 : 'TBD',
               packageStatus: packageResponse.status || 'active',
-            };
+            }; 
           } catch (err) {
             console.error('Error fetching package details:', err);
             return null;

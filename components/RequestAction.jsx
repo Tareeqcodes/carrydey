@@ -14,7 +14,7 @@ export const RequestAction = ({
 
   if (request.status === 'pending') {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2"> 
         <button
           onClick={() => onAccept(request)}
           disabled={processingId === request.applicationId}
