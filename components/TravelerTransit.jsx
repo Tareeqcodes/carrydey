@@ -2,19 +2,23 @@
 import { useEffect, useState } from 'react';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
+import { useEscrow } from '@/hooks/useEscrow';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const applicationsCollection = process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS;
 const packagesCollection =
   process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
+const escrowCollection = process.env.NEXT_PUBLIC_APPWRITE_ESCROW_COLLECTION_ID;
 
 export default function TravelerTransit() {
   const [transitPackages, setTransitPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const escrowHooks = useEscrow();
+  const [processingId, setProcessingId] = useState(null);
 
-  const fetchAcceptedApplications = async () => {
+  const fetchTransitApplications = async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -24,60 +28,75 @@ export default function TravelerTransit() {
       setLoading(true);
       setError(null);
 
-      // Fetch applications where traveler sent request AND sender accepted
-      const applicationsResponse = await databases.listDocuments(
+      const packagesResponse = await databases.listDocuments(
         db,
-        applicationsCollection,
+        packagesCollection,
         [
-          Query.equal('travelerId', user.$id),
-          Query.equal('status', 'Awaiting pickup'),
+          Query.equal('senderId', user.$id), // Get sender's packages
           Query.orderDesc('$createdAt'),
         ]
       );
 
-      if (applicationsResponse.documents.length === 0) {
+      if (packagesResponse.documents.length === 0) {
         setTransitPackages([]);
         setLoading(false);
         return;
       }
 
-      // Fetch package details for each accepted application
-      const packagesData = await Promise.all(
-        applicationsResponse.documents.map(async (application) => {
+      const packagesWithApplications = await Promise.all(
+        packagesResponse.documents.map(async (pkg) => {
           try {
-            const packageResponse = await databases.getDocument(
+            // Get accepted application for this package
+            const applicationsResponse = await databases.listDocuments(
               db,
-              packagesCollection,
-              application.packageId
+              applicationsCollection,
+              [
+                Query.equal('packageId', pkg.$id),
+                Query.equal('status', [
+                  'Awaiting pickup',
+                  'collected',
+                  'delivered',
+                ]), // In-transit statuses
+                Query.limit(1),
+              ]
             );
+
+            if (applicationsResponse.documents.length === 0) {
+              return null;
+            }
+
+            const application = applicationsResponse.documents[0];
 
             return {
               applicationId: application.$id,
-              packageId: packageResponse.$id,
-              title:
-                packageResponse.title || packageResponse.itemName || 'Package',
-              pickupLocation:
-                packageResponse.pickupLocation ||
-                packageResponse.from ||
-                'Pickup Location',
-              deliveryLocation:
-                packageResponse.deliveryLocation ||
-                packageResponse.to ||
-                'Delivery Location',
-              reward: packageResponse.reward || 0,
-              deadline: packageResponse.deadline
-                ? new Date(packageResponse.deadline).toLocaleDateString()
+              packageId: pkg.$id,
+              title: pkg.title || 'Package',
+              pickupLocation: pkg.pickupLocation || 'Pickup Location',
+              deliveryLocation: pkg.deliveryLocation || 'Delivery Location',
+              reward: pkg.reward || 0,
+              deadline: pkg.deadline
+                ? new Date(pkg.deadline).toLocaleDateString()
                 : 'TBD',
-              packageStatus: packageResponse.status || 'active',
-            }; 
+              packageStatus: pkg.status || 'active',
+              applicationStatus: application.status, // The current delivery status
+              travelerId: application.travelerId,
+              travelerMessage: application.travelerMessage || '',
+              createdAt: application.$createdAt,
+            };
           } catch (err) {
-            console.error('Error fetching package details:', err);
+            console.error(
+              'Error fetching application for package:',
+              pkg.$id,
+              err
+            );
             return null;
           }
         })
       );
 
-      const validPackages = packagesData.filter((pkg) => pkg !== null);
+      const validPackages = packagesWithApplications.filter(
+        (pkg) => pkg !== null
+      );
       setTransitPackages(validPackages);
     } catch (err) {
       console.error('Error fetching accepted applications:', err);
@@ -88,7 +107,7 @@ export default function TravelerTransit() {
   };
 
   useEffect(() => {
-    fetchAcceptedApplications();
+    fetchTransitApplications();
   }, [user]);
 
   if (loading) {
@@ -145,7 +164,6 @@ export default function TravelerTransit() {
                 <h3 className="text-lg font-semibold text-gray-900">
                   {pkg.title}
                 </h3>
-      
               </div>
               <div className="text-4xl">🚗</div>
             </div>

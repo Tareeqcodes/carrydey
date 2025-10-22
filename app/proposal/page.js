@@ -30,11 +30,12 @@ export default function TravelerDeliveries() {
       setLoading(true);
       setError(null);
 
-      // Step 1: Get all delivery applications for this traveler
+     
       const applicationsResponse = await databases.listDocuments(
         db,
         applicationsCollection,
-        [Query.equal('travelerId', user.$id), Query.orderDesc('$createdAt')]
+        [Query.equal('travelerId', user.$id), 
+        Query.orderDesc('$createdAt')]
       );
 
       if (applicationsResponse.documents.length === 0) {
