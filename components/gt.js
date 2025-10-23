@@ -5,7 +5,7 @@ export const RequestAction = ({
   processingId,
   escrowStatus,
   onAccept,
-  onDecline,
+  onDecline, 
   onPayment,
   // onConfirmDelivery,
   // onRefund,

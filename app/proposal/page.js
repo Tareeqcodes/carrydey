@@ -189,7 +189,6 @@ export default function TravelerDeliveries() {
                     delivery.status
                   )}`}
                 >
-                 
                   {getStatusLabel(delivery.status)}
                 </span>
               </div>

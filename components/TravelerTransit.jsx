@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { MapPin, DollarSign, Calendar } from 'lucide-react';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 import { useEscrow } from '@/hooks/useEscrow';
+import { getStatusLabel, getStatusColor, EscrowBadge } from './StatusBadge';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const applicationsCollection = process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS;
@@ -160,56 +162,79 @@ export default function TravelerTransit() {
           >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
-              <div>
+              <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900">
                   {pkg.title}
                 </h3>
+                <div className='flex gap-2 mt-2'>
+                  {/* Delivery Status Badge */}
+                  <span className={`text-xs font-semibold ${getStatusColor(pkg.applicationStatus)}`}>
+                    {getStatusLabel(pkg.applicationStatus)}
+                  </span>
+                </div>
               </div>
-              <div className="text-4xl">🚗</div>
+              <div className="text-4xl">
+                {pkg.applicationStatus === 'Awaiting pickup' ? '📦' : 
+                 pkg.applicationStatus === 'collected' ? '🚗' : '📍'}
+              </div>
             </div>
 
-            {/* Route */}
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-green-600 font-bold">●</span>
-                <span className="text-sm text-gray-700">
-                  {pkg.pickupLocation}
-                </span>
+            <div className="p-5 bg-gray-50">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Pickup</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {pkg.pickupLocation}
+                    </p>
+                  </div>
+                </div>
+                <div className="ml-4 border-l-2 border-dashed border-gray-300 h-4"></div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Delivery</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {pkg.deliveryLocation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500">Deadline</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {new Date(pkg.deadline).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-red-600 font-bold">●</span>
-                <span className="text-sm text-gray-700">
-                  {pkg.deliveryLocation}
-                </span>
+                <DollarSign className="w-4 h-4 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500">Payment</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    ₦{pkg.reward.toLocaleString()}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Details Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Deadline</p>
-                <p className="font-semibold text-gray-900">{pkg.deadline}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Status</p>
-                <p className="font-semibold text-blue-600 capitalize">
-                  {pkg.packageStatus}
+            <div className="px-5 pb-5">
+              <div className="bg-blue-50 rounded-xl p-3">
+                <p className="text-xs text-blue-600 font-medium mb-1">
+                  Estimated Arrival
                 </p>
+                <p className="text-sm text-blue-900">Tomorrow, 2:00 PM</p>
               </div>
-            </div>
-
-            {/* Status Card */}
-            <div className="bg-gradient-to-r from-teal-500 to-green-400 rounded-xl p-4 text-white">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold">In Transit</h4>
-                <span className="text-2xl">✓</span>
-              </div>
-              <p className="text-sm text-white/90">
-                Your package is on its way
-              </p>
-              <p className="text-sm font-semibold mt-2">
-                Estimated Arrival: Today, 6:30 PM
-              </p>
             </div>
           </div>
         ))}

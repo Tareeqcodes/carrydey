@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, Package, Filter, X } from 'lucide-react';
+import { MapPin, Package, Filter, X } from 'lucide-react';
 import { formatDistanceToNow } from "date-fns";
 
 export default function PackagesList({ data, loading }) {
