@@ -1,5 +1,5 @@
 import { TravelerProfile } from './TravelerProfile';
-import { StatusBadge, EscrowBadge } from './StatusBadge';
+import { EscrowBadge } from './StatusBadge';
 import { RequestAction } from './RequestAction';
 
 export const RequestCard = ({ request, actions }) => {
@@ -10,7 +10,6 @@ export const RequestCard = ({ request, actions }) => {
         
         <div className="flex flex-col items-end gap-2">
           <span className="text-xs text-gray-400">{request.appliedAt}</span>
-          <StatusBadge status={request.status} />
         </div>
       </div>
 

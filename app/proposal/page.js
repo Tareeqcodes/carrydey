@@ -1,13 +1,22 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { CheckCircle, MapPin, ArrowLeft, Clock, Truck, Package } from 'lucide-react';
+import {
+  CheckCircle,
+  MapPin,
+  ArrowLeft,
+  Clock,
+  Truck,
+  Package,
+} from 'lucide-react';
 import { databases, Query } from '@/lib/config/Appwriteconfig';
 import { getStatusLabel, getStatusColor } from '@/components/StatusBadge';
+import Header from '@/hooks/Header';
 import { useAuth } from '@/hooks/Authcontext';
 
 const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const applicationsCollection = process.env.NEXT_PUBLIC_APPWRITE_APPLICATIONS;
-const packagesCollection = process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
+const packagesCollection =
+  process.env.NEXT_PUBLIC_APPWRITE_PACKAGE_COLLECTION_ID;
 
 export default function TravelerDeliveries() {
   const { user } = useAuth();
@@ -30,12 +39,10 @@ export default function TravelerDeliveries() {
       setLoading(true);
       setError(null);
 
-     
       const applicationsResponse = await databases.listDocuments(
         db,
         applicationsCollection,
-        [Query.equal('travelerId', user.$id), 
-        Query.orderDesc('$createdAt')]
+        [Query.equal('travelerId', user.$id), Query.orderDesc('$createdAt')]
       );
 
       if (applicationsResponse.documents.length === 0) {
@@ -70,7 +77,11 @@ export default function TravelerDeliveries() {
               packageStatus: packageData?.status || 'active',
             };
           } catch (err) {
-            console.error('Error fetching package for application:', app.$id, err);
+            console.error(
+              'Error fetching package for application:',
+              app.$id,
+              err
+            );
             return {
               applicationId: app.$id,
               packageId: app.packageId,
@@ -109,10 +120,16 @@ export default function TravelerDeliveries() {
       );
 
       // Also update package status
-      const delivery = deliveries.find((d) => d.applicationId === applicationId);
+      const delivery = deliveries.find(
+        (d) => d.applicationId === applicationId
+      );
       if (delivery) {
         const packageUpdateStatus =
-          newStatus === 'collected' ? 'in_transit' : newStatus === 'delivered' ? 'delivered' : newStatus;
+          newStatus === 'collected'
+            ? 'in_transit'
+            : newStatus === 'delivered'
+            ? 'delivered'
+            : newStatus;
 
         await databases.updateDocument(
           db,
@@ -124,7 +141,9 @@ export default function TravelerDeliveries() {
 
       // Update local state
       setDeliveries((prev) =>
-        prev.map((d) => (d.applicationId === applicationId ? { ...d, status: newStatus } : d))
+        prev.map((d) =>
+          d.applicationId === applicationId ? { ...d, status: newStatus } : d
+        )
       );
     } catch (err) {
       console.error('Error updating delivery status:', err);
@@ -133,9 +152,6 @@ export default function TravelerDeliveries() {
       setUpdating(null);
     }
   };
-
-
-  
 
   if (loading) {
     return (
@@ -150,14 +166,7 @@ export default function TravelerDeliveries() {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-8 pb-4 border-b bg-white shadow-sm">
-        <button onClick={() => history.back()} className="text-gray-600 hover:text-gray-800">
-          <ArrowLeft size={22} />
-        </button>
-        <h1 className="text-lg font-semibold text-gray-900">My Deliveries</h1>
-        <div className="w-6" />
-      </div>
+      <Header title="My Deliveries" showBack />
 
       <div className="p-5 space-y-5">
         {error && (
@@ -170,7 +179,9 @@ export default function TravelerDeliveries() {
           <div className="text-center py-12">
             <Package size={48} className="mx-auto text-gray-300 mb-3" />
             <p className="text-gray-600 font-medium">No deliveries yet</p>
-            <p className="text-gray-500 text-sm mt-1">Accept packages to get started</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Accept packages to get started
+            </p>
           </div>
         ) : (
           deliveries.map((delivery) => (
@@ -181,8 +192,9 @@ export default function TravelerDeliveries() {
               {/* Header with title and status badge */}
               <div className="flex justify-between items-start gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">{delivery.title}</h2>
-                 
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {delivery.title}
+                  </h2>
                 </div>
                 <span
                   className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap ${getStatusColor(
@@ -199,14 +211,18 @@ export default function TravelerDeliveries() {
                   <MapPin size={16} className="text-blue-500 flex-shrink-0" />
                   <div>
                     <p className="text-xs text-gray-500">Pickup</p>
-                    <p className="text-gray-900 font-medium">{delivery.pickup}</p>
+                    <p className="text-gray-900 font-medium">
+                      {delivery.pickup}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin size={16} className="text-red-500 flex-shrink-0" />
                   <div>
                     <p className="text-xs text-gray-500">Delivery</p>
-                    <p className="text-gray-900 font-medium">{delivery.dropoff}</p>
+                    <p className="text-gray-900 font-medium">
+                      {delivery.dropoff}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -215,7 +231,9 @@ export default function TravelerDeliveries() {
               <div className="mt-4 flex justify-between items-center text-sm">
                 <div>
                   <p className="text-gray-500 text-xs">Payment</p>
-                  <p className="text-green-600 font-semibold text-lg">₦{delivery.reward.toLocaleString()}</p>
+                  <p className="text-green-600 font-semibold text-lg">
+                    ₦{delivery.reward.toLocaleString()}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 text-gray-600">
                   <Clock size={14} />
@@ -227,21 +245,29 @@ export default function TravelerDeliveries() {
               <div className="mt-5">
                 {delivery.status === 'Awaiting pickup' ? (
                   <button
-                    onClick={() => updateDeliveryStatus(delivery.applicationId, 'collected')}
+                    onClick={() =>
+                      updateDeliveryStatus(delivery.applicationId, 'collected')
+                    }
                     disabled={updating === delivery.applicationId}
                     className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <Package size={18} />
-                    {updating === delivery.applicationId ? 'Processing...' : 'Confirm Pickup'}
+                    {updating === delivery.applicationId
+                      ? 'Processing...'
+                      : 'Confirm Pickup'}
                   </button>
                 ) : delivery.status === 'collected' ? (
                   <button
-                    onClick={() => updateDeliveryStatus(delivery.applicationId, 'delivered')}
+                    onClick={() =>
+                      updateDeliveryStatus(delivery.applicationId, 'delivered')
+                    }
                     disabled={updating === delivery.applicationId}
                     className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <Truck size={18} />
-                    {updating === delivery.applicationId ? 'Processing...' : 'Mark as Delivered'}
+                    {updating === delivery.applicationId
+                      ? 'Processing...'
+                      : 'Mark as Delivered'}
                   </button>
                 ) : delivery.status === 'delivered' ? (
                   <div className="flex items-center justify-center gap-2 text-purple-600 font-medium bg-purple-50 py-3 rounded-xl">

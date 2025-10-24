@@ -6,21 +6,16 @@ export const StatusBadge = ({ status }) => {
       bg: 'bg-yellow-700',
       text: 'text-yellow-100',
       label: 'Awaiting pickup',
-      hasDot: false,
     },
     declined: {
       bg: 'bg-gray-50',
       text: 'text-gray-500',
       label: 'Declined',
-      hasDot: true,
-      dotColor: 'bg-gray-400',
     },
     default: {
       bg: 'bg-orange-50',
       text: 'text-orange-700',
       label: 'Pending',
-      hasDot: true,
-      dotColor: 'bg-orange-400',
     },
   };
 
@@ -30,9 +25,6 @@ export const StatusBadge = ({ status }) => {
     <div
       className={`flex items-center gap-1.5 px-2 py-1 ${badge.bg} rounded-lg`}
     >
-      {badge.hasDot && (
-        <div className={`w-2 h-2 ${badge.dotColor} rounded-full`}></div>
-      )}
       <span className={`text-xs ${badge.text} font-medium`}>{badge.label}</span>
     </div>
   );

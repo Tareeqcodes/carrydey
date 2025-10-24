@@ -26,31 +26,31 @@ export const RequestAction = ({
           disabled={processingId === request.applicationId}
           className="flex-1 py-2 text-gray-600 text-sm font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
-          Decline
+          Decline 
         </button>
       </div>
     );
   }
 
-  if (request.status === 'Awaiting pickup') {
-    if (!currentEscrowStatus || currentEscrowStatus === 'pending') {
-      return (
-        <button
-          onClick={() => onPayment(request)}
-          className="w-full py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <CreditCard size={16} />
-          Pay ₦{request.reward?.toLocaleString() || '0'} to Escrow
-        </button>
-      );
-    }
+  // if (request.status === 'Awaiting pickup') {
+  //   if (!currentEscrowStatus || currentEscrowStatus === 'pending') {
+  //     return (
+  //       <button
+  //         onClick={() => onPayment(request)}
+  //         className="w-full py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+  //       >
+  //         <CreditCard size={16} />
+  //         Pay ₦{request.reward?.toLocaleString() || '0'} to Escrow
+  //       </button>
+  //     );
+  //   }
 
-    return (
-      <div className="w-full py-2 text-center text-sm text-green-600 bg-green-50 rounded-lg">
-        ✓ Payment sent to escrow
-      </div>
-    );
-  }
+  //   return (
+  //     <div className="w-full py-2 text-center text-sm text-green-600 bg-green-50 rounded-lg">
+  //       ✓ Payment sent to escrow
+  //     </div>
+  //   );
+  // }
 
   if (request.status === 'declined') {
     return (
@@ -61,7 +61,7 @@ export const RequestAction = ({
   }
 
   return (
-    <div className="flex-1 py-2 text-center text-sm text-gray-800">
+    <div className="flex-1 py-2 text-center font-bold text-sm text-gray-800">
       {request.status}
     </div>
   );
