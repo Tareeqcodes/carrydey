@@ -99,7 +99,7 @@ const VerificationPage = () => {
           animate={{ letterSpacing: '-0.025em', opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          Sendr
+          CarryDey
         </motion.h1>
         <motion.div
           initial={{ opacity: 0, y: 10 }}

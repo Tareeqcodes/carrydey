@@ -10,11 +10,7 @@ import PendingVerification from "../travelerdashboard/page";
 
 export default function page() {
   const { user } = useAuth();
-  const { loading, role, name } = useUserRole();
-
-  if (loading ) {
-    return <div>Loading</div>
-  }
+  const { role, name } = useUserRole();
 
   return (
     <>

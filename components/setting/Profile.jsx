@@ -159,11 +159,8 @@ const Profile = () => {
               <h2 className="text-xl font-semibold mb-1">
                 {profileData.userName}
               </h2>
-              <p className="text-gray-600 text-sm mb-2 flex items-center">
-                <Calendar size={14} className="mr-1" />
-                Member since Dec 2023
-              </p>
-              <div className="flex items-center text-green-600 text-sm">
+              
+              <div className="flex items-center text-green-600 text-sm font-bold">
                 {status.charAt(0).toUpperCase() + status.slice(1) || "Unverified Account"}
               </div>
             </div>

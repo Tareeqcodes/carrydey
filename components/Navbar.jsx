@@ -75,9 +75,9 @@ const Navbar = () => {
 
                 <NavButton href="/setting">
                   <div className="relative">
-                    <Grid size={24} className="relative z-10" />
+                    <LayoutDashboard size={24} className="relative z-10" />
                   </div>
-                  <span className="text-xs font-semibold">Profile</span>
+                  <span className="text-xs font-semibold">Dashboard</span>
                 </NavButton>
               </>
             ) : role === 'sender' ? (
@@ -92,13 +92,13 @@ const Navbar = () => {
                   </div>
                   <span className="text-xs font-semibold">Requests</span>
                 </NavButton>
-
+{/* 
                 <NavButton href="/dashboard">
                   <div className="relative">
                     <LayoutDashboard size={24} className="relative z-10" />
                   </div>
                   <span className="text-xs font-semibold">Home</span>
-                </NavButton>
+                </NavButton> */}
 
                 
 

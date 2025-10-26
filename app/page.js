@@ -39,16 +39,16 @@ export default function Page() {
         <header className="flex justify-between items-center p-8 max-w-6xl mx-auto w-full">
           <Link
             href="/setting"
-            className="text-3xl font-light tracking-tight bg-gradient-to-r from-gray-900 via-slate-800 to-blue-900 bg-clip-text text-transparent"
+            className="text-2xl font-light tracking-tight bg-gradient-to-r from-gray-900 via-slate-800 to-blue-900 bg-clip-text text-transparent"
           >
-            Sendr
+            CarryDey
           </Link>
           {user && (
             <Link
               href="/dashboard"
               className="px-6 py-2 rounded-full border border-gray-200/60 bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-blue-50/80 hover:border-blue-200/60 hover:text-blue-900 transition-all duration-300 font-medium shadow-sm"
             >
-              Dashboard
+              Profile
             </Link>
           )}
         </header>
