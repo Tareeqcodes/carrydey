@@ -223,7 +223,7 @@ export default function PostPackage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Reward(₦)
+                  Payment Offer(₦)
                 </label>
                 <input
                   type="number"

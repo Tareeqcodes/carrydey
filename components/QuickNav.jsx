@@ -53,7 +53,7 @@ export default function QuickNav() {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-4 mt-6">
         <h3 className="text-lg font-bold text-gray-900">In Transit Packages</h3>
 
         <div className="space-y-3">

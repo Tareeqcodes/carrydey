@@ -3,9 +3,6 @@ import {
   Package,
   Plane,
   Wallet,
-  Star,
-  CheckCircle,
-  Shield,
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
@@ -37,18 +34,17 @@ export default function Page() {
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
         <header className="flex justify-between items-center p-8 max-w-6xl mx-auto w-full">
-          <Link
-            href="/setting"
+          <h1
             className="text-2xl font-light tracking-tight bg-gradient-to-r from-gray-900 via-slate-800 to-blue-900 bg-clip-text text-transparent"
           >
-            CarryDey
-          </Link>
+            Sendr
+          </h1>
           {user && (
             <Link
               href="/dashboard"
               className="px-6 py-2 rounded-full border border-gray-200/60 bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-blue-50/80 hover:border-blue-200/60 hover:text-blue-900 transition-all duration-300 font-medium shadow-sm"
             >
-              Profile
+              Dashboard
             </Link>
           )}
         </header>

@@ -42,7 +42,11 @@ export default function TravelerDeliveries() {
       const applicationsResponse = await databases.listDocuments(
         db,
         applicationsCollection,
-        [Query.equal('travelerId', user.$id), Query.orderDesc('$createdAt')]
+        [
+          Query.equal('travelerId', user.$id),
+          Query.equal('status', 'Awaiting pickup'),
+          Query.orderDesc('$createdAt'),
+        ]
       );
 
       if (applicationsResponse.documents.length === 0) {
@@ -178,9 +182,11 @@ export default function TravelerDeliveries() {
         {deliveries.length === 0 ? (
           <div className="text-center py-12">
             <Package size={48} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-600 font-medium">No deliveries yet</p>
+            <p className="text-gray-600 font-medium">
+              No accepted deliveries yet
+            </p>
             <p className="text-gray-500 text-sm mt-1">
-              Accept packages to get started
+              Apply for packages to get started
             </p>
           </div>
         ) : (
@@ -227,7 +233,6 @@ export default function TravelerDeliveries() {
                 </div>
               </div>
 
-              {/* Reward and deadline */}
               <div className="mt-4 flex justify-between items-center text-sm">
                 <div>
                   <p className="text-gray-500 text-xs">Payment</p>
