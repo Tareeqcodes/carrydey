@@ -165,19 +165,7 @@ export default function QuickNav() {
               </div>
             </div>
           </button>
-
-          {/* Wallet */}
-          <button className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all border border-gray-100 hover:border-blue-200 group active:scale-95">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                <Wallet size={20} className="text-blue-600" />
-              </div>
-              <div className="text-left">
-                <p className="font-semibold text-gray-900 text-sm">Wallet</p>
-                <p className="text-xs text-gray-600">Balance: ₦5,250</p>
-              </div>
-            </div>
-          </button>
+          
         </div>
       </div>
     </>
