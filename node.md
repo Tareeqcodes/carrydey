@@ -1,1 +1,4 @@
-When successfully collected a package traveler can hide his travel routine or profile for safety and privacy
+add seemore loading in packages listing
+add help center with ruls and regulations
+notifications
+add messaging
