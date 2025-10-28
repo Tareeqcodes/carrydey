@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Send } from "lucide-react";
-import { Pending } from "./Pending";
+import PendingPage from "@/app/pendingVerification/page";
 
 export function SubmitVerification({
   verificationData,
@@ -10,7 +10,7 @@ export function SubmitVerification({
   isLoading,
   error,
 }) {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false); 
 
   const verificationItems = [
     {
@@ -40,7 +40,7 @@ export function SubmitVerification({
   };
 
   if (isSubmitted) {
-    return <Pending />;
+    return <PendingPage />;
   }
 
   return (
