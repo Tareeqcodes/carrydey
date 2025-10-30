@@ -25,7 +25,7 @@ export const usePackages = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, []); 
 
   const refetch = () => {
     fetchData();
