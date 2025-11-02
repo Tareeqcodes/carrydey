@@ -242,5 +242,6 @@ export default function useSenderRequests() {
     error,
     refetch: fetchAllRequests,
     updateStatus: updateRequestStatus,
+    totalRequests: requests.length,
   };
 }

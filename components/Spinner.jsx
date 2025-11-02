@@ -1,4 +1,4 @@
-import { SkewLoader } from 'react-spinners';
+import { BeatLoader } from 'react-spinners';
 
 const override = {
   display: 'block',
@@ -8,7 +8,7 @@ const override = {
 
 const Spinner = ({ loading }) => {
   return (
-    <SkewLoader
+    <BeatLoader
       color='#333'
       loading={loading}
       cssOverride={override}
