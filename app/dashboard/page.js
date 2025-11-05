@@ -6,7 +6,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import QuickNav from "@/components/QuickNav";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/Authcontext";
-import PendingVerification from "../travelerdashboard/page";
+import Dashtraveler from "../travelerdashboard/page"; 
 
 export default function page() {
   const { user } = useAuth();
@@ -14,6 +14,7 @@ export default function page() {
 
   return (
     <>
+
       {user ? ( 
         <div>  
           {role === "sender" ? (
@@ -21,13 +22,12 @@ export default function page() {
             <div className='mb-20 bg-gradient-to-br from-gray-50 to-blue-50 px-6'>
               <Main role={role} name={name} />
               <Hero role={role} />
-
               <QuickNav />
               <div className='h-20'></div>
             </div>
           ) : (
             <div>
-              <PendingVerification />
+              <Dashtraveler />
             </div>
           )}
           <Navbar />
