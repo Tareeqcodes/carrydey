@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { account, databases, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 
-export default function Confirm() {
+export default function Confirm() { 
   const router = useRouter();
   const { checkSession } = useAuth();
   const Processed = useRef(false);
@@ -53,9 +53,13 @@ export default function Confirm() {
         if (!userName) {
           try {
             const user = await account.get();
-            userName = user.name;
+            // fallback to email username
+            userName = user.name || user.email.split('@')[0];
+            console.log('Using name from account:', userName);
           } catch (error) {
             console.log('Could not get user name from account:', error.message);
+            // default name
+            userName = `User_${userId.slice(0, 6)}`;
           }
         }
        
@@ -83,11 +87,11 @@ export default function Confirm() {
         router.push('/dashboard');
         break;
       case 'traveler':
-        router.push('/travelerdashboard');
+        router.push('/travelerdashboard'); 
         break;
       default:
         // Fallback to general dashboard
-        router.push('/dashboard');
+        router.push('/');
     }
   };
 

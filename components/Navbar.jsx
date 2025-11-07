@@ -64,14 +64,13 @@ const Navbar = () => {
                   </div>
                   <span className="text-xs font-semibold">Proposals</span>
                 </NavButton>
-
                 
-                <NavButton href="/transit">
+                {/* <NavButton href="/transit">
                   <div className="relative">
                     <Truck size={24} className="relative z-10" />
                   </div>
                   <span className="text-xs font-semibold">In Transit</span>
-                </NavButton>
+                </NavButton> */}
 
                 <NavButton href="/setting">
                   <div className="relative">
@@ -99,8 +98,6 @@ const Navbar = () => {
                   </div>
                   <span className="text-xs font-semibold">Home</span>
                 </NavButton> */}
-
-                
 
                 <NavButton href="/transit">
                   <div className="relative">

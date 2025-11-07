@@ -1,7 +1,7 @@
 'use client';
 import { MessageSquare, Clock, Wallet, MapPin, Star, Package, ChevronRight } from 'lucide-react';
 
-export default function QuickNav() {
+export default function SenderQuickNav() {
   const deliveries = [
     {
       id: 1,
@@ -20,7 +20,7 @@ export default function QuickNav() {
       destination: 'Ibadan, Nigeria',
       traveler: 'Kadir M.',
       rating: 4.8,
-      status: 'Pending',
+      status: 'Awaiting pickup',
       progress: 10,
       arrival: 'Tomorrow, 2:00 PM',
       color: 'from-purple-400 to-pink-400',
@@ -44,7 +44,7 @@ export default function QuickNav() {
         return 'bg-blue-100 text-blue-700';
       case 'Delivered':
         return 'bg-green-100 text-green-700';
-      case 'Pending':
+      case 'Awaiting pickup':
         return 'bg-amber-100 text-amber-700';
       default:
         return 'bg-gray-100 text-gray-700';
