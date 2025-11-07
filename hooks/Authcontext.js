@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
-import { account } from '@/lib/config/Appwriteconfig';
+import { account, ID } from '@/lib/config/Appwriteconfig';
 
 
 const AuthContext = createContext();
@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }) => {
       const verifyUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
       
       await account.createMagicURLToken(
+        ID.unique(),
         email,
         verifyUrl
       );    
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     await account.deleteSession('current');
     setUser(null);
     redirect('/');
-  }; 
+  };
 
   return (
     <AuthContext.Provider value={{ 
