@@ -1,12 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/Authcontext';
 import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export default function LoginForm() {
+function LoginFormContent() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [sent, setSent] = useState(false);
@@ -60,9 +60,6 @@ export default function LoginForm() {
           <h2 className="text-sm font-semibold text-gray-500">
             {welcomeText.title}
           </h2>
-          {/* <p className="text-gray-600">
-            {welcomeText.subtitle}
-          </p> */}
         </div>
       </div>
             
@@ -129,5 +126,17 @@ export default function LoginForm() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function LoginForm() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }
