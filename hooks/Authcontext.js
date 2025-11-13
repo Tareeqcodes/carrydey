@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, role = null) => {
     try {
-      const baseUrl = 'http://localhost:3000/emailVerification';
+      const baseUrl = 'https://carrydey.tech/emailVerification';
       const verifyUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
       
       await account.createMagicURLToken(
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async (role = null) => {
     try {
-      const baseUrl = 'http://localhost:3000/emailVerification';
+      const baseUrl = 'https://carrydey.tech/emailVerification';
       const redirectUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
       
-      account.createOAuth2Session('google', "http://localhost:3000", redirectUrl);
+      account.createOAuth2Session('google', "https://carrydey.tech", redirectUrl);
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);
     }
