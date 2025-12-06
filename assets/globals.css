@@ -1,1 +1,25 @@
 @import "tailwindcss";
+@import "mapbox-gl/dist/mapbox-gl.css";
+
+/* Custom map marker styles */
+.pickup-marker .absolute {
+  top: -30px !important;
+}
+
+.dropoff-marker .absolute { 
+  top: -30px !important;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}

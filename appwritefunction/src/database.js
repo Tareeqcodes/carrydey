@@ -1,195 +1,92 @@
-import { ID, Query } from 'node-appwrite';
+import {  Databases, Query, ID } from 'node-appwrite';
 
-class DatabaseService {
-  constructor(database, databaseId) {
-    this.database = database;
-    this.databaseId = databaseId;
-    this.escrowCollectionId = process.env.APPWRITE_CONTRACTS_COLLECTION_ID;
-    this.packagesCollectionId = process.env.APPWRITE_PACKAGE_COLLECTION_ID;
-    this.usersCollectionId = process.env.APPWRITE_USERS_COLLECTION_ID;
-  }
-
-  async createEscrowRecord(escrowData) {
-    try {
-      const {
-        senderId,
-        travelerId,
-        packageId,
-        amount,
-        status = 'pending',
-        paystackReference,
-      } = escrowData;
-
-      const escrowId = ID.unique();
-
-      const result = await this.database.createDocument(
-        this.databaseId,
-        this.escrowCollectionId,
-        escrowId,
-        {
-          senderId,
-          travelerId,
-          packageId,
-          amount,
-          status,
-          paystackReference,
-        }
-      );
-
-      return {
-        success: true,
-        escrowId: result.$id,
-        data: result,
-      };
-    } catch (error) {
-      console.error('Database create escrow error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async updateEscrowStatus(escrowId, status, additionalData = {}) {
-    try {
-      const updateData = {
-        status,
-        updatedAt: new Date().toISOString(),
-        ...additionalData,
-      };
-
-      const result = await this.database.updateDocument(
-        this.databaseId,
-        this.escrowCollectionId,
-        escrowId,
-        updateData
-      );
-
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (error) {
-      console.error('Database update escrow error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async getEscrowById(escrowId) {
-    try {
-      const result = await this.database.getDocument(
-        this.databaseId,
-        this.escrowCollectionId,
-        escrowId
-      );
-
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (error) {
-      console.error('Database get escrow error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async getEscrowByPackage(packageId) {
-    try {
-      const result = await this.database.listDocuments(
-        this.databaseId,
-        this.escrowCollectionId,
-        [Query.equal('packageId', packageId)]
-      );
-
-      return {
-        success: true,
-        data: result.documents[0] || null,
-      };
-    } catch (error) {
-      console.error('Database get escrow by package error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async getEscrowByReference(paystackReference) {
-    try {
-      const result = await this.database.listDocuments(
-        this.databaseId,
-        this.escrowCollectionId,
-        [Query.equal('paystackReference', paystackReference)]
-      );
-
-      return {
-        success: true,
-        data: result.documents[0] || null,
-      };
-    } catch (error) {
-      console.error('Database get escrow by reference error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async updatePackageStatus(packageId, status) {
-    try {
-      const result = await this.database.updateDocument(
-        this.databaseId,
-        this.packagesCollectionId,
-        packageId,
-        {
-          status,
-          updatedAt: new Date().toISOString(),
-        }
-      );
-
-      return {
-        success: true,
-        data: result,
-      };
-    } catch (error) {
-      console.error('Database update package error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async getUserBankDetails(userId) {
-    try {
-      const result = await this.database.getDocument(
-        this.databaseId,
-        this.usersCollectionId,
-        userId
-      );
-
-      return {
-        success: true,
-        data: {
-          accountNumber: result.bankAccountNumber,
-          bankCode: result.bankCode,
-          accountName: result.bankAccountName,
-        },
-      };
-    } catch (error) {
-      console.error('Database get user bank details error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
+export async function saveTransaction(transactionData, client, variables) {
+  const databases = new Databases(client);
+  
+  const document = {
+    userId: transactionData.userId,
+    amount: transactionData.amount,
+    type: transactionData.type,
+    status: transactionData.status || 'pending',
+    reference: transactionData.reference,
+    paymentReference: transactionData.paymentReference || null,
+    checkoutUrl: transactionData.checkoutUrl || null,
+    description: transactionData.description || '',
+    balanceAfter: transactionData.balanceAfter || null,
+    metadata: transactionData.metadata || {},
+  };
+  
+  return await databases.createDocument(
+    variables['APPWRITE_DATABASE_ID'],
+    variables['APPWRITE_TRANSACTIONS_COLLECTION_ID'],
+    ID.unique(),
+    document
+  );
 }
 
-export default DatabaseService;
+export async function updateWalletBalance(userId, amount, type, client, variables) {
+  const databases = new Databases(client);
+  
+  // Get current wallet
+  const wallets = await databases.listDocuments(
+    variables['APPWRITE_DATABASE_ID'],
+    variables['APPWRITE_WALLETS_COLLECTION_ID'],
+    [Query.equal('userId', userId)]
+  );
+  
+  if (wallets.documents.length === 0) {
+    throw new Error('Wallet not found');
+  }
+  
+  const wallet = wallets.documents[0];
+  let newBalance = wallet.balance;
+  
+  // Update balance based on type
+  if (type === 'credit') {
+    newBalance = wallet.balance + amount;
+  } else if (type === 'debit') {
+    newBalance = wallet.balance - amount;
+    if (newBalance < 0) {
+      throw new Error('Insufficient balance');
+    }
+  }
+  
+  // Update wallet
+  await databases.updateDocument(
+    variables['APPWRITE_DATABASE_ID'],
+    variables['APPWRITE_WALLETS_COLLECTION_ID'],
+    wallet.$id,
+    {
+      balance: newBalance,
+      updatedAt: new Date().toISOString()
+    }
+  );
+  
+  return newBalance;
+}
+
+export async function getUserWallet(userId, client, variables) {
+  const databases = new Databases(client);
+  
+  const wallets = await databases.listDocuments(
+    variables['APPWRITE_DATABASE_ID'],
+    variables['APPWRITE_WALLETS_COLLECTION_ID'],
+    [Query.equal('userId', userId)]
+  );
+  
+  return wallets.documents[0] || null;
+}
+
+export async function getTransactions(userId, limit = 50, client, variables) {
+  const databases = new Databases(client);
+  
+  return await databases.listDocuments(
+    variables['APPWRITE_DATABASE_ID'],
+    variables['APPWRITE_TRANSACTIONS_COLLECTION_ID'],
+    [
+      Query.equal('userId', userId),
+      Query.orderDesc('createdAt'),
+      Query.limit(limit)
+    ]
+  );
+}

@@ -1,62 +1,58 @@
 'use client'
 import { useEffect, useState } from 'react';
-import { databases, Query } from '@/lib/config/Appwriteconfig';
+import { Query, tablesDB } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 
 export const useUserRole = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { user } = useAuth();
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+  if (!user) {
+    setLoading(false);
+    return;
+  }
 
-      try {
-        const response = await databases.listDocuments(
-          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-          process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-          [Query.equal('userId', user.$id)]
-        );
+  try {
+    setLoading(true);
+    setError(null);
+    const response = await tablesDB.listRows({
+      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+      queries: [Query.equal('userId', user.$id)]
+    });
 
-        if (response.documents.length > 0) {
-          setUserData(response.documents[0]);
-        } else {
-          console.log('No role found for user');
-          setUserData(null);
-        }
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (response && response.rows && response.rows.length > 0) {
+      setUserData(response.rows[0]); 
+    } else {
+      console.log('No user data found in collection');
+      setUserData(null);
+    }
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+    setError(error.message || 'Failed to fetch user role');
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchUserRole();
   }, [user]);
 
-  if (loading) {
-    return {
-      loading: true,
-      role: null,
-      name: null,
-      status: null,
-      userData: null,
-      isVerified: false
-    };
-  }
-
   const status = userData?.status || 'pending';
+  const role = userData?.role || 'user';
+  const isVerified = status === 'verified';
 
   return {
-    loading: false,
-    role: userData?.role || null,
-    name: userData?.userName || null,
-    status: status,
-    userData: userData,
-    isVerified: status === 'verified'
+    loading,
+    error,
+    role,
+    name: userData?.userName || user?.name || null,
+    status,
+    userData,
+    isVerified,
   };
 }

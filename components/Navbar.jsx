@@ -1,122 +1,84 @@
 'use client';
-import {
-  Search,
+import { useState } from "react";
+import Link from "next/link";
+import { Menu, X  } from "lucide-react";
+import { useAuth } from "@/hooks/Authcontext";
 
-  Grid,
-  FileEdit,
-  User,
-  Truck,
-  MessageSquare,
-  LayoutDashboard,
-} from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
 const Navbar = () => {
-  const { role, loading } = useUserRole();
-
-  if (loading) return null;
-
-  if (!role) return null;
-
-  const NavButton = ({ children, isActive = false, href = null }) => {
-    const buttonContent = (
-      <button
-        className={`relative flex flex-col items-center space-y-1 p-2 rounded transition-all duration-300 transform hover:scale-105 cursor-pointer ${
-          isActive
-            ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
-            : 'bg-white/60 backdrop-blur-sm text-gray-700 hover:bg-white/80 hover:text-gray-900 shadow-md border border-white/30'
-        } hover:shadow-xl hover:-translate-y-1`}
-      >
-        {/* Subtle glow effect for active state */}
-        {isActive && (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 rounded-2xl blur-lg scale-110" />
-        )}
-        {children}
-      </button>
-    );
-
-    if (href) {
-      return (
-        <a href={href} className="relative">
-          {buttonContent}
-        </a>
-      );
-    }
-    return <div className="relative">{buttonContent}</div>;
-  };
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  
   return (
-    <div className="fixed max-w-md mx-auto bottom-0 left-0 right-0 z-50">
-      <div className="relative">
-        <div className="bg-white/40 backdrop-blur-sm border-t border-white/30 p-2 shadow-xl">
-          <div className="relative z-10 flex justify-around">
-            {role === 'traveler' ? (
-              <>
-              <NavButton>
-                  <div className="relative">
-                    <Search size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">Browse</span>
-                </NavButton>
+    <div className="fixed max-w-full z-50">
+      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              
+              <span className="text-2xl font-bold text-[#3A0A21]">Carrydey</span>
+            </Link>
 
-                <NavButton href="/proposal">
-                  <div className="relative">
-                    <FileEdit size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">Proposals</span>
-                </NavButton>
-                
-                {/* <NavButton href="/transit">
-                  <div className="relative">
-                    <Truck size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">In Transit</span>
-                </NavButton> */}
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/send-package" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+                Send
+              </Link>
+              <Link href="/become-traveler" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+               Travel
+              </Link>
+              <Link href="/track" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+                Track Delivery
+              </Link>
 
-                <NavButton href="/setting">
-                  <div className="relative">
-                    <LayoutDashboard size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">Dashboard</span>
-                </NavButton>
-              </>
-            ) : role === 'sender' ? (
-              <>
-              <NavButton href="/deliveryRequest">
-                  <div className="relative">
-                    <MessageSquare size={24} className="relative z-10" />
-                    {/* Notification indicator */}
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-red-400 to-pink-500 rounded-full border-2 border-white shadow-md">
-                      <div className="w-full h-full bg-red-500 rounded-full animate-ping opacity-75" />
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold">Requests</span>
-                </NavButton>
-{/* 
-                <NavButton href="/dashboard">
-                  <div className="relative">
-                    <LayoutDashboard size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">Home</span>
-                </NavButton> */}
+              { user ? (
+                <Link href="/dashboard" className="bg-white/95 backdrop-blur-sm border-b border-gray-100 hover:text-white hover:bg-[#3A0A21] transition-colors px-3 py-2 shadow rounded-xl font-medium">
+                  Dashboard
+                </Link>
+              ) : (
+                <Link 
+                href="/login" 
+                className="bg-[#3A0A21] text-white px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors font-medium"
+              >
+                Get Started
+              </Link>
+              ) }
+            </div>
 
-                <NavButton href="/transit">
-                  <div className="relative">
-                    <Truck size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">In Transit</span>
-                </NavButton>
-
-                <NavButton href="/setting">
-                  <div className="relative">
-                    <LayoutDashboard size={24} className="relative z-10" />
-                  </div>
-                  <span className="text-xs font-semibold">Dashboard</span>
-                </NavButton>
-              </>
-            ) : null}
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden text-[#3A0A21] p-2"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-6 space-y-4 border-t border-gray-100">
+              <Link href="/send-package" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+                Send Package
+              </Link>
+              <Link href="/become-traveler" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+                Become a Traveler
+              </Link>
+              <Link href="/track" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+                Track Delivery
+              </Link>
+              <Link href="/login" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+                Login
+              </Link>
+              <Link 
+                href="/login" 
+                className="block bg-[#3A0A21] text-white px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors font-medium text-center"
+              >
+                Get Started
+              </Link>
+            </div>
+          )}
         </div>
-      </div>
+      </nav>
     </div>
   );
 };

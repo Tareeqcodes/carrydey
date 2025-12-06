@@ -1,129 +1,94 @@
 'use client';
 import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/Authcontext';
 import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 
 function LoginFormContent() {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [sent, setSent] = useState(false);
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role');
-     
+
   const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, role, name);
+    await login(email);
     setSent(true);
   };
 
   const handleGoogleLogin = async () => {
-    await loginWithGoogle(role);
+    await loginWithGoogle();
   };
-
-  const getWelcomeText = () => {
-    if (role === 'sender') {
-      return {
-        title: 'Join as Sender',
-        subtitle: 'Send packages with trusted travelers'
-      };
-    } else if (role === 'traveler') {
-      return {
-        title: 'Join as Traveler',
-        subtitle: 'Earn money while traveling'
-      };
-    }
-    return {
-      title: 'Welcome Back',
-      subtitle: 'Sign in to your account'
-    };
-  };
-
-  const welcomeText = getWelcomeText();
 
   return (
-    <div className="flex flex-col min-h-screen items-justify justify-center bg-gray-50 px-4">
-      <div className="flex flex-col mb-5 space-y-6 pl-10">
-        <Link
-          href="/"
-          className="flex items-center text-gray-600 mb-4"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          Back
-        </Link>
-        <div>
-            <h1 className="text-xl font-semibold text-gray-500">Create Account</h1>
-          <h2 className="text-sm font-semibold text-gray-500">
-            {welcomeText.title}
-          </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8 sm:p-10 space-y-6">
+        <div className="text-center mb-4">
+          <Image
+            src="/ringo-logo.svg"
+            alt="RINGO Logo"
+            width={60}
+            height={60}
+            className="mx-auto mb-2"
+          />
         </div>
-      </div>
-            
-      <div className="max-w-md text-justify rounded-xl bg-white p-10 shadow-xl">
+
         {sent ? (
-          <p className="text-green-600 text-sm font-light text-center">
-            Magic link sent! Check your inbox.
-          </p>
+          <div className="text-center">
+            <p className="text-green-600 text-sm font-medium">
+              ✅ Magic link sent! Check your inbox.
+            </p>
+          </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="text-sm py-5">
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
-                className="w-full rounded-xl border border-gray-300 p-2 mt-2 focus:border-indigo-500 focus:outline-none"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm py-5">
-                Email
-              </label>
+              <label className="text-sm text-gray-600 font-medium">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full rounded-xl border border-gray-300 p-2 mt-2 focus:border-indigo-500 focus:outline-none"
+                placeholder="you@example.com"
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none transition"
                 required
               />
             </div>
-            
+
             <button
               type="submit"
-              className="w-full rounded-xl cursor-pointer bg-indigo-600 my-5 p-2 text-white hover:bg-indigo-700"
+              className="w-full rounded-xl bg-indigo-600 text-white font-medium py-3 text-sm hover:bg-indigo-700 transition-all duration-200"
             >
               Send Login Link
             </button>
           </form>
         )}
-                
-        <div className="my-4 text-center text-gray-500 relative">
-          <hr className="absolute top-3 w-full border-t border-b-gray-100" />
-          <span className="relative text-xs bg-white px-3">Or continue with</span>
+
+        <div className="relative text-center my-4">
+          <div className="absolute inset-x-0 top-1/2 border-t border-gray-200"></div>
+          <span className="relative bg-white px-3 text-xs text-gray-400">
+            Or continue with
+          </span>
         </div>
-                
+
         <button
           onClick={handleGoogleLogin}
-          className="w-full border border-gray-300 py-2 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 cursor-pointer transition"
+          className="w-full border border-gray-300 rounded-xl py-3 flex items-center justify-center gap-2 hover:bg-gray-100 transition-all"
         >
-          <Image
-            src="/google.svg"
-            alt='Google-image'
-            width={25}
-            height={25}
-          />
-          Google
+          <Image src="/google.svg" alt="Google icon" width={22} height={22} />
+          <span className="text-sm font-medium text-gray-700">
+            Continue with Google
+          </span>
         </button>
+
+        <p className="text-center text-xs text-gray-400 pt-4">
+          By continuing, you agree to ’s{' '}
+          <span className="text-indigo-600 cursor-pointer hover:underline">
+            Terms
+          </span>{' '}
+          &{' '}
+          <span className="text-indigo-600 cursor-pointer hover:underline">
+            Privacy Policy
+          </span>
+          .
+        </p>
       </div>
     </div>
   );
@@ -131,11 +96,13 @@ function LoginFormContent() {
 
 export default function LoginForm() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="text-gray-600">Loading...</div>
+        </div>
+      }
+    >
       <LoginFormContent />
     </Suspense>
   );

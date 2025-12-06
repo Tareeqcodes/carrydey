@@ -1,8 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
-import { account, ID } from '@/lib/config/Appwriteconfig';
-
+import { account, ID } from '@/lib/config/Appwriteconfig'; 
 
 const AuthContext = createContext();
 
@@ -20,38 +19,36 @@ export const AuthProvider = ({ children }) => {
       if (session) {
         const user = await account.get();
         setUser(user);
-        return;
       } else {
         setUser(null);
       }
     } catch (error) {
       setUser(null);
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
-  const login = async (email, role = null) => {
+  const login = async (email) => {
     try {
-      const baseUrl = 'https://carrydey.tech/emailVerification';
-      const verifyUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
-      
       await account.createMagicURLToken(
         ID.unique(),
         email,
-        verifyUrl
+        'http://localhost:3000/emailVerification'
       );    
+      alert('Magic link sent to your email!');
     } catch (error) {
       alert(error.message);
     } 
   };
 
-  const loginWithGoogle = async (role = null) => {
+  const loginWithGoogle = async () => {
     try {
-      const baseUrl = 'https://carrydey.tech/emailVerification';
-      const redirectUrl = role ? `${baseUrl}?role=${role}` : baseUrl;
-      
-      account.createOAuth2Session('google', "https://carrydey.tech", redirectUrl);
+      account.createOAuth2Session(
+        'google', 
+        'http://localhost:3000', // success URL
+        'http://localhost:3000/emailVerification' // failure URL
+      );
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);
     }
@@ -72,15 +69,7 @@ export const AuthProvider = ({ children }) => {
       logout, 
       checkSession 
     }}>
-     {loading ? (
-      <div className="min-h-screen bg-white">
-        {children}
-        {/* Overlay loader instead of blocking */}
-        <div className="fixed top-4 right-4">
-          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-        </div>
-      </div>
-    ) : children}
+      {children}
     </AuthContext.Provider>
   );
 };

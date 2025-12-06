@@ -176,7 +176,7 @@ const SettingsComponent = () => {
           </div>
         </div>
       ),
-      help: (
+      help: ( 
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-gray-800">Help & Support</h2>
           <div className="space-y-4">
