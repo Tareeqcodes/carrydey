@@ -1,4 +1,4 @@
-// main.js - FIXED VERSION with proper request handling
+// main.js - PROPERLY FIXED
 import { Client } from 'node-appwrite';
 import {
   handleWebhook,
@@ -9,85 +9,116 @@ import {
   createPayout,
   getVirtualAccount
 } from './monnify.js';
-import { getTransactions } from './database.js';
+import { getTransactions } from './databases.js';
 
 export default async ({ req, res, log, error }) => {
   try {
-    // Log incoming request for debugging
-    log('Received request:');
-    log(`Method: ${req.method}`);
-    log(`Path: ${req.path}`);
-    log(`Headers: ${JSON.stringify(req.headers)}`);
-    log(`Body: ${req.body}`);
-
+    log('=== WALLET FUNCTION STARTED ===');
+    
+    // IMPORTANT: Appwrite functions use context object, not req/res directly
     const client = new Client();
 
     // Initialize Appwrite client
+    if (!process.env.APPWRITE_ENDPOINT || !process.env.APPWRITE_PROJECT_ID || !process.env.APPWRITE_API_KEY) {
+      error('Missing Appwrite environment variables');
+      return res.json({
+        success: false,
+        error: 'Server configuration error'
+      }, 500);
+    }
+
     client
-      .setEndpoint(process.env.APPWRITE_ENDPOINT_ID || 'https://cloud.appwrite.io/v1')
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
       .setProject(process.env.APPWRITE_PROJECT_ID)
       .setKey(process.env.APPWRITE_API_KEY);
 
     // Parse request body
     let body = {};
+    let operation = 'unknown';
+    
     try {
-      body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    } catch (e) {
-      log('Could not parse body, using empty object');
+      // Appwrite functions receive payload in req.body
+      if (req.body) {
+        body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        log('Parsed body:', JSON.stringify(body));
+      }
+      
+      // Get operation from header first, then body
+      operation = req.headers['x-operation'] || body.operation || 'unknown';
+      
+    } catch (parseError) {
+      log('Parse error, using empty body');
     }
 
-    // Get operation from header or body
-    const operation = req.headers['x-operation'] || body.operation || 'unknown';
-    
-    log(`Operation: ${operation}`);
+    log(`Operation requested: ${operation}`);
 
-    // Handle webhook from Monnify (special case)
-    if (req.path.includes('/webhook') || operation === 'webhook') {
-      log('Handling webhook...');
+    // Special handling for Monnify webhook (POST with JSON)
+    const isMonnifyWebhook = req.headers['monnify-signature'] || 
+                            (req.path && req.path.includes('webhook'));
+    
+    if (isMonnifyWebhook) {
+      log('Processing Monnify webhook...');
       return await handleWebhook(
-        { payload: req.body, headers: req.headers, variables: process.env },
+        { 
+          payload: req.body, 
+          headers: req.headers, 
+          variables: process.env 
+        },
         res,
         client
       );
     }
 
+    // Handle different operations
     let result;
-
+    
     switch (operation) {
       case 'initialize-payment':
-        log('Initialize payment operation');
+        log('Initialize payment with data:', body);
         result = await initializePayment(body, client, process.env);
         break;
       
       case 'create-wallet':
-        log('Create wallet operation');
+        log('Creating wallet with data:', body);
         result = await createWallet(body, client, process.env);
         break;
       
       case 'debit-wallet':
-        log('Debit wallet operation');
+        log('Debiting wallet with data:', body);
         result = await debitWallet(body, client, process.env);
         break;
       
       case 'get-wallet':
-        log('Get wallet operation');
-        log(`Fetching wallet for userId: ${body.userId}`);
-        result = await getWallet(body, client, process.env);
-        log(`Wallet result: ${JSON.stringify(result)}`);
-        break;
-      
-      case 'create-payout':
-        log('Create payout operation');
-        result = await createPayout(body, client, process.env);
+        log('Getting wallet for userId:', body.userId);
+        if (!body.userId) {
+          result = {
+            success: false,
+            error: 'userId is required'
+          };
+        } else {
+          result = await getWallet(body, client, process.env);
+        }
         break;
       
       case 'get-virtual-account':
-        log('Get virtual account operation');
-        result = await getVirtualAccount(body, client, process.env);
+        log('Getting virtual account for userId:', body.userId);
+        if (!body.userId) {
+          result = {
+            success: false,
+            error: 'userId is required'
+          };
+        } else {
+          result = await getVirtualAccount(body, client, process.env);
+        }
+        break;
+      
+      case 'create-payout':
+        log('Creating payout with data:', body);
+        result = await createPayout(body, client, process.env);
         break;
       
       case 'get-transactions':
-        log('Get transactions operation');
+        log('Getting transactions for userId:', body.userId);
         const transactions = await getTransactions(
           body.userId, 
           body.limit || 50,
@@ -96,13 +127,13 @@ export default async ({ req, res, log, error }) => {
         );
         result = {
           success: true,
-          transactions: transactions.documents
+          transactions: transactions.documents || []
         };
         break;
       
       default:
         log(`Unknown operation: ${operation}`);
-        return res.json({
+        result = {
           success: false,
           error: 'Invalid operation',
           receivedOperation: operation,
@@ -116,10 +147,12 @@ export default async ({ req, res, log, error }) => {
             'get-virtual-account',
             'get-transactions'
           ]
-        }, 400);
+        };
     }
 
+    log('Operation result:', JSON.stringify(result));
     return res.json(result);
+    
   } catch (err) {
     error('Function error:', err);
     return res.json({

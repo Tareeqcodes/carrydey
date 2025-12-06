@@ -1,11 +1,12 @@
+// app/dashboard/wallet/page.js - Main wallet page
 'use client';
 import { useState, useEffect } from 'react';
 import { WalletService } from '@/lib/WalletService';
-import WalletScreen from '@/components/WalletScreen';
-import AddFundsScreen from '@/components/AddFundsScreen';
-import PayoutScreen from '@/components/PayoutScreen';
-import { SuccessModal, LowBalanceAlert } from '@/components/Modals';
-import { useAuth } from '@/hooks/Authcontext'; // Import your auth hook
+import WalletScreen from '@/components/Wallets/WalletScreen';
+import AddFundsScreen from '@/components/Wallets/AddFundsScreen';
+import PayoutScreen from '@/components/Wallets/PayoutScreen';
+import { SuccessModal, LowBalanceAlert } from '@/components/Wallets/Modals';
+import { useAuth } from '@/hooks/Authcontext';
 
 const Payment = () => {
   const [activeScreen, setActiveScreen] = useState('wallet');
@@ -16,9 +17,7 @@ const Payment = () => {
   const [showLowBalanceAlert, setShowLowBalanceAlert] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Get user from auth context
-  const { user } = useAuth(); // Adjust based on your auth implementation
+  const { user } = useAuth();
 
   // Fetch wallet data on mount
   useEffect(() => {
@@ -32,73 +31,68 @@ const Payment = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching wallet data for user:', user);
+      const userId = user.$id;
       
-      // Get or create wallet
-      let walletResponse = await WalletService.getWallet(user.$id || user.id);
+      // 1. Get wallet balance
+      const walletResponse = await WalletService.getWallet(userId);
       console.log('Wallet response:', walletResponse);
       
-      if (!walletResponse.success) {
-        if (walletResponse.code === 'WALLET_NOT_FOUND') {
-          console.log('Wallet not found, creating new wallet...');
+      if (walletResponse.success) {
+        setBalance(walletResponse.balance || 0);
+        
+        // 2. Get virtual account if wallet exists
+        if (walletResponse.wallet) {
+          const accountResponse = await WalletService.getVirtualAccount(userId);
+          console.log('Virtual account response:', accountResponse);
           
-          // Create wallet if it doesn't exist
-          const createResponse = await WalletService.createWallet(
-            user.$id || user.id,
-            user.email,
-            user.name
-          );
-          
-          console.log('Create wallet response:', createResponse);
-          
-          if (createResponse.success) {
-            setBalance(createResponse.wallet.balance || 0);
-          } else {
-            throw new Error(createResponse.error || 'Failed to create wallet');
+          if (accountResponse.success && accountResponse.virtualAccount) {
+            setVirtualAccount(accountResponse.virtualAccount);
           }
-        } else {
-          throw new Error(walletResponse.error || 'Failed to fetch wallet');
         }
-      } else {
-        setBalance(walletResponse.wallet?.balance || 0);
-      }
-
-      // Fetch transactions
-      try {
-        const transactionsResponse = await WalletService.getTransactions(
-          user.$id || user.id, 
-          50
-        );
+        
+        // 3. Get transactions
+        const transactionsResponse = await WalletService.getTransactions(userId);
         console.log('Transactions response:', transactionsResponse);
         
         if (transactionsResponse.success) {
           setTransactions(transactionsResponse.transactions || []);
         }
-      } catch (txError) {
-        console.error('Failed to fetch transactions:', txError);
-        // Don't fail the whole component if transactions fail
-        setTransactions([]);
-      }
-
-      // Fetch virtual account
-      try {
-        const accountResponse = await WalletService.getVirtualAccount(
-          user.$id || user.id
-        );
-        console.log('Virtual account response:', accountResponse);
         
-        if (accountResponse.success) {
-          setVirtualAccount(accountResponse.virtualAccount);
+      } else {
+        // If wallet doesn't exist, create it
+        if (walletResponse.code === 'WALLET_NOT_FOUND') {
+          console.log('Wallet not found, creating new wallet...');
+          await createUserWallet();
+        } else {
+          setError(walletResponse.error || 'Failed to load wallet');
         }
-      } catch (accError) {
-        console.error('Failed to fetch virtual account:', accError);
-        // Virtual account is optional, don't fail
       }
-    } catch (error) {
-      console.error('Error fetching wallet data:', error);
-      setError(error.message || 'Failed to load wallet data. Please try again.');
+      
+    } catch (err) {
+      console.error('Error fetching wallet data:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createUserWallet = async () => {
+    try {
+      const createResponse = await WalletService.createWallet(
+        user.$id,
+        user.email,
+        user.name || 'User'
+      );
+      
+      if (createResponse.success) {
+        // Retry fetching wallet data
+        fetchWalletData();
+      } else {
+        setError(createResponse.error || 'Failed to create wallet');
+      }
+    } catch (err) {
+      console.error('Error creating wallet:', err);
+      setError(err.message);
     }
   };
 
@@ -109,64 +103,61 @@ const Payment = () => {
   const handleCardPayment = async (amount = 10000) => {
     try {
       const paymentResponse = await WalletService.initializePayment(
-        user.$id || user.id,
+        user.$id,
         amount,
         user.email,
-        user.name
+        user.name || 'User'
       );
       
-      console.log('Payment response:', paymentResponse);
+      console.log('Card payment response:', paymentResponse);
       
       if (paymentResponse.success) {
         // Redirect to Monnify checkout
         window.location.href = paymentResponse.data.checkoutUrl;
       } else {
-        alert('Payment initialization failed: ' + paymentResponse.error);
+        alert(`Payment error: ${paymentResponse.error}`);
       }
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed: ' + error.message);
+      alert('Payment failed. Please try again.');
     }
   };
 
-  const handlePayout = async (amount, bankDetails) => {
+  const handlePayout = async (amount) => {
     if (amount > balance) {
       setShowLowBalanceAlert(true);
       return;
     }
 
     try {
+      // TODO: Get user's bank details from saved payment methods
+      const bankCode = '058'; // GTBank code
+      const accountNumber = '0123456789'; // Should come from user's saved banks
+      const accountName = user.name || 'User';
+      
       const payoutResponse = await WalletService.createPayout(
-        user.$id || user.id,
+        user.$id,
         amount,
-        bankDetails.bankCode,
-        bankDetails.accountNumber,
-        bankDetails.accountName
+        bankCode,
+        accountNumber,
+        accountName
       );
       
       console.log('Payout response:', payoutResponse);
       
       if (payoutResponse.success) {
-        setBalance(payoutResponse.newBalance);
+        setBalance(payoutResponse.newBalance || (balance - amount));
         setShowSuccessModal(true);
+        // Refresh transactions
+        fetchWalletData();
       } else {
-        alert('Payout failed: ' + payoutResponse.error);
+        alert(`Payout failed: ${payoutResponse.error}`);
       }
     } catch (error) {
       console.error('Payout error:', error);
-      alert('Payout failed: ' + error.message);
+      alert('Payout failed. Please try again.');
     }
   };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Please log in to access your wallet</p>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -181,12 +172,18 @@ const Payment = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-[#3A0A21] mb-2">Error Loading Wallet</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={fetchWalletData}
-            className="bg-[#3A0A21] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#5A1331] transition"
+            className="bg-[#3A0A21] text-white px-4 py-2 rounded-lg hover:bg-[#5A1331] transition"
           >
             Retry
           </button>
@@ -206,7 +203,7 @@ const Payment = () => {
         />
       )}
       
-      {activeScreen === 'addFunds' && virtualAccount && (
+      {activeScreen === 'addFunds' && (
         <AddFundsScreen
           virtualAccount={virtualAccount}
           onBack={() => setActiveScreen('wallet')}
@@ -226,7 +223,7 @@ const Payment = () => {
         <SuccessModal onClose={() => {
           setShowSuccessModal(false);
           setActiveScreen('wallet');
-          fetchWalletData(); // Refresh data
+          fetchWalletData();
         }} />
       )}
       
