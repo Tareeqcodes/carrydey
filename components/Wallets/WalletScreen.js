@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wallet, ArrowDownRight, Plus, Send } from 'lucide-react';
+import { Wallet, ArrowDownRight, ArrowUpRight, Plus, Send } from 'lucide-react';
 // import TransactionList from './TransactionList';
 
 const WalletScreen = ({ balance, onAddFunds, onPayout, transactions }) => {

@@ -1,4 +1,4 @@
-// main.js - ES Module syntax
+// main.js - FIXED VERSION with proper request handling
 import { Client } from 'node-appwrite';
 import {
   handleWebhook,
@@ -9,52 +9,103 @@ import {
   createPayout,
   getVirtualAccount
 } from './monnify.js';
+import { getTransactions } from './databases.js';
 
-export default async (req, res) => {
+export default async ({ req, res, log, error }) => {
   try {
+    // Log incoming request for debugging
+    log('Received request:');
+    log(`Method: ${req.method}`);
+    log(`Path: ${req.path}`);
+    log(`Headers: ${JSON.stringify(req.headers)}`);
+    log(`Body: ${req.body}`);
+
     const client = new Client();
 
     // Initialize Appwrite client
     client
-      .setEndpoint(req.variables['APPWRITE_ENDPOINT_ID'])
-      .setProject(req.variables['APPWRITE_PROJECT_ID'])
-      .setKey(req.variables['APPWRITE_API_KEY']);
+      .setEndpoint(process.env.APPWRITE_ENDPOINT_ID || 'https://cloud.appwrite.io/v1')
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
 
-    // Route based on request type
-    const route = req.headers['x-operation'] || req.query.operation || 'unknown';
+    // Parse request body
+    let body = {};
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    } catch (e) {
+      log('Could not parse body, using empty object');
+    }
 
-    switch (route) {
-      case 'webhook':
-        return await handleWebhook(req, res, client);
-      
+    // Get operation from header or body
+    const operation = req.headers['x-operation'] || body.operation || 'unknown';
+    
+    log(`Operation: ${operation}`);
+
+    // Handle webhook from Monnify (special case)
+    if (req.path.includes('/webhook') || operation === 'webhook') {
+      log('Handling webhook...');
+      return await handleWebhook(
+        { payload: req.body, headers: req.headers, variables: process.env },
+        res,
+        client
+      );
+    }
+
+    let result;
+
+    switch (operation) {
       case 'initialize-payment':
-        const paymentData = JSON.parse(req.payload || '{}');
-        return await initializePayment(paymentData, client, req.variables);
+        log('Initialize payment operation');
+        result = await initializePayment(body, client, process.env);
+        break;
       
       case 'create-wallet':
-        const userData = JSON.parse(req.payload || '{}');
-        return await createWallet(userData, client, req.variables);
+        log('Create wallet operation');
+        result = await createWallet(body, client, process.env);
+        break;
       
       case 'debit-wallet':
-        const debitData = JSON.parse(req.payload || '{}');
-        return await debitWallet(debitData, client, req.variables);
+        log('Debit wallet operation');
+        result = await debitWallet(body, client, process.env);
+        break;
       
       case 'get-wallet':
-        const walletData = JSON.parse(req.payload || '{}');
-        return await getWallet(walletData, client, req.variables);
+        log('Get wallet operation');
+        log(`Fetching wallet for userId: ${body.userId}`);
+        result = await getWallet(body, client, process.env);
+        log(`Wallet result: ${JSON.stringify(result)}`);
+        break;
       
       case 'create-payout':
-        const payoutData = JSON.parse(req.payload || '{}');
-        return await createPayout(payoutData, client, req.variables);
+        log('Create payout operation');
+        result = await createPayout(body, client, process.env);
+        break;
       
       case 'get-virtual-account':
-        const accountData = JSON.parse(req.payload || '{}');
-        return await getVirtualAccount(accountData, client, req.variables);
+        log('Get virtual account operation');
+        result = await getVirtualAccount(body, client, process.env);
+        break;
+      
+      case 'get-transactions':
+        log('Get transactions operation');
+        const transactions = await getTransactions(
+          body.userId, 
+          body.limit || 50,
+          client, 
+          process.env
+        );
+        result = {
+          success: true,
+          transactions: transactions.documents
+        };
+        break;
       
       default:
+        log(`Unknown operation: ${operation}`);
         return res.json({
           success: false,
           error: 'Invalid operation',
+          receivedOperation: operation,
           available_operations: [
             'webhook',
             'initialize-payment',
@@ -62,16 +113,19 @@ export default async (req, res) => {
             'debit-wallet',
             'get-wallet',
             'create-payout',
-            'get-virtual-account'
+            'get-virtual-account',
+            'get-transactions'
           ]
         }, 400);
     }
-  } catch (error) {
-    console.error('Function error:', error);
+
+    return res.json(result);
+  } catch (err) {
+    error('Function error:', err);
     return res.json({
       success: false,
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     }, 500);
   }
 };
