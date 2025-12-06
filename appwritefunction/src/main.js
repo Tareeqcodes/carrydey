@@ -9,7 +9,7 @@ import {
   createPayout,
   getVirtualAccount
 } from './monnify.js';
-import { getTransactions } from './databases.js';
+import { getTransactions } from './database.js';
 
 export default async ({ req, res, log, error }) => {
   try {
