@@ -9,7 +9,7 @@ import {
   createPayout, 
   getVirtualAccount
 } from './monnify.js';
-import { getTransactions } from './databases.js';
+import { getTransactions } from './database.js';
 
 export default async ({ req, res, log, error }) => {
   try {
@@ -26,7 +26,8 @@ export default async ({ req, res, log, error }) => {
       }
     });
 
-    // Initialize Appwrite client - USE CORRECT VARIAB;
+    // Initialize Appwrite client - USE CORRECT VARIABLE NAMES
+    const endpoint = process.env.APPWRITE_ENDPOINT_ID || process.env.APPWRITE_ENDPOINT;
     const projectId = process.env.APPWRITE_PROJECT_ID;
     const apiKey = process.env.APPWRITE_API_KEY;
     
@@ -62,7 +63,7 @@ export default async ({ req, res, log, error }) => {
       // Appwrite functions receive payload in req.body
       if (req.body) {
         body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-        log('Parsed body:', JSON.stringify(body));
+        log('Parsed body:', JSON.stringify(body, null, 2));
       }
       
       // Get operation from header first, then body
@@ -172,7 +173,7 @@ export default async ({ req, res, log, error }) => {
         };
     }
 
-    log('Operation result:', JSON.stringify(result));
+    log('Operation result:', JSON.stringify(result, null, 2));
     return res.json(result);
     
   } catch (err) {
@@ -180,7 +181,7 @@ export default async ({ req, res, log, error }) => {
     return res.json({
       success: false,
       error: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      stack: err.stack
     }, 500);
   }
 };

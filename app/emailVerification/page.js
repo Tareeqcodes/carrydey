@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/Authcontext';
 import { account } from '@/lib/config/Appwriteconfig';
@@ -8,9 +8,9 @@ export default function Confirm() {
   const router = useRouter();
   const { checkSession } = useAuth();
   const Processed = useRef(false);
+  const [status, setStatus] = useState('Verifying your email...');
 
   useEffect(() => {
-    // Prevent multiple executions
     if (Processed.current) return;
 
     const verifySession = async () => {
@@ -18,48 +18,61 @@ export default function Confirm() {
       const userId = urlParams.get('userId');
       const secret = urlParams.get('secret');
 
-      console.log('Params:', { userId, secret });
-
       if (!userId || !secret) {
-        // console.warn('Missing credentials from URL'); 
-        router.push('/login');
+        setStatus('Invalid verification link');
+        setTimeout(() => router.push('/login'), 2000);
         return;
       }
 
       try {
         Processed.current = true;
-        let sessionExists = false;
 
+        // Check existing session
+        let sessionExists = false;
         try {
-          const currentSession = await account.getSession('current');
+          const currentSession = await account.getSession({
+            sessionId: 'current'
+          });
           if (currentSession) {
             sessionExists = true;
-            // console.log('Session already exists');
+            setStatus('Session already active, redirecting...');
           }
         } catch (e) {
-          console.log('No active session found');  
+          setStatus('Creating your session...');
         }
 
+        // Create session from magic link
         if (!sessionExists) {
-          const session = await account.updateMagicURLSession({ userId, secret });
-          // console.log('Session created:', session);
-        }
+          await account.createSession({
+            userId: userId,
+            secret: secret
+          });
+          setStatus('Session created successfully!');
+        } 
 
+        // Update context
         await checkSession();
-        router.push('/onboarding');
+        
+        setStatus('Redirecting to your account...');
+        setTimeout(() => router.push('/onboarding'), 1000);
+        
       } catch (error) {
-        console.error('Verification failed:', error.message);
+        console.error('Verification failed:', error);
+        setStatus('Verification failed. Please try again.');
         Processed.current = false;
-        router.push('/login');
+        setTimeout(() => router.push('/login'), 2000);
       }
     };
 
-    verifySession();
-  }, []);
+    verifySession(); 
+  }, [router, checkSession]);
 
   return (
-    <div className="h-screen text-sm text-green-400 p-20 text-center items-center justify-center">
-      Verifying please wait...
+    <div className="h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
+        <p className="text-sm text-green-400">{status}</p>
+      </div>
     </div>
   );
 }

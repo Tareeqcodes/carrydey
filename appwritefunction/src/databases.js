@@ -58,7 +58,6 @@ export async function updateWalletBalance(userId, amount, type, client, variable
     wallet.$id,
     {
       balance: newBalance,
-      updatedAt: new Date().toISOString()
     }
   );
   

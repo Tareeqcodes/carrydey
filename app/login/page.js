@@ -1,7 +1,9 @@
 'use client';
 import { Suspense, useState } from 'react';
+import Image from 'next/image'; 
+import Link from 'next/link';
 import { useAuth } from '@/hooks/Authcontext';
-import Image from 'next/image';
+
 
 function LoginFormContent() {
   const [email, setEmail] = useState('');
@@ -20,16 +22,17 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8 sm:p-10 space-y-6">
-        <div className="text-center mb-4">
-          <Image
-            src="/ringo-logo.svg"
-            alt="RINGO Logo"
-            width={60}
-            height={60}
-            className="mx-auto mb-2"
-          />
+    <div className="min-h-screen mt-20 flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-5 space-y-6">
+        <div className="flex justify-center mb-8">
+          <div className="relative h-24 w-24 sm:h-28 sm:w-28">
+            <Image
+              src="/login.png"
+              alt="Carrydey Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
 
         {sent ? (
@@ -79,15 +82,20 @@ function LoginFormContent() {
         </button>
 
         <p className="text-center text-xs text-gray-400 pt-4">
-          By continuing, you agree to ’s{' '}
+          By continuing, you agree to Carrydey’s{' '}
+          <Link href="/terms">
+            
           <span className="text-indigo-600 cursor-pointer hover:underline">
             Terms
           </span>{' '}
+          </Link>
           &{' '}
+          <Link href="/privacy">
           <span className="text-indigo-600 cursor-pointer hover:underline">
             Privacy Policy
           </span>
           .
+           </Link>
         </p>
       </div>
     </div>

@@ -456,7 +456,6 @@ export async function debitWallet(debitData, client, variables) {
       wallet.$id,
       {
         balance: newBalance,
-        updatedAt: new Date().toISOString()
       }
     );
     
