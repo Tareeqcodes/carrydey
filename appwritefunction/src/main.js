@@ -1,4 +1,4 @@
-// main.js - PROPERLY FIXED
+// main.js - FIXED VERSION
 import { Client } from 'node-appwrite';
 import {
   handleWebhook,
@@ -18,19 +18,41 @@ export default async ({ req, res, log, error }) => {
     // IMPORTANT: Appwrite functions use context object, not req/res directly
     const client = new Client();
 
-    // Initialize Appwrite client
-    if (!process.env.APPWRITE_ENDPOINT || !process.env.APPWRITE_PROJECT_ID || !process.env.APPWRITE_API_KEY) {
+    // Log all environment variables (for debugging)
+    log('Environment variables available:');
+    Object.keys(process.env).forEach(key => {
+      if (key.includes('APPWRITE') || key.includes('MONNIFY')) {
+        log(`${key}: ${key.includes('KEY') ? '***REDACTED***' : process.env[key]}`);
+      }
+    });
+
+    // Initialize Appwrite client - USE CORRECT VARIAB;
+    const projectId = process.env.APPWRITE_PROJECT_ID;
+    const apiKey = process.env.APPWRITE_API_KEY;
+    
+    log('Appwrite config check:', { 
+      endpoint: endpoint ? '✓ Set' : '✗ Missing',
+      projectId: projectId ? '✓ Set' : '✗ Missing',
+      apiKey: apiKey ? '✓ Set' : '✗ Missing'
+    });
+    
+    if (!endpoint || !projectId || !apiKey) {
       error('Missing Appwrite environment variables');
       return res.json({
         success: false,
-        error: 'Server configuration error'
+        error: 'Server configuration error',
+        details: {
+          endpoint: !!endpoint,
+          projectId: !!projectId,
+          apiKey: !!apiKey
+        }
       }, 500);
     }
 
     client
-      .setEndpoint(process.env.APPWRITE_ENDPOINT)
-      .setProject(process.env.APPWRITE_PROJECT_ID)
-      .setKey(process.env.APPWRITE_API_KEY);
+      .setEndpoint(endpoint)
+      .setProject(projectId)
+      .setKey(apiKey);
 
     // Parse request body
     let body = {};
@@ -47,7 +69,7 @@ export default async ({ req, res, log, error }) => {
       operation = req.headers['x-operation'] || body.operation || 'unknown';
       
     } catch (parseError) {
-      log('Parse error, using empty body');
+      log('Parse error, using empty body:', parseError.message);
     }
 
     log(`Operation requested: ${operation}`);
