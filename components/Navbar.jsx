@@ -24,7 +24,7 @@ const Navbar = () => {
               <Link href="/send-package" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
                 Send
               </Link>
-              <Link href="/become-traveler" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+              <Link href="/travel" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
                Travel
               </Link>
               <Link href="/track" className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
@@ -60,7 +60,7 @@ const Navbar = () => {
               <Link href="/send-package" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
                 Send Package
               </Link>
-              <Link href="/become-traveler" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
+              <Link href="/travel" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">
                 Become a Traveler
               </Link>
               <Link href="/track" className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium">

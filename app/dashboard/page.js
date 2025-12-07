@@ -136,17 +136,6 @@ const SettingsComponent = () => {
 
       {/* Main Settings Screen */}
       <div className="relative z-10 p-4 md:p-6 space-y-8">
-        {/* Header */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <Link href="/dashboard">
-            <button className="flex items-center space-x-3 text-gray-700 hover:text-[#3A0A21] transition-colors">
-              <div className="p-2 bg-gray-50 rounded-lg">
-                <ArrowLeft className="w-5 h-5" />
-              </div>
-              <span className="text-lg font-medium">Back to Dashboard</span>
-            </button>
-          </Link>
-        </div>
 
         {/* Profile Header */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">

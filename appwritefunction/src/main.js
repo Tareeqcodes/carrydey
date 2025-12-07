@@ -6,7 +6,7 @@ import {
   createWallet,
   debitWallet,
   getWallet,
-  createPayout,
+  createPayout, 
   getVirtualAccount
 } from './monnify.js';
 import { getTransactions } from './database.js';

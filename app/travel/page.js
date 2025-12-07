@@ -1,9 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { MapPin, Package, User, Plus, Clock, DollarSign, Navigation, CheckCircle, XCircle, Calendar, ChevronRight } from 'lucide-react';
+import { MapPin, Plus, Navigation, CheckCircle, XCircle } from 'lucide-react';
 
-export default function TravelerDashboard() {
+export default function page() {
   const [activeTab, setActiveTab] = useState('home'); 
   const [showCreateTrip, setShowCreateTrip] = useState(false);
   const [tripForm, setTripForm] = useState({

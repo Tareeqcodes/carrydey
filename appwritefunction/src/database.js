@@ -40,7 +40,7 @@ export async function updateWalletBalance(userId, amount, type, client, variable
   
   const wallet = wallets.documents[0];
   let newBalance = wallet.balance;
-  
+   
   // Update balance based on type
   if (type === 'credit') {
     newBalance = wallet.balance + amount;

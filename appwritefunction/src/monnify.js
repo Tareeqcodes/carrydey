@@ -173,7 +173,7 @@ export async function getVirtualAccount(userData, client, variables) {
         customerEmail: userData.email,
         customerName: userData.name,
         getAllAvailableBanks: false,
-        preferredBanks: ['50515'] // Wema Bank code
+        preferredBanks: ['50515'] 
       },
       {
         headers: {
@@ -396,8 +396,6 @@ export async function createWallet(userData, client, variables) {
         name,
         currency: 'NGN',
         status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
       }
     );
     
