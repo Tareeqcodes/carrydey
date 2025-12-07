@@ -27,7 +27,6 @@ export default function Confirm() {
       try {
         Processed.current = true;
 
-        // Check existing session
         let sessionExists = false;
         try {
           const currentSession = await account.getSession({
@@ -41,7 +40,6 @@ export default function Confirm() {
           setStatus('Creating your session...');
         }
 
-        // Create session from magic link
         if (!sessionExists) {
           await account.createSession({
             userId: userId,
@@ -50,7 +48,6 @@ export default function Confirm() {
           setStatus('Session created successfully!');
         } 
 
-        // Update context
         await checkSession();
         
         setStatus('Redirecting to your account...');
