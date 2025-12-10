@@ -27,7 +27,7 @@ const structuredData = {
     '@type': 'Organization',
     name: 'Carrydey',
     url: 'https://carrydey.tech',
-    logo: 'https://carrydey.tech/icon-192.png',
+    logo: '/icon-192.png',
   },
   aggregateRating: {
     '@type': 'AggregateRating',
@@ -43,7 +43,7 @@ const organizationStructuredData = {
   '@type': 'Organization',
   name: 'Carrydey',
   url: 'https://carrydey.tech',
-  logo: 'https://carrydey.tech/og-image.svg',
+  logo: '/og-image.svg',
   description:
     'Peer-to-peer package delivery platform connecting travelers and senders worldwide',
   sameAs: [
@@ -99,6 +99,8 @@ export const metadata = {
   applicationName: 'Carrydey',
   category: 'Logistics & Travel',
 
+  metadataBase: new URL('https://carrydey.tech'),
+
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -109,7 +111,7 @@ export const metadata = {
       'Join thousands using Carrydey to send packages worldwide affordably or earn extra income while traveling. Safe, verified, and community-driven delivery.',
     images: [
       {
-        url: 'https://carrydey.tech/og-image.svg',
+        url: '/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'Carrydey - Global Package Delivery Platform',
