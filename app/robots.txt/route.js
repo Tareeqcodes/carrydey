@@ -1,0 +1,26 @@
+// app/robots.txt/route.js
+export function GET() {
+  const robots = `User-agent: *
+Allow: /
+
+# Disallow sensitive areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /onboarding/
+Disallow: /pendingVerification/
+
+# Sitemap
+Sitemap: https://carrydey.tech/sitemap.xml
+
+# Crawl delay (optional)
+# Crawl-delay: 1`;
+
+  return new Response(robots, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+    },
+  });
+}

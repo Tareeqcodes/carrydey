@@ -18,7 +18,7 @@ const structuredData = {
   offers: {
     '@type': 'Offer',
     price: '0',
-    priceCurrency: 'USD',
+    priceCurrency: 'NGN',
   },
   description:
     'Connect senders and travelers globally for affordable package delivery. Send items worldwide or earn money delivering on your trips.',
