@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
-import { account, ID } from '@/lib/config/Appwriteconfig';
+import { account, ID, OAuthProvider } from '@/lib/config/Appwriteconfig';
 
 const AuthContext = createContext();
 
@@ -45,16 +45,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    try {
-      account.createOAuth2Session({
-        provider: 'google',
-        success: 'https://carrydey.tech/emailVerification',
-        failure: 'https://carrydey.tech/login',
-      });
-    } catch (error) {
-      alert('Failed to login with Google: ' + error.message);
-    }
-  };
+  try {
+    account.createOAuth2Session({
+      provider: OAuthProvider.Google,
+      success: 'https://carrydey.tech/emailVerification',
+      failure: 'https://carrydey.tech/login',
+    });
+  } catch (error) {
+    alert('Failed to login with Google: ' + error.message);
+  }
+};
 
   const listSessions = async () => {
     try {
