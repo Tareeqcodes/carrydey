@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: 'google',
-        success: 'https://carrydey.tech',
+        success: 'https://carrydey.tech/emailVerification',
         failure: 'https://carrydey.tech/login',
       });
     } catch (error) {
