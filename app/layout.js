@@ -27,7 +27,7 @@ const structuredData = {
     '@type': 'Organization',
     name: 'Carrydey',
     url: 'https://carrydey.tech',
-    logo: '/logo.png',
+    logo: 'https://carrydey.tech/icon-192.png',
   },
   aggregateRating: {
     '@type': 'AggregateRating',
@@ -43,7 +43,7 @@ const organizationStructuredData = {
   '@type': 'Organization',
   name: 'Carrydey',
   url: 'https://carrydey.tech',
-  logo: '/logo.png',
+  logo: 'https://carrydey.tech/og-image.svg',
   description:
     'Peer-to-peer package delivery platform connecting travelers and senders worldwide',
   sameAs: [
@@ -109,11 +109,11 @@ export const metadata = {
       'Join thousands using Carrydey to send packages worldwide affordably or earn extra income while traveling. Safe, verified, and community-driven delivery.',
     images: [
       {
-        url: '/og-image.svg',
+        url: 'https://carrydey.tech/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'Carrydey - Global Package Delivery Platform',
-        type: 'image/png',
+        type: 'image/svg',
       },
     ],
   },
@@ -125,7 +125,7 @@ export const metadata = {
     title: 'Carrydey - Send Packages with Travelers or Earn Money Delivering',
     description:
       'Affordable international package delivery through travelers. Send items worldwide or earn money on your trips.',
-    images: ['/twitter-image.png'],
+    images: ['https://carrydey.tech/twitter-image.png'],
   },
 
   robots: {
@@ -140,13 +140,6 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
-
-  // Verification Tags (Add your verification codes)
-  verification: {
-    google: 'your-google-verification-code',
-  },
-
-  // Additional Meta Tags
   alternates: {
     canonical: 'https://carrydey.tech',
   },
