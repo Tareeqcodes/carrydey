@@ -113,9 +113,9 @@ export const metadata = {
         width: 1200,
         height: 630,
         alt: 'Carrydey - Global Package Delivery Platform',
-        type: 'image/svg',
       },
     ],
+    
   },
 
   twitter: {
@@ -125,7 +125,7 @@ export const metadata = {
     title: 'Carrydey - Send Packages with Travelers or Earn Money Delivering',
     description:
       'Affordable international package delivery through travelers. Send items worldwide or earn money on your trips.',
-    images: ['https://carrydey.tech/twitter-image.png'],
+    images: ['/twitter-image.png'],
   },
 
   robots: {
