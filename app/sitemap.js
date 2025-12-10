@@ -22,7 +22,7 @@ export default function sitemap() {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/send-package`,
+      url: `${baseUrl}/send`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
       priority: 0.8,

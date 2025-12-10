@@ -156,9 +156,6 @@ export const metadata = {
 
   manifest: '/manifest.json',
 
-  themeColor: '#3A0A21',
-  colorScheme: 'light',
-
   other: {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
@@ -166,15 +163,18 @@ export const metadata = {
   },
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#3A0A21', 
+  colorScheme: 'light', 
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=5"
-        />
-
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
