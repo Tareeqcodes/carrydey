@@ -16,7 +16,7 @@
     "lucide-react": "^0.507.0",
     "mapbox-gl": "^3.16.0",
     "motion": "^12.23.16",
-    "next": "^15.5.3",
+    "next": "15.5.7",
     "node-appwrite": "^21.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
