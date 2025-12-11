@@ -1,24 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async redirects() {
-    return [
-      // Redirect www to non-www
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.carrydey.tech' }],
-        destination: 'https://carrydey.tech/:path*',
-        permanent: true,
-      },
-      // Redirect HTTP to HTTPS
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'carrydey.tech' }],
-        destination: 'https://carrydey.tech/:path*',
-        permanent: true,
-      },
-    ];
-  },
-  // Add headers for robots.txt
+  // No redirects needed - handle at Vercel level
   async headers() {
     return [
       {

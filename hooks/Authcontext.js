@@ -9,8 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkSession();
+  useEffect(  () => {
+     checkSession();
   }, []);
 
   const checkSession = async () => {
@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
   try {
     account.createOAuth2Session({
       provider: OAuthProvider.Google,
-      success: 'https://carrydey.tech/Oauth2',
-      failure: 'https://carrydey.tech/login',
+      success: 'http://localhost:3000/Oauth2',
+      failure: 'http://localhost:3000/login',
       scopes: ['email', 'profile', 'openid'],
     });
   } catch (error) {

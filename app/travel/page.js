@@ -101,7 +101,7 @@ export default function TravelPage() {
   };
 
   return (
-    <div className="min-h-screen m-20 bg-gray-50 pb-20">
+    <div className="min-h-screen mx-auto mt-16 md:m-20 bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-[#3A0A21] text-white p-6 rounded-b-3xl shadow-lg">
         <h1 className="text-2xl font-bold mb-2">Travel Dashboard</h1>
