@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
   try {
     account.createOAuth2Session({
       provider: OAuthProvider.Google,
-      success: 'https://www.carrydey.tech/Oauth2',
-      failure: 'https://www.carrydey.tech/login',
+      success: 'https://carrydey.tech/Oauth2',
+      failure: 'https://carrydey.tech/login',
       scopes: ['email', 'profile', 'openid'],
     });
   } catch (error) {
