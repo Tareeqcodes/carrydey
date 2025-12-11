@@ -23,15 +23,13 @@ export default function OAuthCallback() {
                 const error = searchParams.get('error');
                 const state = searchParams.get('state');
                 
-                if (error) {
+                if (error) {S
                     setStatus(`OAuth error: ${error}`);
                     setTimeout(() => router.push('/login'), 2000);
                     return;
                 }
 
                 setStatus('Verifying OAuth session...');
-                
-                // Check if we already have a session
                 try {
                     const user = await account.get();
                     
@@ -46,7 +44,7 @@ export default function OAuthCallback() {
                         setStatus('Session found, getting user details...');
                     }
                 } catch (sessionError) {
-                    // This is normal - we'll get user data after OAuth callback
+                   
                     console.log('Getting fresh user data from OAuth callback...');
                 }
 
