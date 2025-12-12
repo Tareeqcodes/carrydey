@@ -1,13 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { DollarSignIcon, Navigation2, MapPin, Clock } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function InputLocation({
   onLocationSelect,
   onRouteCalculated,
   pickup,
   dropoff,
-  routeData,
   onCalculate,
 }) {
   const [pickupAddress, setPickupAddress] = useState('');
@@ -116,8 +115,8 @@ export default function InputLocation({
 
         const distance = (route.distance / 1000).toFixed(1);
         const duration = Math.round(route.duration / 60);
-        const baseFare = 500;
-        const perKm = 150;
+        const baseFare = 100;
+        const perKm = 50;
         const estimatedFare = Math.round(baseFare + distance * perKm);
 
         const routeInfo = {
