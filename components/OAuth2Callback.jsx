@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/Authcontext';
-import { account } from '@/lib/config/Appwriteconfig';
 
 export default function OAuthCallback() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const { checkSession } = useAuth();
+    const { checkSession, user } = useAuth();
     const [status, setStatus] = useState('Processing OAuth callback...');
     const [processed, setProcessed] = useState(false);
 
@@ -19,67 +17,37 @@ export default function OAuthCallback() {
             try {
                 setProcessed(true);
                 
-                // Check if we have any error from OAuth provider
-                const error = searchParams.get('error');
-                const state = searchParams.get('state');
+                // Wait for Appwrite to process the OAuth callback
+                setStatus('Finalizing authentication...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                if (error) {S
-                    setStatus(`OAuth error: ${error}`);
-                    setTimeout(() => router.push('/login'), 2000);
-                    return;
-                }
-
-                setStatus('Verifying OAuth session...');
-                try {
-                    const user = await account.get();
-                    
-                    if (user) {
-                        setStatus('User already logged in, refreshing session...');
-                    } else {
-                        // Try to get current session
-                        const sessions = await account.listSessions();
-                        if (sessions.sessions.length === 0) {
-                            throw new Error('No active session found');
-                        }
-                        setStatus('Session found, getting user details...');
-                    }
-                } catch (sessionError) {
-                   
-                    console.log('Getting fresh user data from OAuth callback...');
-                }
-
-                // Force refresh the session/user data
-                await checkSession();
+                // Check if session was created
+                const hasSession = await checkSession();
                 
-                // Check if user needs onboarding
-                try {
-                    const user = await account.get();
-                    
-                    // Check if user has completed onboarding (you can check a custom user pref)
-                    // Example: Check if user has a name set
-                    if (!user.name || user.name === '') {
+                if (hasSession) {
+                    // Check if user needs onboarding
+                    // This assumes you have access to user data in context
+                    if (!user?.name || user.name.trim() === '') {
                         setStatus('Redirecting to onboarding...');
                         setTimeout(() => router.push('/onboarding'), 1000);
                     } else {
                         setStatus('Redirecting to dashboard...');
                         setTimeout(() => router.push('/dashboard'), 1000);
                     }
-                } catch (userError) {
-                    console.error('Failed to get user after OAuth:', userError);
-                    setStatus('Failed to get user information');
+                } else {
+                    setStatus('Authentication failed. Please try again.');
                     setTimeout(() => router.push('/login'), 2000);
                 }
                 
             } catch (error) {
                 console.error('OAuth callback failed:', error);
                 setStatus('OAuth authentication failed. Please try again.');
-                setProcessed(false);
                 setTimeout(() => router.push('/login'), 2000);
             }
         };
 
         handleOAuthCallback();
-    }, [router, searchParams, checkSession, processed]);
+    }, [router, checkSession, processed, user]);
 
     return (
         <div className="h-screen flex items-center justify-center">

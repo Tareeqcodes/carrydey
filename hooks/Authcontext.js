@@ -36,9 +36,8 @@ export const AuthProvider = ({ children }) => {
       await account.createMagicURLToken({
         userId: ID.unique(),
         email: email,
-        url: 'https://carrydey.tech/emailVerification',
+        url: 'https://www.carrydey.tech/emailVerification',
       });
-      alert('Magic link sent to your email!');
     } catch (error) {
       alert(error.message);
     }
@@ -48,8 +47,8 @@ export const AuthProvider = ({ children }) => {
   try {
     account.createOAuth2Session({
       provider: OAuthProvider.Google,
-      success: 'https://carrydey.tech/Oauth2',
-      failure: 'https://carrydey.tech/login',
+      success: 'https://www.carrydey.tech/dashboard',
+      failure: 'https://www.carrydey.tech/login',
       scopes: ['email', 'profile', 'openid'],
     });
   } catch (error) {

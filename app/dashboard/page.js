@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
-  Package,
   Shield,
   CreditCard,
   Bell,
@@ -93,15 +92,12 @@ const SettingsComponent = () => {
     },
   };
 
-  const ProfileComponent = () => (
-    <div className="space-y-6">
-      <Profile />
-    </div>
-  );
 
   const renderSectionContent = (sectionId) => {
     const content = {
-      profile: <ProfileComponent />,
+      profile: ( 
+        <Profile />
+      ),
       verification: (
         <VerificationCenter />
       ),
@@ -135,7 +131,7 @@ const SettingsComponent = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-white via-[#F8F5F7] to-[#F0EBEF]" />
 
       {/* Main Settings Screen */}
-      <div className="relative z-10 p-4 md:p-6 space-y-8">
+      <div className="relative z-10 p-2 md:p-6 space-y-8">
 
         {/* Profile Header */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">

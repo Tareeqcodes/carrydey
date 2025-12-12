@@ -174,7 +174,7 @@ const Profile = () => {
               <h1 className="text-2xl font-bold">
                 {profileData.userName || user.name || 'User'}
               </h1>
-              <p className="text-white/80">{profileData.email}</p>
+              <p className="text-white/80 text-xs md:text-md">{profileData.email}</p>
             </div>
           </div>
         </div>
