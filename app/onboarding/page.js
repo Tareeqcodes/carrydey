@@ -74,7 +74,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-white p-6 flex flex-col justify-between">
+    <div className="max-w-md mx-auto mt-12 min-h-screen bg-white p-6 flex flex-col justify-between">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

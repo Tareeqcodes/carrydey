@@ -399,7 +399,7 @@ export default function TravelPage() {
       {/* Create Trip Modal */}
       {showCreateTrip && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end z-50">
-          <div className="bg-white w-full rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full rounded-t-3xl p-6 mx-48 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Create New Trip</h2>
               <button
