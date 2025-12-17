@@ -44,7 +44,7 @@ const Navbar = () => {
                     Send
                   </Link>
                   <Link
-                    href="/track"
+                    href="/login"
                     className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                   >
                     Track Delivery
@@ -56,7 +56,7 @@ const Navbar = () => {
               {user && isTraveler && (
                 <>
                   <Link
-                    href="/send-package"
+                    href="/send"
                     className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                   >
                     Send Package
@@ -69,7 +69,7 @@ const Navbar = () => {
                   </Link>
 
                   <Link
-                    href="/track"
+                    href="/login"
                     className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                   >
                     Track Delivery
@@ -143,7 +143,7 @@ const Navbar = () => {
                   </Link>
                   
                   <Link
-                    href="/track"
+                    href="/login"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -155,7 +155,7 @@ const Navbar = () => {
               {user && isTraveler && (
                 <>
                 <Link
-                    href="/send-package"
+                    href="/send"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -170,7 +170,7 @@ const Navbar = () => {
                   </Link>
                   
                   <Link
-                    href="/track"
+                    href="/login"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -197,7 +197,7 @@ const Navbar = () => {
                     Travel
                   </Link>
                   <Link
-                    href="/track"
+                    href="/login"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >

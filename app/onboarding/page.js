@@ -6,7 +6,7 @@ import { User, Package, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-import { WalletService } from '@/lib/WalletService'; 
+// import { WalletService } from '@/lib/WalletService'; 
 
 export default function Onboarding() {
   const router = useRouter();
@@ -45,16 +45,16 @@ export default function Onboarding() {
       }
     });
 
-     const walletResult = await WalletService.createWallet(
-        userId,
-        user.email,
-        userName
-      );
+    //  const walletResult = await WalletService.createWallet(
+    //     userId,
+    //     user.email,
+    //     userName
+    //   );
 
-      if (!walletResult.success) {
-        console.error('Wallet creation failed:', walletResult.error);
-        // You can decide whether to proceed or show an error
-      }
+    //   if (!walletResult.success) {
+    //     console.error('Wallet creation failed:', walletResult.error);
+    //   }
+      // You can decide whether to proceed or show an error
       
 
     router.push('/dashboard');

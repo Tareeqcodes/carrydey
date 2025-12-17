@@ -4,10 +4,10 @@ export function GET() {
 Allow: /
 
 # Disallow sensitive areas
-Disallow: /api/
-Disallow: /admin/
+Disallow: /track/
+Disallow: /travel/
 Disallow: /dashboard/
-Disallow: /profile/
+Disallow: /send/
 Disallow: /onboarding/
 Disallow: /pendingVerification/
 

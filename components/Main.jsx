@@ -65,7 +65,7 @@ export default function Main() {
                 </Link>
                 
                 <Link
-                  href="/become-traveler"
+                  href="/travel"
                   className="inline-flex items-center justify-center space-x-2 bg-white text-[#3A0A21] px-8 py-4 rounded-full hover:bg-gray-50 transition-colors border-2 border-[#3A0A21] font-medium text-lg"
                 >
                   <span>Earn as a Traveler</span>
