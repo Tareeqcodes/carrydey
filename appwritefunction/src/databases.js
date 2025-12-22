@@ -75,7 +75,7 @@ export async function getUserWallet(userId, client, variables) {
   
   return wallets.documents[0] || null;
 }
-
+ 
 export async function getTransactions(userId, limit = 50, client, variables) {
   const databases = new Databases(client);
   

@@ -102,7 +102,7 @@ export default async ({ req, res, log, error }) => {
         break;
       
       case 'create-wallet':
-        log('Creating wallet with data:', body);
+        log('Creating wallet with data:', body); 
         result = await createWallet(body, client, process.env);
         break;
       

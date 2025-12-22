@@ -6,7 +6,7 @@ import { User, Package, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-// import { WalletService } from '@/lib/WalletService'; 
+// import { WalletService } from '@/lib/WalletService';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function Onboarding() {
 
   const [userName, setUserName] = useState('');
   const [role, setRole] = useState('');
+  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -28,42 +29,42 @@ export default function Onboarding() {
   }, [user, router]);
 
   const handleSubmit = async () => {
-  if (!userName.trim() || !role) return;
-  const userId = user.$id;
+    if (!userName.trim() || !role) return;
+    const userId = user.$id;
 
-  try {
-    setIsLoading(true);
-    await tablesDB.createRow({
-      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-      tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-      rowId: ID.unique(),
-      data: {
-        userId,
-        userName,
-        role,
-        onboardingCompleted: true,
-      }
-    });
+    try {
+      setIsLoading(true);
+      await tablesDB.createRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+        rowId: ID.unique(),
+        data: {
+          userId,
+          userName: userName || user.email.split('@')[0],
+          role,
+          phone,
+          onboardingCompleted: true,
+        },
+      });
 
-    //  const walletResult = await WalletService.createWallet(
-    //     userId,
-    //     user.email,
-    //     userName
-    //   );
+      //  const walletResult = await WalletService.createWallet(
+      //     userId,
+      //     user.email,
+      //     userName
+      //   );
 
-    //   if (!walletResult.success) {
-    //     console.error('Wallet creation failed:', walletResult.error);
-    //   }
+      //   if (!walletResult.success) {
+      //     console.error('Wallet creation failed:', walletResult.error);
+      //   }
       // You can decide whether to proceed or show an error
-      
 
-    router.push('/dashboard');
-  } catch (err) {
-    console.error('Failed to save onboarding:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('Failed to save onboarding:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -74,7 +75,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-12 min-h-screen bg-white p-6 flex flex-col justify-between">
+    <div className="max-w-md mx-auto mt-16 min-h-screen bg-white p-6 flex flex-col justify-between">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -88,7 +89,7 @@ export default function Onboarding() {
         </p>
       </motion.div>
 
-      <div className="space-y-8 mt-10">
+      <div className="space-y-4 mt-10">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -106,13 +107,29 @@ export default function Onboarding() {
           />
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-2"
+        >
           <label className="text-sm font-medium text-[#3A0A21]">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            placeholder="Enter your phone number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#3A0A21] text-[15px] text-[#3A0A21] placeholder:text-gray-400"
+          />
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <label className="text-sm font-semibold text-[#3A0A21]">
             Choose Your Role
           </label>
 
-          <div className="grid grid-cols-2 gap-4 mt-3">
-           
+          <div className="grid grid-cols-2 gap-4 mt-3 pb-8 pt-2">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

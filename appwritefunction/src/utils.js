@@ -1,4 +1,4 @@
-// utils.js - ES Module syntax
+
 export function generateTransactionReference(userId) {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();

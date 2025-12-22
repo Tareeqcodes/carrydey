@@ -6,7 +6,7 @@ import { saveTransaction, updateWalletBalance } from './databases.js';
 
 class MonnifyService {
   constructor(apiKey, secretKey, contractCode, baseUrl = 'https://api.monnify.com') {
-    this.apiKey = apiKey;
+    this.apiKey = apiKey; 
     this.secretKey = secretKey;
     this.contractCode = contractCode;
     this.baseUrl = baseUrl;
