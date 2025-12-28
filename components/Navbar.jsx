@@ -10,6 +10,35 @@ const Navbar = () => {
   const { user } = useAuth();
   const { role, loading } = useUserRole();
 
+  // Show loading skeleton while checking role
+  if (loading) {
+    return (
+      <div className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-6">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo skeleton */}
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            
+            {/* Desktop navigation skeleton */}
+            <div className="hidden md:flex items-center space-x-8">
+              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-10 w-32 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+            
+            {/* Mobile menu button skeleton */}
+            <div className="md:hidden">
+              <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isSender = role === 'sender';
   const isTraveler = role === 'traveler';
 
@@ -64,7 +93,6 @@ const Navbar = () => {
                   >
                     Travel
                   </Link>
-
                   <Link
                     href="/track"
                     className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
@@ -121,10 +149,9 @@ const Navbar = () => {
           {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-6 space-y-4 border-t border-gray-100">
-
               {user && isSender && (
                 <>
-                <Link
+                  <Link
                     href="/travel"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
@@ -138,7 +165,6 @@ const Navbar = () => {
                   >
                     Send
                   </Link>
-                  
                   <Link
                     href="/track"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
@@ -151,7 +177,7 @@ const Navbar = () => {
 
               {user && isTraveler && (
                 <>
-                <Link
+                  <Link
                     href="/send"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
@@ -165,7 +191,6 @@ const Navbar = () => {
                   >
                     Travel
                   </Link>
-                  
                   <Link
                     href="/track"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
