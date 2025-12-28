@@ -10,7 +10,6 @@ const Navbar = () => {
   const { user } = useAuth();
   const { role, loading } = useUserRole();
 
-  // Determine which links to show based on role
   const isSender = role === 'sender';
   const isTraveler = role === 'traveler';
 
@@ -19,14 +18,12 @@ const Navbar = () => {
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-6">
           <div className="flex justify-between items-center h-20">
-            {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold text-[#3A0A21]">
                 Carrydey
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               {/* Sender Role Navigation */}
               {user && isSender && (
@@ -44,7 +41,7 @@ const Navbar = () => {
                     Send
                   </Link>
                   <Link
-                    href="/login"
+                    href="/track"
                     className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                   >
                     Track Delivery
@@ -69,7 +66,7 @@ const Navbar = () => {
                   </Link>
 
                   <Link
-                    href="/login"
+                    href="/track"
                     className="text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                   >
                     Track Delivery
@@ -143,7 +140,7 @@ const Navbar = () => {
                   </Link>
                   
                   <Link
-                    href="/login"
+                    href="/track"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -170,7 +167,7 @@ const Navbar = () => {
                   </Link>
                   
                   <Link
-                    href="/login"
+                    href="/track"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -197,7 +194,7 @@ const Navbar = () => {
                     Travel
                   </Link>
                   <Link
-                    href="/login"
+                    href="/track"
                     className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
