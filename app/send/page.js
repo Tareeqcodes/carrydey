@@ -4,6 +4,7 @@ import InputLocation from '@/components/InputLocation';
 import DeliveryPreview from '@/components/DeliveryPreview';
 import DeliveryReview from '@/components/DeliveryReview';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
+import { useAuth } from '@/hooks/Authcontext';
 
 export default function CreateDelivery() {
   const [pickup, setPickup] = useState(null);
@@ -13,6 +14,21 @@ export default function CreateDelivery() {
   const [showPreview, setShowPreview] = useState(false);
   const [deliveryCreated, setDeliveryCreated] = useState(false);
   const [savedDelivery, setSavedDelivery] = useState(null);
+  const { user } = useAuth();
+  
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#3A0A21] to-black text-white">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Please log in to send packages</h1>
+          <p className="text-lg mb-6">You need to be logged in to create a delivery.</p>
+          <a href="/login" className="bg-[#3A0A21] text-white px-6 py-3 rounded-full hover:bg-[#4A0A31] transition-colors font-medium">
+            Log In
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const handleLocationSelect = (type, location) => {
     if (type === 'pickup') {

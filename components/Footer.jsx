@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Twitter, Linkedin, Instagram } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,16 +12,26 @@ export default function Footer() {
   ];
 
   const socialLinks = [
-    { href: 'https://twitter.com/carrydey', label: 'Twitter', icon: '𝕏' },
-    { href: 'https://linkedin.com/company/carrydey', label: 'LinkedIn', icon: 'in' },
-    { href: 'https://instagram.com/carrydey', label: 'Instagram', icon: 'ig' },
+    { 
+      href: 'https://twitter.com/carrydey', 
+      label: 'Twitter', 
+      icon: <Twitter size={20} /> 
+    },
+    { 
+      href: 'https://linkedin.com/company/carrydey', 
+      label: 'LinkedIn', 
+      icon: <Linkedin size={20} /> 
+    },
+    { 
+      href: 'https://instagram.com/carrydey', 
+      label: 'Instagram', 
+      icon: <Instagram size={20} /> 
+    },
   ];
 
   return (
     <footer className="bg-gradient-to-b from-white to-gray-50 border-t border-gray-200/60">
-      {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-5 lg:px-8 py-12 lg:py-16">
-        {/* Brand Section with Paragraph */}
         <div className="flex flex-col text-center items-start md:text-left mb-12">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-r from-[#3A0A21] to-[#5A1A41] rounded-lg flex items-center justify-center">
@@ -37,11 +48,9 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Links and Social Section */}
         <div className="border-t border-gray-200 pt-8">
           <div className="flex flex-col gap-8 md:flex-row md:justify-between items-start">
             
-            {/* Quick Links - Stack on mobile, row on desktop */}
             <div className="w-full md:w-auto">
               <h3 className="font-semibold text-gray-900 mb-4 text-center md:text-left">Quick Links</h3>
               <div className="grid grid-cols-1 gap-3 md:flex md:flex-col md:space-y-3">
@@ -57,18 +66,19 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Social Links */}
             <div className="w-full md:w-auto">
-              
+              <h3 className="font-semibold text-gray-900 mb-4 text-center md:text-left">Connect with us</h3>
               <div className="flex justify-center md:justify-start space-x-4">
                 {socialLinks.map((social) => (
                   <a
                     key={social.label}
                     href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={social.label}
-                    className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-[#3A0A21] hover:text-white hover:border-[#3A0A21] transition-all duration-200 active:scale-95"
+                    className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-[#3A0A21] hover:text-white hover:border-[#3A0A21] transition-all duration-200"
                   >
-                    <span className="font-semibold text-base">{social.icon}</span>
+                    {social.icon}
                   </a>
                 ))}
               </div>
@@ -77,11 +87,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-200 w-full">
-              <p className="text-gray-600 text-sm">
-                © {currentYear} Carrydey. All rights reserved.
-              </p>
-            </div>
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <p className="text-gray-600 text-sm text-center">
+            © {currentYear} Carrydey. All rights reserved.
+          </p>
+        </div>
       </div>
     </footer>
   );

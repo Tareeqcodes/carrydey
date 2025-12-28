@@ -10,9 +10,12 @@ import AccountSetupStep from '@/components/Onboarding/steps/AccountSetupStep';
 import SuccessStep from '@/components/Onboarding/steps/SuccessStep';
 import StepNavigation from '@/components/Onboarding/steps/StepNavigation';
 import useOnboardingForm from '@/hooks/useOnboardingForm';
+import { useAuth } from '@/hooks/Authcontext';
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const { user } = useAuth();
+
   const {
     formData,
     errors,
@@ -39,6 +42,20 @@ const OnboardingPage = () => {
       setCurrentStep(7);
     }
   };
+
+   if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#3A0A21] to-black text-white">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Please log in to travel</h1>
+          <p className="text-lg mb-6">You need to be logged in to create a Traveler profile.</p>
+          <a href="/login" className="bg-[#3A0A21] text-white px-6 py-3 rounded-full hover:bg-[#4A0A31] transition-colors font-medium">
+            Log In
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const renderStep = () => {
     switch (currentStep) {
