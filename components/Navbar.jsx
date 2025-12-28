@@ -20,7 +20,7 @@ const Navbar = () => {
             <div className="flex items-center space-x-2">
               <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
             </div>
-            
+
             {/* Desktop navigation skeleton */}
             <div className="hidden md:flex items-center space-x-8">
               <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
@@ -28,7 +28,7 @@ const Navbar = () => {
               <div className="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
               <div className="h-10 w-32 bg-gray-200 rounded-full animate-pulse"></div>
             </div>
-            
+
             {/* Mobile menu button skeleton */}
             <div className="md:hidden">
               <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
@@ -217,13 +217,6 @@ const Navbar = () => {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Travel
-                  </Link>
-                  <Link
-                    href="/track"
-                    className="block text-gray-700 hover:text-[#3A0A21] transition-colors font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Track Delivery
                   </Link>
                 </>
               )}
