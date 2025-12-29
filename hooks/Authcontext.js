@@ -9,8 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(  () => {
-     checkSession();
+  useEffect(() => {
+    checkSession();
   }, []);
 
   const checkSession = async () => {
@@ -44,17 +44,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-  try {
-    account.createOAuth2Session({
-      provider: OAuthProvider.Google,
-      success: 'https://www.carrydey.tech/dashboard',
-      failure: 'https://www.carrydey.tech/login',
-      scopes: ['email', 'profile', 'openid'],
-    });
-  } catch (error) {
-    alert('Failed to login with Google: ' + error.message);
-  }
-};
+    try {
+      account.createOAuth2Session({
+        provider: OAuthProvider.Google,
+        success: 'https://www.carrydey.tech/onboarding',
+        failure: 'https://www.carrydey.tech/login',
+      });
+    } catch (error) {
+      alert('Failed to login with Google: ' + error.message);
+    }
+  };
 
   const listSessions = async () => {
     try {

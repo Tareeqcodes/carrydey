@@ -7,6 +7,6 @@ export default function OAuthPage() {
   return (
     <Suspense fallback={<div>Loading OAuth...</div>}>
         <OAuth2Callback />
-    </Suspense>
+    </Suspense> 
   );
 }

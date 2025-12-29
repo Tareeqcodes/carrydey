@@ -24,7 +24,7 @@ export default function Onboarding() {
     }
 
     if (user.onboardingCompleted) {
-      router.push('/dashboard');
+      router.push('/dashboard'); 
     }
   }, [user, router]);
 
