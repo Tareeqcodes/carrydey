@@ -4,33 +4,65 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Package, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
+import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-// import { WalletService } from '@/lib/WalletService';
 
 export default function Onboarding() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const [userName, setUserName] = useState('');
   const [role, setRole] = useState('');
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
+    if (loading) {
+      setCheckingProfile(true);
+      return;
+    }
+
     if (!user) {
+      setCheckingProfile(false);
       router.push('/login');
       return;
     }
 
-    if (user.onboardingCompleted) {
-      router.push('/dashboard'); 
+    checkOnboardingStatus();
+  }, [user, loading]);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      setCheckingProfile(true);
+      const response = await tablesDB.listRows({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+        queries: [Query.equal('userId', user.$id)],
+      });
+
+      if (
+        response.documents.length > 0 &&
+        response.documents[0].onboardingCompleted
+      ) {
+        router.push('/send');
+      }
+    } catch (err) {
+      console.error('Failed to check onboarding status:', err);
+    } finally {
+      setCheckingProfile(false);
     }
-  }, [user, router]);
+  };
 
   const handleSubmit = async () => {
+    // Add null check at the beginning of handleSubmit
+    if (!user) {
+      console.error('No user found');
+      router.push('/login');
+      return;
+    }
+
     if (!userName.trim() || !role) return;
-    const userId = user.$id;
 
     try {
       setIsLoading(true);
@@ -39,7 +71,7 @@ export default function Onboarding() {
         tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
         rowId: ID.unique(),
         data: {
-          userId,
+          userId: user.$id,
           userName: userName || user.email.split('@')[0],
           role,
           phone,
@@ -47,26 +79,17 @@ export default function Onboarding() {
         },
       });
 
-      //  const walletResult = await WalletService.createWallet(
-      //     userId,
-      //     user.email,
-      //     userName
-      //   );
-
-      //   if (!walletResult.success) {
-      //     console.error('Wallet creation failed:', walletResult.error);
-      //   }
-      // You can decide whether to proceed or show an error
-
-      router.push('/dashboard');
+      router.push('/send');
     } catch (err) {
       console.error('Failed to save onboarding:', err);
+      alert('Failed to save profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!user) {
+  // Don't render the form if user is null
+  if (loading || checkingProfile || !user) {
     return (
       <div className="h-screen flex items-center justify-center">
         <p className="text-gray-600">Loading...</p>

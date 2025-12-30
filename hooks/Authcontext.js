@@ -15,15 +15,8 @@ export const AuthProvider = ({ children }) => {
 
   const checkSession = async () => {
     try {
-      const session = await account.getSession({
-        sessionId: 'current',
-      });
-      if (session) {
-        const user = await account.get();
-        setUser(user);
-      } else {
-        setUser(null);
-      }
+      const userData = await account.get();
+      setUser(userData);
     } catch (error) {
       setUser(null);
     } finally {
@@ -47,8 +40,8 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: OAuthProvider.Google,
-        success: 'https://www.carrydey.tech/onboarding',
-        failure: 'https://www.carrydey.tech/login',
+        success: 'http://localhost:3000/OAuthCallback',
+        failure: 'http://localhost:3000/login',
       });
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);
@@ -73,12 +66,15 @@ export const AuthProvider = ({ children }) => {
       console.error('Failed to logout all devices:', error);
     }
   };
+  
+
   const refreshSession = async () => {
     try {
-      await account.updateSession({
-        sessionId: 'current',
-      });
-      await checkSession();
+      
+      const session = await account.getSession({ sessionId: 'current' });
+      if (session) {
+        await checkSession();
+      }
     } catch (error) {
       console.error('Failed to refresh session:', error);
     }
