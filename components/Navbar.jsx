@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useUserRole } from '@/hooks/useUserRole';
+import NavbarMorphism from '@/ui/NavbarMorphism';
 
 // Define navigation links based on user role
 const getNavLinks = (user, role) => {
   if (!user) {
     return [
       { href: '/send', label: 'Send' },
-      { href: '/travel', label: 'Travel' },
+      { href: '/travel', label: 'Become a Traveler' },
     ];
   }
 
@@ -49,27 +50,9 @@ const Navbar = () => {
   const { user } = useAuth();
   const { role, loading } = useUserRole();
 
-  // Show loading skeleton while checking role
   if (loading) {
     return (
-      <div className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-6">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-10 w-32 bg-gray-200 rounded-full animate-pulse"></div>
-            </div>
-            <div className="md:hidden">
-              <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <NavbarMorphism />
     );
   }
 
@@ -79,9 +62,9 @@ const Navbar = () => {
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6 lg:px-6">
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
+         
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-[#3A0A21]">
+            <span className="text-xl font-bold text-[#3A0A21]">
               Carrydey
             </span>
           </Link>
@@ -94,15 +77,15 @@ const Navbar = () => {
 
             {user ? (
               <Link
-                href="/dashboard"
-                className="bg-white/5 hover:text-white hover:bg-[#3A0A21] transition-colors px-3 py-2 shadow rounded-xl font-medium"
+                href="/hub"
+                className="bg-white/5 hover:text-white hover:bg-[#3A0A21] transition-colors p-1.5 shadow rounded-xl font-medium"
               >
-                Dashboard
+                My Hub
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="bg-[#3A0A21] text-white px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors font-medium"
+                className="bg-[#3A0A21] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors font-semibold"
               >
                 Get Started
               </Link>
@@ -127,22 +110,22 @@ const Navbar = () => {
                 href={link.href}
                 label={link.label}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block"
+                className="block font-medium"
               />
             ))}
 
             {user ? (
               <Link
-                href="/dashboard"
+                href="/hub"
                 className="block bg-white/95 backdrop-blur-sm border hover:text-white hover:bg-[#3A0A21] transition-colors px-3 py-2 shadow rounded-xl font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Dashboard
+                My Hub
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="block bg-[#3A0A21] text-white px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors font-medium text-center"
+                className="block bg-[#3A0A21] text-white text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Get Started

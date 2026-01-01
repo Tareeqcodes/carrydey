@@ -14,11 +14,12 @@ export default function Page() {
       <section className="py-16 bg-gray-50 border-y border-gray-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-4">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#3A0A21] mb-4">
-              Why Choose Carrydey?
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-lg md:text-3xl font-bold text-[#3A0A21] mb-4">
               The smarter way to send packages across Nigeria
+            </h2>
+            <p className="text-gray-600 text-sm md:text-md max-w-2xl mx-auto">
+              Experience the future of delivery with our trusted community of
+              travelers and lightning-fast service.
             </p>
           </div>
             
@@ -27,7 +28,7 @@ export default function Page() {
               <div className="w-14 h-14 bg-[#3A0A21]/10 rounded-full flex items-center justify-center mb-4">
                 <MapPin className="w-7 h-7 text-[#3A0A21]" />
               </div>
-              <h3 className="text-xl font-bold text-[#3A0A21] mb-3">
+              <h3 className="text-lg font-bold text-[#3A0A21] mb-3">
                 Find Travelers Heading Your Way
               </h3>
               <p className="text-gray-600">
@@ -40,7 +41,7 @@ export default function Page() {
               <div className="w-14 h-14 bg-[#3A0A21]/10 rounded-full flex items-center justify-center mb-4">
                 <Clock className="w-7 h-7 text-[#3A0A21]" />
               </div>
-              <h3 className="text-xl font-bold text-[#3A0A21] mb-3">
+              <h3 className="text-lg font-bold text-[#3A0A21] mb-3">
                 Lightning Fast Delivery
               </h3>
               <p className="text-gray-600">
@@ -53,7 +54,7 @@ export default function Page() {
               <div className="w-14 h-14 bg-[#3A0A21]/10 rounded-full flex items-center justify-center mb-4">
                 <Users className="w-7 h-7 text-[#3A0A21]" />
               </div>
-              <h3 className="text-xl font-bold text-[#3A0A21] mb-3">
+              <h3 className="text-lg font-bold text-[#3A0A21] mb-3">
                 Community You Can Trust
               </h3>
               <p className="text-gray-600">

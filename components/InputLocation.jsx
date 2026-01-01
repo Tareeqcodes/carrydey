@@ -8,6 +8,7 @@ export default function InputLocation({
   pickup,
   dropoff,
   onCalculate,
+  showNextButton = false,
 }) {
   const [pickupAddress, setPickupAddress] = useState('');
   const [dropoffAddress, setDropoffAddress] = useState('');
@@ -196,14 +197,14 @@ export default function InputLocation({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 space-y-4">
       {/* Pickup Input */}
       <div className="relative">
-        <label className="block text-sm font-medium text-white mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Pickup Location
         </label>
-        <div className="flex items-center bg-white rounded-lg p-4 border-2 border-[#3A0A21]">
-          <div className="w-3 h-3 rounded-full bg-[#3A0A21] mr-3"></div>
+        <div className="relative ">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#3A0A21]" />
           {AddressAutofill ? (
             <AddressAutofill
               accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
@@ -220,7 +221,7 @@ export default function InputLocation({
                 value={pickupAddress}
                 onChange={(e) => handleInputChange(e.target.value, 'pickup')}
                 autoComplete="address-line1"
-                className="flex-1 bg-transparent outline-none text-[#3A0A21] placeholder-gray-500 w-full"
+                className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent outline-none transition-all text-gray-900"
               />
             </AddressAutofill>
           ) : (
@@ -262,11 +263,11 @@ export default function InputLocation({
 
       {/* Dropoff Input */}
       <div className="relative">
-        <label className="block text-sm font-medium text-white mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Dropoff Location
         </label>
-        <div className="flex items-center bg-white rounded-lg p-4 border-2 border-[#3A0A21]">
-          <div className="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
           {AddressAutofill ? (
             <AddressAutofill
               accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
@@ -283,7 +284,7 @@ export default function InputLocation({
                 value={dropoffAddress}
                 onChange={(e) => handleInputChange(e.target.value, 'dropoff')}
                 autoComplete="address-line1"
-                className="flex-1 bg-transparent outline-none text-[#3A0A21] placeholder-gray-500 w-full"
+                className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent outline-none transition-all text-gray-900"
               />
             </AddressAutofill>
           ) : (
@@ -323,23 +324,21 @@ export default function InputLocation({
         )}
       </div>
 
-      {/* Calculate Delivery Button */}
-      {pickup && dropoff && (
+      {showNextButton && pickup && dropoff && (
         <button
           onClick={onCalculate}
           disabled={!pickup || !dropoff || calculatingRoute}
           className="w-full py-4 bg-[#3A0A21] text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-90 transition"
         >
-          {calculatingRoute ? 'Calculating...' : 'Next'}
+          {calculatingRoute ? 'Processing...' : 'Next'}
         </button>
       )}
 
-      {/* Loading Indicator */}
       {calculatingRoute && (
         <div className="space-y-4">
           <div className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
         </div>
-      )}
+      )} 
     </div>
   );
 }

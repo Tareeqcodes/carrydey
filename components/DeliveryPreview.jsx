@@ -139,8 +139,8 @@ export default function DeliveryPreview({
               className="w-full bg-[#3A0A21] hover:bg-[#4A0A31] text-white font-semibold py-4 rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl active:scale-[0.98]"
             >
               {loading
-                ? 'Processing...'
-                : 'Preview Delivery '}
+                ? 'Creating Delivery...'
+                : 'Confirm Delivery '}
             </button>
 
             <button

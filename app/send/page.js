@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import InputLocation from '@/components/InputLocation';
 import DeliveryPreview from '@/components/DeliveryPreview';
 import DeliveryReview from '@/components/DeliveryReview';
@@ -15,20 +15,27 @@ export default function CreateDelivery() {
   const [deliveryCreated, setDeliveryCreated] = useState(false);
   const [savedDelivery, setSavedDelivery] = useState(null);
   const { user } = useAuth();
-  
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#3A0A21] to-black text-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Please log in to send packages</h1>
-          <p className="text-lg mb-6">You need to be logged in to create a delivery.</p>
-          <a href="/login" className="bg-[#3A0A21] text-white px-6 py-3 rounded-full hover:bg-[#4A0A31] transition-colors font-medium">
-            Log In
-          </a>
-        </div>
-      </div>
-    );
-  }
+
+  // Check for location data passed from homepage
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('deliveryData');
+    if (storedData) {
+      try {
+        const data = JSON.parse(storedData);
+        setPickup(data.pickup);
+        setDropoff(data.dropoff);
+        setRouteData(data.routeData);
+        
+        if (data.pickup && data.dropoff && data.routeData) {
+          setShowPreview(true);
+        }
+        
+        sessionStorage.removeItem('deliveryData');
+      } catch (error) {
+        console.error('Error parsing stored delivery data:', error);
+      }
+    }
+  }, []);
 
   const handleLocationSelect = (type, location) => {
     if (type === 'pickup') {
@@ -57,55 +64,35 @@ export default function CreateDelivery() {
 
     setLoading(true);
     try {
-      // Prepare optimized data structure without routePolyline
       const deliveryData = {
-        // Pickup location
         pickupAddress: pickup.place_name?.substring(0, 500) || 'Pickup location',
         pickupLat: pickup.geometry.coordinates[1],
         pickupLng: pickup.geometry.coordinates[0],
-        
-        // Dropoff location
         dropoffAddress: dropoff.place_name?.substring(0, 500) || 'Dropoff location',
         dropoffLat: dropoff.geometry.coordinates[1],
         dropoffLng: dropoff.geometry.coordinates[0],
-        
-        // Route information (essential data only)
         distance: parseFloat(routeData.distance),
         duration: parseInt(routeData.duration),
         estimatedFare: parseInt(routeData.estimatedFare),
-        
-        // Status
         status: 'pending',
       };
 
-      console.log('Attempting to save delivery:', deliveryData);
+      const result = await tablesDB.createRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId: ID.unique(),
+        data: deliveryData,
+      });
 
-      // Save to Appwrite
-      const result = await tablesDB.createRow(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        ID.unique(),
-        deliveryData
-      );
-
-      console.log('Delivery saved successfully:', result);
-      
-      // Transform result to match expected format for DeliveryReview
       const formattedDelivery = {
         ...result,
         pickup: {
           address: result.pickupAddress,
-          coordinates: {
-            lat: result.pickupLat,
-            lng: result.pickupLng,
-          },
+          coordinates: { lat: result.pickupLat, lng: result.pickupLng },
         },
         dropoff: {
           address: result.dropoffAddress,
-          coordinates: {
-            lat: result.dropoffLat,
-            lng: result.dropoffLng,
-          },
+          coordinates: { lat: result.dropoffLat, lng: result.dropoffLng },
         },
         route: {
           distance: result.distance,
@@ -151,19 +138,25 @@ export default function CreateDelivery() {
   }
 
   return (
-    <div className="min-h-screen mt-20 bg-gradient-to-br from-[#3A0A21] to-black text-white">
-      <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-center pt-10 mb-6">
-          Book Your Delivery
-        </h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mt-20 mx-auto px-6 py-16">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#3A0A21] mb-4">
+            Send Your Delivery
+          </h1>
+          <p className="text-sm md:text-lg text-gray-600">
+            Enter your pickup and dropoff locations to get started
+          </p>
+        </div>
+
         <div>
           <InputLocation
             onLocationSelect={handleLocationSelect}
             onRouteCalculated={handleRouteCalculated}
             pickup={pickup}
             dropoff={dropoff}
-            routeData={routeData}
             onCalculate={handleShowPreview}
+            showNextButton={true}
           />
         </div>
       </div>
