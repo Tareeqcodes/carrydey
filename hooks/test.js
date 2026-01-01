@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import {tableDb, ID} from '@/lib/config/Appwriteconfig';
+import { tableDb, ID, storage } from '@/lib/config/Appwriteconfig';
 
 const useOnboardingForm = () => {
   const [formData, setFormData] = useState({
@@ -8,27 +8,22 @@ const useOnboardingForm = () => {
     organizationType: '',
     registrationNumber: '',
     yearEstablished: '',
-    website: '',
+    website: '', 
     contactPerson: '',
     email: '',
     phone: '',
     alternatePhone: '',
-    address: {
       street: '',
       city: '',
       state: '',
       postalCode: '',
-    },
     businessType: 'private',
     vehicleTypes: [],
     serviceAreas: [],
     services: [],
-    documents: {
       registrationCertificate: null,
       taxCertificate: null,
-      insuranceCertificate: null,
       ownerId: null,
-    },
     termsAccepted: false,
     privacyPolicyAccepted: false,
     dataProcessingAgreement: false,
@@ -36,6 +31,7 @@ const useOnboardingForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field, value) => {
     if (field.includes('.')) {
@@ -117,6 +113,8 @@ const useOnboardingForm = () => {
           newErrors['address.street'] = 'Street address is required';
         if (!formData.address.city.trim())
           newErrors['address.city'] = 'City is required';
+        if (!formData.address.state.trim())
+          newErrors['address.state'] = 'State is required';
         if (!formData.address.postalCode.trim())
           newErrors['address.postalCode'] = 'Postal code is required';
         break;
@@ -126,8 +124,6 @@ const useOnboardingForm = () => {
         if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
           newErrors.vehicleTypes = 'Please select at least one vehicle type';
         }
-        // if (formData.serviceAreas.length === 0)
-        //   newErrors.serviceAreas = 'Please select at least one service area';
         if (formData.services.length === 0)
           newErrors.services = 'Please select at least one service';
         break;
@@ -151,15 +147,111 @@ const useOnboardingForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Upload file to Appwrite Storage
+  const uploadFile = async (file, bucketId) => {
+    try {
+      const fileId = ID.unique();
+      const response = await storage.createFile(bucketId, fileId, file);
+      return response.$id;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  };
+
+  // Submit form data to Appwrite
+  const submitToAppwrite = async (userId) => {
+    setIsSubmitting(true);
+    try {
+      // Upload documents first (if storage is configured)
+      let registrationCertificateId = null;
+      let taxCertificateId = null;
+      let insuranceCertificateId = null;
+
+      const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_LISENCE_BUCKET_ID; 
+
+      if (formData.documents.registrationCertificate) {
+        registrationCertificateId = await uploadFile(
+          formData.documents.registrationCertificate,
+          BUCKET_ID
+        );
+      }
+
+      if (formData.documents.taxCertificate) {
+        taxCertificateId = await uploadFile(
+          formData.documents.taxCertificate,
+          BUCKET_ID
+        );
+      }
+
+      // Prepare data for Appwrite
+      const organizationData = {
+        name: formData.organizationName,
+        type: formData.organizationType,
+        registrationNumber: formData.registrationNumber,
+        yearEstablished: parseInt(formData.yearEstablished),
+        website: formData.website || null,
+        contactPerson: formData.contactPerson,
+        email: formData.email,
+        phone: parseInt(formData.phone.replace(/\D/g, '')), // Remove non-digits
+        alternatePhone: formData.alternatePhone
+          ? parseInt(formData.alternatePhone.replace(/\D/g, ''))
+          : null,
+        address: formData.address.street,
+        city: formData.address.city || null,
+        state: formData.address.state,
+        postalCode: formData.address.postalCode
+          ? parseInt(formData.address.postalCode)
+          : null,
+        businessType: formData.businessType,
+        employeeCount: null, // Add if you collect this
+        fleetSize: null, // Add if you collect this
+        serviceAreas: formData.serviceAreas.length > 0 
+          ? JSON.stringify(formData.serviceAreas) 
+          : null,
+        services: formData.services.length > 0 
+          ? JSON.stringify(formData.services) 
+          : null,
+        registrationCertificate: registrationCertificateId,
+        taxCertificate: taxCertificateId,
+        insuranceCertificate: insuranceCertificateId,
+        ownerId: userId,
+        verificationStatus: 'pending',
+        verificationNotes: null,
+        status: true,
+      };
+
+      // Create document in Appwrite
+      const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID; 
+      const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID; 
+
+      const response = await tableDb.createDocument({
+        database: DATABASE_ID,
+        collection: COLLECTION_ID,
+        documentId: ID.unique(),
+        data: organizationData
+      });
+
+      setIsSubmitting(false);
+      return { success: true, data: response };
+    } catch (error) {
+      console.error('Error submitting to Appwrite:', error);
+      setIsSubmitting(false);
+      return { success: false, error: error.message };
+    }
+  };
+
   return {
     formData,
     setFormData,
     errors,
     setErrors,
+    isSubmitting,
     handleInputChange,
     handleServiceToggle,
     handleFileUpload,
     validateStep,
+    submitToAppwrite,
   };
 };
 
