@@ -39,21 +39,6 @@ const BusinessDetailsStep = ({
     'Box Truck',
   ];
 
-  const handleAddServiceArea = (e) => {
-    if (e.key === 'Enter' && e.target.value.trim()) {
-      e.preventDefault();
-      onInputChange('serviceAreas', [
-        ...formData.serviceAreas,
-        e.target.value.trim(),
-      ]);
-      e.target.value = '';
-    }
-  };
-
-  const handleRemoveServiceArea = (index) => {
-    const newAreas = formData.serviceAreas.filter((_, i) => i !== index);
-    onInputChange('serviceAreas', newAreas);
-  };
 
   const handleAddVehicleType = (vehicleType) => {
     if (!formData.vehicleTypes?.includes(vehicleType)) {
@@ -230,41 +215,6 @@ const BusinessDetailsStep = ({
             <p className="mt-2 text-sm text-red-600">{errors.vehicleTypes}</p>
           )}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Service Areas
-          </label>
-          <div className="space-y-2">
-            <input
-              type="text"
-              placeholder="Add service areas (e.g., New York City, Tri-State Area)"
-              onKeyDown={handleAddServiceArea}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent"
-            />
-            <div className="flex flex-wrap gap-2">
-              {formData.serviceAreas.map((area, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-[#3A0A21] bg-opacity-10 text-[#3A0A21] rounded-full text-sm"
-                >
-                  {area}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveServiceArea(index)}
-                    className="ml-1 hover:bg-[#3A0A21] hover:bg-opacity-20 rounded-full p-0.5"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-          {errors.serviceAreas && (
-            <p className="mt-2 text-sm text-red-600">{errors.serviceAreas}</p>
-          )}
-        </div>
-
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
             Services Offered

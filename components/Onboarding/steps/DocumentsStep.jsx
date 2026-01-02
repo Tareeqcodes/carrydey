@@ -16,7 +16,7 @@ const DocumentsStep = ({ formData, errors, onFileUpload }) => {
       error: errors.taxCertificate
     },
     {
-      id: 'ownerId',
+      id: 'ownerNiN',
       label: 'Owner/Director ID (Optional)',
       description: 'Government-issued ID of owner/director'
     }
@@ -40,10 +40,10 @@ const DocumentsStep = ({ formData, errors, onFileUpload }) => {
                 <FileUpload
                   label={doc.label}
                   description={doc.description}
-                  value={formData.documents[doc.id]}
+                  value={formData[doc.id]} 
                   onChange={(file) => onFileUpload(doc.id, file)}
                   error={doc.error}
-                  required={!doc.id.includes('Optional')}
+                  required={doc.id === 'registrationCertificate' || doc.id === 'taxCertificate'}
                   className="mb-0"
                 />
               </div>

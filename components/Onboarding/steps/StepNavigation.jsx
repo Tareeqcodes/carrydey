@@ -7,7 +7,7 @@ const StepNavigation = ({
   onPrevious, 
   onNext, 
   onSubmit,
-  loading = false 
+  isSubmitting = false 
 }) => {
   return (
     <>
@@ -15,19 +15,20 @@ const StepNavigation = ({
         <Button
           variant="ghost"
           onClick={onPrevious}
-          disabled={currentStep === 1}
+          disabled={currentStep === 1 || isSubmitting}
         >
           Previous
         </Button>
         
         <Button
           onClick={currentStep === 6 ? onSubmit : onNext}
-          loading={loading}
+          loading={isSubmitting}  // Changed from 'loading' to 'isSubmitting'
+          disabled={isSubmitting}  // Add disabled state
           className="flex items-center gap-2"
         >
           {currentStep === 6 ? (
             <>
-              Submit Application
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
               <ArrowRight className="w-5 h-5" />
             </>
           ) : (
@@ -38,7 +39,7 @@ const StepNavigation = ({
           )}
         </Button>
       </div>
-
+      
       {/* Progress dots for mobile */}
       <div className="lg:hidden flex justify-center gap-2 mt-8">
         {[1, 2, 3, 4, 5, 6].map((step) => (
@@ -54,7 +55,7 @@ const StepNavigation = ({
           ></div>
         ))}
       </div>
-
+      
       {/* Bottom note */}
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500">

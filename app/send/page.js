@@ -5,6 +5,7 @@ import DeliveryPreview from '@/components/DeliveryPreview';
 import DeliveryReview from '@/components/DeliveryReview';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
+import NotUser from '@/hooks/NotUser';
 
 export default function CreateDelivery() {
   const [pickup, setPickup] = useState(null);
@@ -36,6 +37,10 @@ export default function CreateDelivery() {
       }
     }
   }, []);
+
+  if (!user) {
+    return <NotUser />;
+  }
 
   const handleLocationSelect = (type, location) => {
     if (type === 'pickup') {

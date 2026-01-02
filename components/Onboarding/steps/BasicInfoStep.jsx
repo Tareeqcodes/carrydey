@@ -1,4 +1,3 @@
-
 import { Building2, Globe, AlertCircle } from 'lucide-react';
 
 const BasicInfoStep = ({ formData, errors, onInputChange }) => {
@@ -11,14 +10,18 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
     'Same-day Delivery',
     'Medical Courier',
     'Food Delivery',
-    'Other'
+    'Other',
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg md:text-2xl font-bold text-gray-900">Basic Organization Information</h2>
-        <p className="text-gray-600 text-sm md:text-lg mt-2">Tell us about your logistics company</p>
+        <h2 className="text-lg md:text-2xl font-bold text-gray-900">
+          Basic Organization Information
+        </h2>
+        <p className="text-gray-600 text-sm md:text-lg mt-2">
+          Tell us about your logistics company
+        </p>
       </div>
 
       <div className="space-y-4">
@@ -31,7 +34,9 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
             <input
               type="text"
               value={formData.organizationName}
-              onChange={(e) => onInputChange('organizationName', e.target.value)}
+              onChange={(e) =>
+                onInputChange('organizationName', e.target.value)
+              }
               className={`pl-10 w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent ${
                 errors.organizationName ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -58,8 +63,10 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
             }`}
           >
             <option value="">Select type</option>
-            {organizationTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
+            {organizationTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
             ))}
           </select>
           {errors.organizationType && (
@@ -71,24 +78,6 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Registration Number
-            </label>
-            <input
-              type="text"
-              value={formData.registrationNumber}
-              onChange={(e) => onInputChange('registrationNumber', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent ${
-                errors.registrationNumber ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="e.g., REG123456"
-            />
-            {errors.registrationNumber && (
-              <p className="mt-1 text-sm text-red-600">{errors.registrationNumber}</p>
-            )}
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Year Established
@@ -105,24 +94,26 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
               placeholder="YYYY"
             />
             {errors.yearEstablished && (
-              <p className="mt-1 text-sm text-red-600">{errors.yearEstablished}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.yearEstablished}
+              </p>
             )}
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Website (Optional)
-          </label>
-          <div className="relative">
-            <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="url"
-              value={formData.website}
-              onChange={(e) => onInputChange('website', e.target.value)}
-              className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent"
-              placeholder="https://yourcompany.com"
-            />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Website (Optional)
+            </label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="url"
+                value={formData.website}
+                onChange={(e) => onInputChange('website', e.target.value)}
+                className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent"
+                placeholder="https://yourcompany.com"
+              />
+            </div>
           </div>
         </div>
       </div>

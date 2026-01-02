@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-// import {tableDb, ID} from '@/lib/config/Appwriteconfig';
+import { tablesDB, ID, storage } from '@/lib/config/Appwriteconfig';
+import { useAuth } from './Authcontext';
 
 const useOnboardingForm = () => {
   const [formData, setFormData] = useState({
@@ -11,24 +12,19 @@ const useOnboardingForm = () => {
     website: '',
     contactPerson: '',
     email: '',
+
+    street: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    businessType: '',
+    vehicleTypes: [],
+    services: [],
+    registrationCertificate: null,
+    taxCertificate: null,
+    ownerNiN: null,
     phone: '',
     alternatePhone: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      postalCode: '',
-    },
-    businessType: 'private',
-    vehicleTypes: [],
-    serviceAreas: [],
-    services: [],
-    documents: {
-      registrationCertificate: null,
-      taxCertificate: null,
-      insuranceCertificate: null,
-      ownerId: null,
-    },
     termsAccepted: false,
     privacyPolicyAccepted: false,
     dataProcessingAgreement: false,
@@ -36,6 +32,8 @@ const useOnboardingForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
   const handleInputChange = (field, value) => {
     if (field.includes('.')) {
@@ -72,10 +70,7 @@ const useOnboardingForm = () => {
     if (file && file.size <= 5 * 1024 * 1024) {
       setFormData((prev) => ({
         ...prev,
-        documents: {
-          ...prev.documents,
-          [documentType]: file,
-        },
+        [documentType]: file,
       }));
     }
   };
@@ -91,8 +86,6 @@ const useOnboardingForm = () => {
           newErrors.organizationName = 'Organization name is required';
         if (!formData.organizationType)
           newErrors.organizationType = 'Please select organization type';
-        if (!formData.registrationNumber.trim())
-          newErrors.registrationNumber = 'Registration number is required';
         if (
           !formData.yearEstablished ||
           formData.yearEstablished < 1900 ||
@@ -113,12 +106,11 @@ const useOnboardingForm = () => {
           newErrors.phone = 'Please enter a valid phone number';
         break;
       case 3:
-        if (!formData.address.street.trim())
-          newErrors['address.street'] = 'Street address is required';
-        if (!formData.address.city.trim())
-          newErrors['address.city'] = 'City is required';
-        if (!formData.address.postalCode.trim())
-          newErrors['address.postalCode'] = 'Postal code is required';
+        if (!formData.street.trim())
+          newErrors['street'] = 'Street address is required';
+        if (!formData.city.trim()) newErrors['city'] = 'City is required';
+        if (!formData.state.trim()) newErrors.state = 'State is required';
+
         break;
       case 4:
         if (!formData.businessType)
@@ -126,16 +118,14 @@ const useOnboardingForm = () => {
         if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
           newErrors.vehicleTypes = 'Please select at least one vehicle type';
         }
-        // if (formData.serviceAreas.length === 0)
-        //   newErrors.serviceAreas = 'Please select at least one service area';
         if (formData.services.length === 0)
           newErrors.services = 'Please select at least one service';
         break;
       case 5:
-        if (!formData.documents.registrationCertificate)
+        if (!formData.registrationCertificate)
           newErrors.registrationCertificate =
             'Registration certificate is required';
-        if (!formData.documents.taxCertificate)
+        if (!formData.taxCertificate)
           newErrors.taxCertificate = 'Tax certificate is required';
         break;
       case 6:
@@ -151,15 +141,106 @@ const useOnboardingForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Upload file to Appwrite Storage
+  const uploadFile = async (file, bucketId) => {
+    try {
+      const response = await storage.createFile({
+        bucketId: bucketId,
+        fileId: ID.unique(),
+        file,
+      });
+      return response.$id;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  };
+
+  const submitToAppwrite = async () => {
+    setIsSubmitting(true);
+    try {
+      let registrationCertificateId = null;
+      let taxCertificateId = null;
+      let ownerNiN = null;
+      
+      const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_LISENCE_BUCKET_ID;
+      if (formData.registrationCertificate) {
+        registrationCertificateId = await uploadFile(
+          formData.registrationCertificate,
+          BUCKET_ID
+        );
+      }
+
+      if (formData.taxCertificate) {
+        taxCertificateId = await uploadFile(formData.taxCertificate, BUCKET_ID);
+      }
+      if (formData.ownerNiN) {
+        ownerNiN = await uploadFile(formData.ownerNiN, BUCKET_ID);
+      }
+
+
+      // Prepare data for Appwrite
+      const organizationData = {
+        name: formData.organizationName,
+        type: formData.organizationType,
+        yearEstablished: parseInt(formData.yearEstablished),
+        website: formData.website || null,
+        contactPerson: formData.contactPerson,
+        email: formData.email,
+
+        address: formData.street,
+        city: formData.city || null,
+        state: formData.state,
+        businessType: formData.businessType,
+        vehicleTypes:
+          formData.vehicleTypes.length > 0
+            ? JSON.stringify(formData.vehicleTypes)
+            : null,
+        services:
+          formData.services.length > 0
+            ? JSON.stringify(formData.services)
+            : null,
+        registrationCertificate: registrationCertificateId,
+        taxCertificate: taxCertificateId,
+        verificationStatus: 'pending',
+        verificationNotes: null,
+        ownerNiN: ownerNiN,
+        phone: formData.phone,
+        alternatePhone: formData.alternatePhone,
+        userId: user.$id,
+      };
+
+      // Create document in Appwrite
+      const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+      const cll = process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID;
+
+      const response = await tablesDB.createRow({
+        databaseId: db,
+        tableId: cll,
+        rowId: ID.unique(),
+        data: organizationData,
+      });
+
+      setIsSubmitting(false);
+      return { success: true, data: response };
+    } catch (error) {
+      console.error('Error submitting to Appwrite:', error);
+      setIsSubmitting(false);
+      return { success: false, error: error.message };
+    }
+  };
+
   return {
     formData,
     setFormData,
     errors,
     setErrors,
+    isSubmitting,
     handleInputChange,
     handleServiceToggle,
     handleFileUpload,
     validateStep,
+    submitToAppwrite,
   };
 };
 

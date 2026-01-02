@@ -10,43 +10,44 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
       </div>
 
       <div className="space-y-4">
-        <Input
+         <Input
           label="Street Address"
-          value={formData.address.street}
-          onChange={(e) => onInputChange('address.street', e.target.value)}
+          value={formData.street} // Changed from formData.address.street
+          onChange={(e) => onInputChange('street', e.target.value)} // Changed from 'address.street'
           placeholder="123 Business Street"
-          error={errors['address.street']}
+          error={errors['street']} // Changed from errors['address.street']
           required
         />
+        
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="City"
-            value={formData.address.city}
-            onChange={(e) => onInputChange('address.city', e.target.value)}
+            value={formData.city}
+            onChange={(e) => onInputChange('city', e.target.value)}
             placeholder="New York"
-            error={errors['address.city']}
+            error={errors['city']}
             required
           />
 
           <Input
             label="State / Province"
-            value={formData.address.state}
-            onChange={(e) => onInputChange('address.state', e.target.value)}
+            value={formData.state}
+            onChange={(e) => onInputChange('state', e.target.value)}
             placeholder="NY"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Postal Code"
-            value={formData.address.postalCode}
-            onChange={(e) => onInputChange('address.postalCode', e.target.value)}
+            value={formData.postalCode}
+            onChange={(e) => onInputChange('postalCode', e.target.value)}
             placeholder="10001"
-            error={errors['address.postalCode']}
+            error={errors['postalCode']}
             required
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

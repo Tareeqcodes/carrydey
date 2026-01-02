@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,10 +19,11 @@ import Notification from "@/components/setting/Notification";
 import Setting from "@/components/setting/Setting";
 import Help from "@/components/setting/Help";
 import VerificationCenter from "@/components/setting/VerificationCenter";
+import NotUser from "@/hooks/NotUser";
 
 const SettingsComponent = () => {
   const [activeSection, setActiveSection] = useState(null);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const menuItems = [
     { 
@@ -92,6 +92,10 @@ const SettingsComponent = () => {
     },
   };
 
+  if(!user){
+    return <NotUser />
+  }
+
 
   const renderSectionContent = (sectionId) => {
     const content = {
@@ -120,7 +124,6 @@ const SettingsComponent = () => {
 
   return (
     <div className="max-w-full my-20 mx-4 md:mx-48 min-h-screen relative overflow-hidden">
-      {/* Elegant Background Pattern */}
       <div 
         className="absolute inset-0 opacity-5"
         style={{
@@ -130,14 +133,13 @@ const SettingsComponent = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-br from-white via-[#F8F5F7] to-[#F0EBEF]" />
 
-      {/* Main Settings Screen */}
+ 
       <div className="relative z-10 p-2 md:p-6 space-y-8">
 
-        {/* Profile Header */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-[#3A0A21] rounded-xl flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+              <Settings className="w-8 h-8 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-[#3A0A21]">Settings</h2>
@@ -146,7 +148,6 @@ const SettingsComponent = () => {
           </div>
         </div>
 
-        {/* Menu Items */}
         <div className="space-y-3">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
@@ -177,7 +178,6 @@ const SettingsComponent = () => {
           })}
         </div>
 
-        {/* Logout Button */}
         <motion.button
           onClick={logout}
           className="w-full bg-[#3A0A21] text-white py-4 rounded-xl font-semibold flex items-center justify-center space-x-3 hover:bg-[#4A1A31] transition-colors"
@@ -189,7 +189,6 @@ const SettingsComponent = () => {
         </motion.button>
       </div>
 
-      {/* Slide-in Panel */}
       <AnimatePresence>
         {activeSection && (
           <motion.div
@@ -200,7 +199,6 @@ const SettingsComponent = () => {
             exit="exit"
             className="absolute top-0 left-0 w-full h-full z-20"
           >
-            {/* Panel Background */}
             <div 
               className="absolute inset-0 opacity-3"
               style={{
@@ -211,7 +209,7 @@ const SettingsComponent = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-white via-[#FCFAFC] to-[#F8F5F7]" />
             
             <div className="relative z-10 p-4 md:p-6 h-full overflow-y-auto">
-              {/* Header */}
+             
               <div className="bg-white p-4 rounded-xl border border-gray-200 mb-8">
                 <div className="flex items-center space-x-4">
                   <button
@@ -224,7 +222,6 @@ const SettingsComponent = () => {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="pb-8">
                 <div className="max-w-3xl mx-auto">
                   {renderSectionContent(activeSection)}

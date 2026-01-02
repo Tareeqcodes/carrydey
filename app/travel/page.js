@@ -11,7 +11,7 @@ import SuccessStep from '@/components/Onboarding/steps/SuccessStep';
 import StepNavigation from '@/components/Onboarding/steps/StepNavigation';
 import useOnboardingForm from '@/hooks/useOnboardingForm';
 import { useAuth } from '@/hooks/Authcontext';
-
+import NotUser from '@/hooks/NotUser';
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const { user } = useAuth();
@@ -23,6 +23,8 @@ const OnboardingPage = () => {
     handleServiceToggle,
     handleFileUpload,
     validateStep,
+     submitToAppwrite,
+     isSubmitting
   } = useOnboardingForm();
 
   const handleNext = () => {
@@ -38,23 +40,21 @@ const OnboardingPage = () => {
   const handleSubmit = async () => {
     if (validateStep(6)) {
       console.log('Submitting form data:', formData);
-      alert('Organization profile submitted successfully!');
-      setCurrentStep(7);
+
+      const result = await submitToAppwrite(); 
+      if (result.success) {
+        console.log('Submission successful:', result.data);
+        alert('Organization profile submitted successfully!');
+        setCurrentStep(7);
+      } else {
+        console.error('Submission failed:', result.error);
+        alert(`Submission failed: ${result.error}`);
+      }
     }
   };
 
    if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#3A0A21] to-black text-white">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Please log in to travel</h1>
-          <p className="text-lg mb-6">You need to be logged in to create a Traveler profile.</p>
-          <a href="/login" className="bg-[#3A0A21] text-white px-6 py-3 rounded-full hover:bg-[#4A0A31] transition-colors font-medium">
-            Log In
-          </a>
-        </div>
-      </div>
-    );
+    return <NotUser />;
   }
 
   const renderStep = () => {
@@ -125,6 +125,7 @@ const OnboardingPage = () => {
             onPrevious={handlePrevious}
             onNext={handleNext}
             onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
           />
         )}
       </div>
