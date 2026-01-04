@@ -1,8 +1,8 @@
-import {  Databases, Query, ID } from 'node-appwrite';
+import { Databases, Query, ID } from 'node-appwrite';
 
 export async function saveTransaction(transactionData, client, variables) {
   const databases = new Databases(client);
-  
+
   const document = {
     userId: transactionData.userId,
     amount: transactionData.amount,
@@ -15,7 +15,7 @@ export async function saveTransaction(transactionData, client, variables) {
     balanceAfter: transactionData.balanceAfter || null,
     metadata: transactionData.metadata || {},
   };
-  
+
   return await databases.createDocument(
     variables['APPWRITE_DATABASE_ID'],
     variables['APPWRITE_TRANSACTIONS_COLLECTION_ID'],
@@ -24,23 +24,29 @@ export async function saveTransaction(transactionData, client, variables) {
   );
 }
 
-export async function updateWalletBalance(userId, amount, type, client, variables) {
+export async function updateWalletBalance(
+  userId,
+  amount,
+  type,
+  client,
+  variables
+) {
   const databases = new Databases(client);
-  
+
   // Get current wallet
   const wallets = await databases.listDocuments(
     variables['APPWRITE_DATABASE_ID'],
     variables['APPWRITE_WALLETS_COLLECTION_ID'],
     [Query.equal('userId', userId)]
   );
-  
+
   if (wallets.documents.length === 0) {
     throw new Error('Wallet not found');
   }
-  
+
   const wallet = wallets.documents[0];
   let newBalance = wallet.balance;
-   
+
   // Update balance based on type
   if (type === 'credit') {
     newBalance = wallet.balance + amount;
@@ -50,7 +56,7 @@ export async function updateWalletBalance(userId, amount, type, client, variable
       throw new Error('Insufficient balance');
     }
   }
-  
+
   // Update wallet
   await databases.updateDocument(
     variables['APPWRITE_DATABASE_ID'],
@@ -60,32 +66,32 @@ export async function updateWalletBalance(userId, amount, type, client, variable
       balance: newBalance,
     }
   );
-  
+
   return newBalance;
 }
 
 export async function getUserWallet(userId, client, variables) {
   const databases = new Databases(client);
-  
+
   const wallets = await databases.listDocuments(
     variables['APPWRITE_DATABASE_ID'],
     variables['APPWRITE_WALLETS_COLLECTION_ID'],
     [Query.equal('userId', userId)]
   );
-  
+
   return wallets.documents[0] || null;
 }
- 
+
 export async function getTransactions(userId, limit = 50, client, variables) {
   const databases = new Databases(client);
-  
-  return await databases.listDocuments( 
+
+  return await databases.listDocuments(
     variables['APPWRITE_DATABASE_ID'],
     variables['APPWRITE_TRANSACTIONS_COLLECTION_ID'],
     [
       Query.equal('userId', userId),
-      Query.orderDesc('createdAt'),
-      Query.limit(limit)
+      Query.orderDesc('$createdAt'),
+      Query.limit(limit),
     ]
   );
 }

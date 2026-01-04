@@ -112,7 +112,6 @@ export async function handleWebhook(req, res, client) {
       transaction.$id,
       {
         status: eventData.paymentStatus.toLowerCase(),
-        completedAt: new Date().toISOString(),
         metadata: eventData
       }
     );
