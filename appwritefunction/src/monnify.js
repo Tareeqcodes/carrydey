@@ -1,8 +1,7 @@
 import { Databases, Query, ID } from 'node-appwrite';
 import axios from 'axios';
 import crypto from 'crypto';
-import { saveTransaction, updateWalletBalance } from './database.js';
-// import { generateTransactionReference } from './utils.js';
+import { saveTransaction, updateWalletBalance } from './database.js'; // ← Fixed: singular
 
 class MonnifyService {
   constructor(apiKey, secretKey, contractCode, baseUrl = 'https://api.monnify.com') {
@@ -75,163 +74,6 @@ class MonnifyService {
   }
 }
 
-export async function createPayout(payoutData, client, variables) {
-  try {
-    const { userId, amount, bankCode, accountNumber, accountName } = payoutData;
-    
-    const monnify = new MonnifyService(
-      variables['MONNIFY_API_KEY'],
-      variables['MONNIFY_SECRET_KEY'],
-      variables['MONNIFY_CONTRACT_CODE']
-    );
-    
-    // First check and debit wallet
-    const debitResult = await debitWallet({
-      userId,
-      amount,
-      description: 'Payout to bank account'
-    }, client, variables);
-    
-    if (!debitResult.success) {
-      return debitResult;
-    }
-    
-    // Initialize Monnify transfer
-    const accessToken = await monnify.getAccessToken();
-    const reference = `PAYOUT_${userId}_${Date.now()}`;
-    
-    const transferResponse = await axios.post(
-      `${monnify.baseUrl}/api/v2/disbursements/single`,
-      {
-        amount: amount,
-        reference: reference,
-        narration: `Payout to ${accountName}`,
-        destinationBankCode: bankCode,
-        destinationAccountNumber: accountNumber,
-        destinationAccountName: accountName,
-        currency: 'NGN'
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    // Save payout transaction
-    await saveTransaction({
-      userId,
-      amount,
-      type: 'payout',
-      status: 'processing',
-      reference: reference,
-      paymentReference: transferResponse.data.responseBody.transactionReference,
-      description: `Payout to ${accountName} (${accountNumber})`,
-      balanceAfter: debitResult.newBalance,
-      metadata: transferResponse.data.responseBody
-    }, client, variables);
-    
-    return {
-      success: true,
-      transactionReference: reference,
-      message: 'Payout initiated successfully',
-      newBalance: debitResult.newBalance
-    };
-    
-  } catch (error) {
-    console.error('Payout error:', error);
-    return {
-      success: false,
-      error: error.response?.data?.message || error.message
-    };
-  }
-}
-
-export async function getVirtualAccount(userData, client, variables) {
-  try {
-    const { userId } = userData;
-    
-    const monnify = new MonnifyService(
-      variables['MONNIFY_API_KEY'],
-      variables['MONNIFY_SECRET_KEY'],
-      variables['MONNIFY_CONTRACT_CODE']
-    );
-    
-    const accessToken = await monnify.getAccessToken();
-    
-    // Generate unique account reference
-    const accountReference = `USER_${userId}`;
-    
-    const response = await axios.post(
-      `${monnify.baseUrl}/api/v2/bank-transfer/reserved-accounts`,
-      {
-        accountReference: accountReference,
-        accountName: `${userData.name} - TravelSend`,
-        currencyCode: 'NGN',
-        contractCode: monnify.contractCode,
-        customerEmail: userData.email,
-        customerName: userData.name,
-        getAllAvailableBanks: false,
-        preferredBanks: ['50515'] 
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    const accountDetails = response.data.responseBody.accounts[0];
-    
-    // Save virtual account info to user's wallet
-    const databases = new Databases(client);
-    
-    const wallets = await databases.listDocuments(
-      variables['APPWRITE_DATABASE_ID'],
-      variables['APPWRITE_WALLETS_COLLECTION_ID'],
-      [Query.equal('userId', userId)]
-    );
-    
-    if (wallets.documents.length > 0) {
-      await databases.updateDocument(
-        variables['APPWRITE_DATABASE_ID'],
-        variables['APPWRITE_WALLETS_COLLECTION_ID'],
-        wallets.documents[0].$id,
-        {
-          virtualAccount: {
-            accountNumber: accountDetails.accountNumber,
-            accountName: accountDetails.accountName,
-            bankName: accountDetails.bankName,
-            bankCode: accountDetails.bankCode,
-            accountReference: accountReference,
-            createdAt: new Date().toISOString()
-          },
-          updatedAt: new Date().toISOString()
-        }
-      );
-    }
-    
-    return {
-      success: true,
-      virtualAccount: {
-        accountNumber: accountDetails.accountNumber,
-        accountName: accountDetails.accountName,
-        bankName: accountDetails.bankName,
-        bankCode: accountDetails.bankCode
-      }
-    };
-    
-  } catch (error) {
-    console.error('Get virtual account error:', error);
-    return {
-      success: false,
-      error: error.response?.data?.message || error.message
-    };
-  }
-}
-
 export async function handleWebhook(req, res, client) {
   try {
     const payload = JSON.parse(req.payload);
@@ -243,14 +85,12 @@ export async function handleWebhook(req, res, client) {
       req.variables['MONNIFY_CONTRACT_CODE']
     );
     
-    // Verify webhook signature
     if (!monnify.verifyWebhookSignature(payload, signature)) {
       throw new Error('Invalid webhook signature');
     }
     
     const eventData = payload.eventData;
     
-    // Find transaction by payment reference
     const databases = new Databases(client);
     const transactions = await databases.listDocuments(
       req.variables['APPWRITE_DATABASE_ID'],
@@ -266,7 +106,6 @@ export async function handleWebhook(req, res, client) {
     const userId = transaction.userId;
     const amount = parseFloat(eventData.amountPaid);
     
-    // Update transaction status
     await databases.updateDocument(
       req.variables['APPWRITE_DATABASE_ID'],
       req.variables['APPWRITE_TRANSACTIONS_COLLECTION_ID'],
@@ -278,18 +117,16 @@ export async function handleWebhook(req, res, client) {
       }
     );
     
-    // If payment successful, credit wallet
     if (eventData.paymentStatus === 'PAID') {
+      // ← Fixed: removed description parameter
       const newBalance = await updateWalletBalance(
         userId, 
         amount, 
         'credit', 
         client, 
-        req.variables,
-        // `Wallet funding via ${eventData.paymentMethod}`
+        req.variables
       );
       
-      // Save completed transaction
       await saveTransaction({
         userId,
         amount,
@@ -320,11 +157,9 @@ export async function initializePayment(paymentData, client, variables) {
       variables['MONNIFY_CONTRACT_CODE']
     );
     
-    // Generate unique references
     const paymentReference = `WALLET_${userId}_${Date.now()}`;
     const transactionReference = `TRX_${userId}_${Date.now()}`;
     
-    // Initialize payment with Monnify
     const paymentResponse = await monnify.initializeTransaction({
       amount: amount,
       customerName: name,
@@ -334,7 +169,6 @@ export async function initializePayment(paymentData, client, variables) {
       redirectUrl: `${variables['FRONTEND_URL']}/wallet/payment-success?reference=${paymentReference}`
     });
     
-    // Save pending transaction
     await saveTransaction({
       userId,
       amount,
@@ -369,7 +203,6 @@ export async function createWallet(userData, client, variables) {
     
     const databases = new Databases(client);
     
-    // Check if wallet already exists
     const existingWallets = await databases.listDocuments(
       variables['APPWRITE_DATABASE_ID'],
       variables['APPWRITE_WALLETS_COLLECTION_ID'],
@@ -384,7 +217,6 @@ export async function createWallet(userData, client, variables) {
       };
     }
     
-    // Create new wallet
     const wallet = await databases.createDocument(
       variables['APPWRITE_DATABASE_ID'],
       variables['APPWRITE_WALLETS_COLLECTION_ID'],
@@ -419,7 +251,6 @@ export async function debitWallet(debitData, client, variables) {
     
     const databases = new Databases(client);
     
-    // Get user's wallet
     const wallets = await databases.listDocuments(
       variables['APPWRITE_DATABASE_ID'],
       variables['APPWRITE_WALLETS_COLLECTION_ID'],
@@ -436,7 +267,6 @@ export async function debitWallet(debitData, client, variables) {
     
     const wallet = wallets.documents[0];
     
-    // Check sufficient balance
     if (wallet.balance < amount) {
       return {
         success: false,
@@ -449,7 +279,6 @@ export async function debitWallet(debitData, client, variables) {
     
     const newBalance = wallet.balance - amount;
     
-    // Update wallet balance
     await databases.updateDocument(
       variables['APPWRITE_DATABASE_ID'],
       variables['APPWRITE_WALLETS_COLLECTION_ID'],
@@ -459,7 +288,6 @@ export async function debitWallet(debitData, client, variables) {
       }
     );
     
-    // Save debit transaction
     const transactionReference = `DEBIT_${userId}_${Date.now()}`;
     await saveTransaction({
       userId,
@@ -492,7 +320,6 @@ export async function getWallet(walletData, client, variables) {
     
     const databases = new Databases(client);
     
-    // Get user's wallet
     const wallets = await databases.listDocuments(
       variables['APPWRITE_DATABASE_ID'],
       variables['APPWRITE_WALLETS_COLLECTION_ID'],
@@ -519,6 +346,155 @@ export async function getWallet(walletData, client, variables) {
     return {
       success: false,
       error: error.message
+    };
+  }
+}
+
+export async function getVirtualAccount(userData, client, variables) {
+  try {
+    const { userId } = userData;
+    
+    const monnify = new MonnifyService(
+      variables['MONNIFY_API_KEY'],
+      variables['MONNIFY_SECRET_KEY'],
+      variables['MONNIFY_CONTRACT_CODE']
+    );
+    
+    const accessToken = await monnify.getAccessToken();
+    const accountReference = `USER_${userId}`;
+    
+    const response = await axios.post(
+      `${monnify.baseUrl}/api/v2/bank-transfer/reserved-accounts`,
+      {
+        accountReference: accountReference,
+        accountName: `${userData.name} - TravelSend`,
+        currencyCode: 'NGN',
+        contractCode: monnify.contractCode,
+        customerEmail: userData.email,
+        customerName: userData.name,
+        getAllAvailableBanks: false,
+        preferredBanks: ['50515'] 
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    const accountDetails = response.data.responseBody.accounts[0];
+    
+    const databases = new Databases(client);
+    
+    const wallets = await databases.listDocuments(
+      variables['APPWRITE_DATABASE_ID'],
+      variables['APPWRITE_WALLETS_COLLECTION_ID'],
+      [Query.equal('userId', userId)]
+    );
+    
+    if (wallets.documents.length > 0) {
+      await databases.updateDocument(
+        variables['APPWRITE_DATABASE_ID'],
+        variables['APPWRITE_WALLETS_COLLECTION_ID'],
+        wallets.documents[0].$id,
+        {
+          virtualAccount: {
+            accountNumber: accountDetails.accountNumber,
+            accountName: accountDetails.accountName,
+            bankName: accountDetails.bankName,
+            bankCode: accountDetails.bankCode,
+            accountReference: accountReference,
+          },
+        }
+      );
+    }
+    
+    return {
+      success: true,
+      virtualAccount: {
+        accountNumber: accountDetails.accountNumber,
+        accountName: accountDetails.accountName,
+        bankName: accountDetails.bankName,
+        bankCode: accountDetails.bankCode
+      }
+    };
+    
+  } catch (error) {
+    console.error('Get virtual account error:', error);
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message
+    };
+  }
+}
+
+export async function createPayout(payoutData, client, variables) {
+  try {
+    const { userId, amount, bankCode, accountNumber, accountName } = payoutData;
+    
+    const monnify = new MonnifyService(
+      variables['MONNIFY_API_KEY'],
+      variables['MONNIFY_SECRET_KEY'],
+      variables['MONNIFY_CONTRACT_CODE']
+    );
+    
+    const debitResult = await debitWallet({
+      userId,
+      amount,
+      description: 'Payout to bank account'
+    }, client, variables);
+    
+    if (!debitResult.success) {
+      return debitResult;
+    }
+    
+    const accessToken = await monnify.getAccessToken();
+    const reference = `PAYOUT_${userId}_${Date.now()}`;
+    
+    const transferResponse = await axios.post(
+      `${monnify.baseUrl}/api/v2/disbursements/single`,
+      {
+        amount: amount,
+        reference: reference,
+        narration: `Payout to ${accountName}`,
+        destinationBankCode: bankCode,
+        destinationAccountNumber: accountNumber,
+        destinationAccountName: accountName,
+        currency: 'NGN'
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    await saveTransaction({
+      userId,
+      amount,
+      type: 'payout',
+      status: 'processing',
+      reference: reference,
+      paymentReference: transferResponse.data.responseBody.transactionReference,
+      description: `Payout to ${accountName} (${accountNumber})`,
+      balanceAfter: debitResult.newBalance,
+      metadata: transferResponse.data.responseBody
+    }, client, variables);
+    
+    return {
+      success: true,
+      transactionReference: reference,
+      message: 'Payout initiated successfully',
+      newBalance: debitResult.newBalance
+    };
+    
+  } catch (error) {
+    console.error('Payout error:', error);
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message
     };
   }
 }
