@@ -1,7 +1,7 @@
 import { Databases, Query, ID } from 'node-appwrite';
 import axios from 'axios';
 import crypto from 'crypto';
-import { saveTransaction, updateWalletBalance } from './databases.js';
+import { saveTransaction, updateWalletBalance } from './database.js';
 // import { generateTransactionReference } from './utils.js';
 
 class MonnifyService {
@@ -9,7 +9,7 @@ class MonnifyService {
     this.apiKey = apiKey; 
     this.secretKey = secretKey;
     this.contractCode = contractCode;
-    this.baseUrl = baseUrl;
+    this.baseUrl = baseUrl; 
     this.accessToken = null;
     this.tokenExpiry = null;
   }
@@ -286,7 +286,7 @@ export async function handleWebhook(req, res, client) {
         'credit', 
         client, 
         req.variables,
-        `Wallet funding via ${eventData.paymentMethod}`
+        // `Wallet funding via ${eventData.paymentMethod}`
       );
       
       // Save completed transaction

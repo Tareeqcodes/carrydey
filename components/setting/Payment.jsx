@@ -1,4 +1,4 @@
-// app/dashboard/wallet/page.js - Main wallet page
+
 'use client';
 import { useState, useEffect } from 'react';
 import { WalletService } from '@/lib/WalletService';
@@ -208,7 +208,7 @@ const Payment = () => {
           virtualAccount={virtualAccount}
           onBack={() => setActiveScreen('wallet')}
           onCardPayment={() => handleCardPayment()}
-        />
+        /> 
       )}
       
       {activeScreen === 'payout' && (

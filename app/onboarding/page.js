@@ -6,6 +6,7 @@ import { User, Package, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
+import { WalletService } from '@/lib/WalletService';
 
 export default function Onboarding() {
   const router = useRouter();
@@ -41,10 +42,7 @@ export default function Onboarding() {
         queries: [Query.equal('userId', user.$id)],
       });
 
-      if (
-        response.documents.length > 0 &&
-        response.documents[0].onboardingCompleted
-      ) {
+      if (response.rows.length > 0 && response.rows[0].onboardingCompleted) {
         router.push('/send');
       }
     } catch (err) {
@@ -78,6 +76,20 @@ export default function Onboarding() {
           onboardingCompleted: true,
         },
       });
+
+      const walletResult = await WalletService.createWallet(
+        user.$id,
+        user.email,
+        userName || user.name
+      );
+
+      if (!walletResult.success) {
+        console.error('Wallet creation failed:', walletResult.error);
+        // Don't block onboarding, but log the error
+        alert(
+          'Profile created but wallet setup incomplete. You can set it up later.'
+        );
+      }
 
       router.push('/send');
     } catch (err) {

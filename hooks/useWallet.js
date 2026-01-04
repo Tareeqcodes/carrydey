@@ -17,7 +17,7 @@ export const useWallet = () => {
         return;
       }
 
-      try {
+      try { 
         setLoading(true);
         const result = await WalletService.getWallet(user.$id);
         

@@ -202,12 +202,16 @@ const useOnboardingForm = () => {
             : null,
         registrationCertificate: registrationCertificateId,
         taxCertificate: taxCertificateId,
-        verificationStatus: 'pending',
         verificationNotes: null,
         ownerNiN: ownerNiN,
         phone: formData.phone,
         alternatePhone: formData.alternatePhone,
         userId: user.$id,
+        rating: null,
+        minPrice: null,
+        status: true,
+        verified: false,
+
       };
 
       // Create document in Appwrite

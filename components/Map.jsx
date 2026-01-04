@@ -40,9 +40,8 @@ export default function InputLocation({
         const distance = (route.distance / 1000).toFixed(1); // km
         const duration = Math.round(route.duration / 60); // minutes
         
-        // Simple fare calculation (you can customize this)
-        const baseFare = 200; // ₦500 base fare
-        const perKm = 100; // ₦150 per km
+        const baseFare = 5; 
+        const perKm = 50; 
         const estimatedFare = Math.round(baseFare + (distance * perKm));
 
         const routeInfo = {
@@ -61,7 +60,6 @@ export default function InputLocation({
     }
   };
 
-  // Calculate route when both pickup and dropoff are selected
   useEffect(() => {
     if (pickup && dropoff) {
       calculateRoute();
@@ -88,7 +86,7 @@ export default function InputLocation({
 
   return (
     <div className="space-y-6">
-      {/* Pickup Input */}
+     
       <div className="relative">
         <label className="block text-sm font-medium text-[#3A0A21] mb-2">
           Pickup Location
@@ -111,7 +109,6 @@ export default function InputLocation({
         </div>
       </div>
 
-      {/* Dropoff Input */}
       <div className="relative">
         <label className="block text-sm font-medium text-[#3A0A21] mb-2">
           Dropoff Location
@@ -134,7 +131,6 @@ export default function InputLocation({
         </div>
       </div>
 
-      {/* Route Info */}
       {(calculatingRoute || loading) && (
         <div className="text-center py-4">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#3A0A21] border-t-transparent"></div>
@@ -177,7 +173,7 @@ export default function InputLocation({
               disabled={loading}
               className="w-full bg-[#3A0A21] hover:bg-[#4A0A31] text-white font-semibold py-3 rounded-lg mt-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating Delivery...' : 'Create Delivery'}
+              {loading ? 'Creating Delivery...' : 'Send Delivery'}
             </button>
           </div>
         )}

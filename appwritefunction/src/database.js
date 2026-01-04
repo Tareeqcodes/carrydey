@@ -79,7 +79,7 @@ export async function getUserWallet(userId, client, variables) {
 export async function getTransactions(userId, limit = 50, client, variables) {
   const databases = new Databases(client);
   
-  return await databases.listDocuments(
+  return await databases.listDocuments( 
     variables['APPWRITE_DATABASE_ID'],
     variables['APPWRITE_TRANSACTIONS_COLLECTION_ID'],
     [

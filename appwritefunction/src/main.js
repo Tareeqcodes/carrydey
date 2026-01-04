@@ -1,4 +1,4 @@
-// main.js - FIXED VERSION
+// main.js - FINAL CORRECTED VERSION
 import { Client } from 'node-appwrite';
 import {
   handleWebhook,
@@ -14,39 +14,41 @@ import { getTransactions } from './database.js';
 export default async ({ req, res, log, error }) => {
   try {
     log('=== WALLET FUNCTION STARTED ===');
+    log('Method:', req.method);
+    log('Headers:', JSON.stringify(req.headers, null, 2));
+    log('Raw body type:', typeof req.body);
     
-    // IMPORTANT: Appwrite functions use context object, not req/res directly
     const client = new Client();
 
-    // Log all environment variables (for debugging)
-    log('Environment variables available:');
-    Object.keys(process.env).forEach(key => {
-      if (key.includes('APPWRITE') || key.includes('MONNIFY')) {
-        log(`${key}: ${key.includes('KEY') ? '***REDACTED***' : process.env[key]}`);
-      }
-    });
-
-    // Initialize Appwrite client - USE CORRECT VARIABLE NAMES
-    const endpoint = process.env.APPWRITE_ENDPOINT_ID || process.env.APPWRITE_ENDPOINT;
-    const projectId = process.env.APPWRITE_PROJECT_ID;
+    // Use consistent environment variable names
+    const endpoint = process.env.APPWRITE_ENDPOINT || process.env.APPWRITE_FUNCTION_API_ENDPOINT;
+    const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
     const apiKey = process.env.APPWRITE_API_KEY;
     
-    log('Appwrite config check:', { 
-      endpoint: endpoint ? '✓ Set' : '✗ Missing',
-      projectId: projectId ? '✓ Set' : '✗ Missing',
-      apiKey: apiKey ? '✓ Set' : '✗ Missing'
+    log('Appwrite config:', { 
+      endpoint: endpoint ? '✓' : '✗',
+      projectId: projectId ? '✓' : '✗',
+      apiKey: apiKey ? '✓' : '✗'
+    });
+    
+    // Validate Monnify config
+    const monnifyConfig = {
+      apiKey: process.env.MONNIFY_API_KEY,
+      secretKey: process.env.MONNIFY_SECRET_KEY,
+      contractCode: process.env.MONNIFY_CONTRACT_CODE
+    };
+    
+    log('Monnify config:', {
+      apiKey: monnifyConfig.apiKey ? '✓' : '✗',
+      secretKey: monnifyConfig.secretKey ? '✓' : '✗',
+      contractCode: monnifyConfig.contractCode ? '✓' : '✗'
     });
     
     if (!endpoint || !projectId || !apiKey) {
-      error('Missing Appwrite environment variables');
+      error('Missing Appwrite configuration');
       return res.json({
         success: false,
-        error: 'Server configuration error',
-        details: {
-          endpoint: !!endpoint,
-          projectId: !!projectId,
-          apiKey: !!apiKey
-        }
+        error: 'Server configuration error - Appwrite credentials missing'
       }, 500);
     }
 
@@ -55,32 +57,36 @@ export default async ({ req, res, log, error }) => {
       .setProject(projectId)
       .setKey(apiKey);
 
-    // Parse request body
+    // Parse request body - READ FROM BODY ONLY (more reliable)
     let body = {};
     let operation = 'unknown';
     
     try {
-      // Appwrite functions receive payload in req.body
       if (req.body) {
         body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
         log('Parsed body:', JSON.stringify(body, null, 2));
+        
+        // Get operation from body (not headers)
+        operation = body.operation || 'unknown';
+      } else {
+        log('No body received');
       }
-      
-      // Get operation from header first, then body
-      operation = req.headers['x-operation'] || body.operation || 'unknown';
-      
     } catch (parseError) {
-      log('Parse error, using empty body:', parseError.message);
+      error('Body parse error:', parseError.message);
+      return res.json({
+        success: false,
+        error: 'Invalid request body - must be valid JSON'
+      }, 400);
     }
 
-    log(`Operation requested: ${operation}`);
+    log(`Operation: ${operation}`);
 
-    // Special handling for Monnify webhook (POST with JSON)
+    // Check for Monnify webhook
     const isMonnifyWebhook = req.headers['monnify-signature'] || 
                             (req.path && req.path.includes('webhook'));
     
     if (isMonnifyWebhook) {
-      log('Processing Monnify webhook...');
+      log('Processing Monnify webhook');
       return await handleWebhook(
         { 
           payload: req.body, 
@@ -92,27 +98,48 @@ export default async ({ req, res, log, error }) => {
       );
     }
 
-    // Handle different operations
+    // Route operations
     let result;
     
     switch (operation) {
       case 'initialize-payment':
-        log('Initialize payment with data:', body);
-        result = await initializePayment(body, client, process.env);
+        log('Initialize payment:', body);
+        if (!body.userId || !body.amount || !body.email || !body.name) {
+          result = {
+            success: false,
+            error: 'Missing required fields: userId, amount, email, name'
+          };
+        } else {
+          result = await initializePayment(body, client, process.env);
+        }
         break;
       
       case 'create-wallet':
-        log('Creating wallet with data:', body); 
-        result = await createWallet(body, client, process.env);
+        log('Create wallet:', body); 
+        if (!body.userId || !body.email || !body.name) {
+          result = {
+            success: false,
+            error: 'Missing required fields: userId, email, name'
+          };
+        } else {
+          result = await createWallet(body, client, process.env);
+        }
         break;
       
       case 'debit-wallet':
-        log('Debiting wallet with data:', body);
-        result = await debitWallet(body, client, process.env);
-        break;
+        log('Debit wallet:', body);
+        if (!body.userId || !body.amount) {
+          result = {
+            success: false,
+            error: 'Missing required fields: userId, amount'
+          };
+        } else {
+          result = await debitWallet(body, client, process.env);
+        }
+        break; 
       
       case 'get-wallet':
-        log('Getting wallet for userId:', body.userId);
+        log('Get wallet for userId:', body.userId);
         if (!body.userId) {
           result = {
             success: false,
@@ -124,11 +151,11 @@ export default async ({ req, res, log, error }) => {
         break;
       
       case 'get-virtual-account':
-        log('Getting virtual account for userId:', body.userId);
-        if (!body.userId) {
+        log('Get virtual account:', body);
+        if (!body.userId || !body.name || !body.email) {
           result = {
             success: false,
-            error: 'userId is required'
+            error: 'Missing required fields: userId, name, email'
           };
         } else {
           result = await getVirtualAccount(body, client, process.env);
@@ -136,22 +163,37 @@ export default async ({ req, res, log, error }) => {
         break;
       
       case 'create-payout':
-        log('Creating payout with data:', body);
-        result = await createPayout(body, client, process.env);
+        log('Create payout:', body);
+        if (!body.userId || !body.amount || !body.bankCode || 
+            !body.accountNumber || !body.accountName) {
+          result = {
+            success: false,
+            error: 'Missing required fields: userId, amount, bankCode, accountNumber, accountName'
+          };
+        } else {
+          result = await createPayout(body, client, process.env);
+        }
         break;
       
       case 'get-transactions':
-        log('Getting transactions for userId:', body.userId);
-        const transactions = await getTransactions(
-          body.userId, 
-          body.limit || 50,
-          client, 
-          process.env
-        );
-        result = {
-          success: true,
-          transactions: transactions.documents || []
-        };
+        log('Get transactions for userId:', body.userId);
+        if (!body.userId) {
+          result = {
+            success: false,
+            error: 'userId is required'
+          };
+        } else {
+          const transactions = await getTransactions(
+            body.userId, 
+            body.limit || 50,
+            client, 
+            process.env
+          );
+          result = {
+            success: true,
+            transactions: transactions.documents || []
+          };
+        }
         break;
       
       default:
@@ -160,8 +202,8 @@ export default async ({ req, res, log, error }) => {
           success: false,
           error: 'Invalid operation',
           receivedOperation: operation,
-          available_operations: [
-            'webhook',
+          receivedBody: body,
+          availableOperations: [
             'initialize-payment',
             'create-wallet',
             'debit-wallet',
@@ -177,11 +219,12 @@ export default async ({ req, res, log, error }) => {
     return res.json(result);
     
   } catch (err) {
-    error('Function error:', err);
+    error('Function error:', err.message);
+    error('Stack:', err.stack);
     return res.json({
       success: false,
       error: err.message,
-      stack: err.stack
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     }, 500);
   }
 };

@@ -12,7 +12,7 @@ export function validatePaymentData(data) {
   requiredFields.forEach(field => {
     if (!data[field]) {
       missingFields.push(field);
-    }
+    } 
   });
   
   if (missingFields.length > 0) {

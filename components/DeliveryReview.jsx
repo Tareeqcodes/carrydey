@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import PickupDetailsModal from '@/components/PickupDetailsModal';
 import DropoffDetailsModal from '@/components/DropoffDetailsModal';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -10,6 +11,8 @@ export default function DeliveryReview({ delivery }) {
   const [showPickupModal, setShowPickupModal] = useState(false);
   const [showDropoffModal, setShowDropoffModal] = useState(false);
   const { userData } = useUserRole();
+  const router = useRouter();
+
 
   // const formatCurrency = (amount) => {
   //   return new Intl.NumberFormat('en-NG', {
@@ -28,6 +31,10 @@ export default function DeliveryReview({ delivery }) {
     // Delivery object is updated in place via the modal
     console.log('Dropoff details saved:', updatedDelivery);
   };
+
+  const handleTraveler = () => {
+    router.push('/check');
+  }
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -197,7 +204,7 @@ export default function DeliveryReview({ delivery }) {
           </ul>
         </div>
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
-          <button className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg text-center">
+          <button onClick={handleTraveler} className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg text-center">
             Pick your Ride
           </button>
         </div>

@@ -1,32 +1,7 @@
 import React from 'react';
 
 export default function VerificationCenter() {
-  // const getStatusColor = (status) => {
-  //   switch (status?.toLowerCase()) {
-  //     case 'verified':
-  //       return 'bg-green-100 text-green-800 border-green-200';
-  //     case 'pending':
-  //       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-  //     case 'rejected':
-  //       return 'bg-red-100 text-red-800 border-red-200';
-  //     default:
-  //       return 'bg-gray-100 text-gray-800 border-gray-200';
-  //   }
-  // };
-
-  // const getRoleColor = (role) => {
-  //   switch (role?.toLowerCase()) {
-  //     case 'admin':
-  //       return 'bg-purple-100 text-purple-800 border-purple-200';
-  //     case 'courier':
-  //       return 'bg-blue-100 text-blue-800 border-blue-200';
-  //     case 'user':
-  //       return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-  //     default:
-  //       return 'bg-gray-100 text-gray-800 border-gray-200';
-  //   }
-  // };
-
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#3A0A21]">Verification Center</h2>
@@ -43,16 +18,6 @@ export default function VerificationCenter() {
           </p>
         </div>
 
-        {/* {!roleLoading && (
-            <div className="flex flex-col items-end space-y-2">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getRoleColor(role)}`}>
-                {role || "User"}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(status)}`}>
-                {status?.toUpperCase() || "PENDING"}
-              </span>
-            </div>
-          )} */}
 
         <div className="bg-white p-6 rounded-xl border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
