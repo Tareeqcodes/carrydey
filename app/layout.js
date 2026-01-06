@@ -56,7 +56,7 @@ const organizationStructuredData = {
 export const metadata = {
   title: {
     default:
-      'Carrydey - Send Packages Worldwide with Travelers | Earn Money Delivering',
+      'Carrydey - Send Packages Across Nigeria with Travelers | Earn Money Delivering',
     template: '%s | Carrydey',
   },
   description:
@@ -114,7 +114,7 @@ export const metadata = {
         url: '/og-image.svg',
         width: 1200,
         height: 630,
-        alt: 'Carrydey - Global Package Delivery Platform',
+        alt: 'Carrydey -Package Delivery Platform',
       },
     ],
     
