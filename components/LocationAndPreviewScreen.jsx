@@ -170,7 +170,7 @@ export default function LocationAndPreviewScreen({
               disabled={!localPickup || !localDropoff || !localRouteData}
               className="px-6 py-3 bg-[#3A0A21] hover:bg-[#4A0A31] text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-1"
             >
-              Add Package Details
+              Enter pickup & dropoff
             </button>
           </div>
 
