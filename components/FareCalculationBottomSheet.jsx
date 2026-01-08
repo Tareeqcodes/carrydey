@@ -5,10 +5,8 @@ function FareCalculationBottomSheet({ isOpen, onClose, routeData }) {
   const calculateFareBreakdown = () => {
     const baseFare = Math.round(routeData.estimatedFare * 0.4); // 40%
     const distanceFare = Math.round(routeData.estimatedFare * 0.3); // 30%
-    const timeFare = Math.round(routeData.estimatedFare * 0.2); // 20%
-    const serviceFee = Math.round(routeData.estimatedFare * 0.1); // 10%
 
-    return { baseFare, distanceFare, timeFare, serviceFee };
+    return { baseFare, distanceFare };
   };
 
   const breakdown = calculateFareBreakdown();
@@ -94,36 +92,6 @@ function FareCalculationBottomSheet({ isOpen, onClose, routeData }) {
                 </div>
                 <p className="font-semibold">₦{breakdown.distanceFare}</p>
               </div>
-
-              {/* Time Charge */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                    <Clock size={20} className="text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Time Charge</p>
-                    <p className="text-xs text-gray-600">
-                      {routeData.duration} min × ₦20/min
-                    </p>
-                  </div>
-                </div>
-                <p className="font-semibold">₦{breakdown.timeFare}</p>
-              </div>
-
-              {/* Service Fee */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                    <Info size={20} className="text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Service Fee</p>
-                    <p className="text-xs text-gray-600">Platform & support</p>
-                  </div>
-                </div>
-                <p className="font-semibold">₦{breakdown.serviceFee}</p>
-              </div>
             </div>
 
             {/* Total */}
@@ -137,7 +105,7 @@ function FareCalculationBottomSheet({ isOpen, onClose, routeData }) {
             </div>
           </div>
 
-          {/* Pricing Factors */}
+
           <div className="mb-6">
             <h4 className="font-semibold text-gray-800 mb-3">
               What affects the fare?

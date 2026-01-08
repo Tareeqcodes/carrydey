@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { Navigation, Clock, Info } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import FareCalculationBottomSheet from './FareCalculationBottomShee';
+import FareCalculationBottomSheet from './FareCalculationBottomSheet';
 
 // Dynamically import the map
 const RouteMapPreview = dynamic(() => import('./RouteMapPreview'), {
   ssr: false,
   loading: () => (
-    <div className="h-80 bg-gray-100 rounded-xl flex items-center justify-center animate-pulse">
+    <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center animate-pulse">
       <div className="text-center">
         <div className="w-12 h-12 bg-gray-300 rounded-full mx-auto mb-4"></div>
         <div className="h-4 bg-gray-300 rounded w-32 mx-auto mb-2"></div>
@@ -25,6 +25,7 @@ export default function DeliveryPreview({
   onEdit,
   onConfirm,
   loading,
+  isEmbedded = false,
 }) {
   const [showFareModal, setShowFareModal] = useState(false);
 
@@ -35,6 +36,29 @@ export default function DeliveryPreview({
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  if (isEmbedded) {
+    return (
+      <div className="bg-white">
+        {/* Map Section */}
+        <div className="h-64">
+          {pickup && dropoff ? (
+            <RouteMapPreview pickup={pickup} dropoff={dropoff} />
+          ) : (
+            <div className="h-full bg-gray-100 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <Navigation size={48} className="mx-auto mb-2 text-[#3A0A21]" />
+                <p className="font-medium">Map Loading</p>
+                <p className="text-sm mt-1">Loading route preview...</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-gray-900">

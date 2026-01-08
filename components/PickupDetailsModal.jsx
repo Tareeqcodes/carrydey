@@ -1,26 +1,27 @@
 'use client';
 import { useState } from 'react';
-import { tablesDB } from '@/lib/config/Appwriteconfig';
 import { MapPin } from 'lucide-react';
 
 export default function PickupDetailsModal({
   isOpen,
   onClose,
   delivery,
-  onSave,
   userData,
+  initialData,
+  onSave,
 }) {
   const [formData, setFormData] = useState({
     pickupContactName:
-      userData?.userName || userData?.name || delivery?.pickupContactName || '',
-    pickupPhone: userData?.phone || delivery?.pickupPhone || '',
-    pickupStoreName: delivery?.pickupStoreName || '',
-    pickupUnitFloor: delivery?.pickupUnitFloor || '',
-    pickupOption: delivery?.pickupOption || 'curb',
-    pickupInstructions: delivery?.pickupInstructions || '',
+      initialData?.pickupContactName ||
+      userData?.userName ||
+      userData?.name ||
+      '',
+    pickupPhone: initialData?.pickupPhone || userData?.phone || '',
+    pickupStoreName: initialData?.pickupStoreName || '',
+    pickupUnitFloor: initialData?.pickupUnitFloor || '',
+    pickupOption: initialData?.pickupOption || 'curb',
+    pickupInstructions: initialData?.pickupInstructions || '',
   });
-
-  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -37,40 +38,9 @@ export default function PickupDetailsModal({
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const updatedData = {
-        pickupContactName: formData.pickupContactName,
-        pickupPhone: formData.pickupPhone,
-        pickupStoreName: formData.pickupStoreName,
-        pickupUnitFloor: formData.pickupUnitFloor,
-        pickupOption: formData.pickupOption,
-        pickupInstructions: formData.pickupInstructions,
-      };
-
-      const result = await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: delivery.$id,
-        data: updatedData,
-      });
-
-      console.log('Pickup details updated:', result);
-
-      if (onSave) {
-        onSave(result);
-      }
-
-      onClose();
-    } catch (error) {
-      console.error('Error updating pickup details:', error);
-      alert('Failed to save pickup details. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    onSave(formData);
   };
 
   if (!isOpen) return null;
@@ -99,21 +69,50 @@ export default function PickupDetailsModal({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">
                 Contact Information
               </h3>
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500 mb-1">Your profile info:</p>
-                <p className="font-medium">
-                  {userData?.userName || userData?.name || 'Not set'}
-                </p>
-                {userData?.phone && (
-                  <p className="text-sm text-gray-600">{userData.phone}</p>
-                )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contact Name
+                  </label>
+                  <input
+                    type="text"
+                    name="pickupContactName"
+                    value={formData.pickupContactName}
+                    onChange={handleInputChange}
+                    placeholder="Enter contact name"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pre-filled from your profile:{' '}
+                    {userData?.userName || userData?.name || 'Not set'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="pickupPhone"
+                    value={formData.pickupPhone}
+                    onChange={handleInputChange}
+                    placeholder="Enter phone number"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
+                  />
+                </div>
               </div>
             </div>
 
+            {/* PICKUP LOCATION */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">
                 Pickup Location
@@ -126,7 +125,7 @@ export default function PickupDetailsModal({
                       Pickup Address
                     </p>
                     <p className="text-gray-900">
-                      {delivery.pickup.address || 'No address provided'}
+                      {delivery.pickup?.place_name || 'No address provided'}
                     </p>
                   </div>
                 </div>
@@ -162,7 +161,7 @@ export default function PickupDetailsModal({
               </div>
             </div>
 
-            {/* Pickup Options */}
+            {/* PICKUP OPTIONS */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">
                 Pickup options
@@ -189,6 +188,7 @@ export default function PickupDetailsModal({
               </div>
             </div>
 
+            {/* INSTRUCTIONS */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">
                 Instructions for Traveler
@@ -203,13 +203,13 @@ export default function PickupDetailsModal({
               />
             </div>
 
+            {/* SUBMIT BUTTON */}
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition disabled:opacity-50"
+                className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
               >
-                {loading ? 'Saving...' : 'Save pickup details'}
+                Save pickup details
               </button>
             </div>
           </form>

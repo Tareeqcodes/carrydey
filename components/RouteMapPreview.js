@@ -17,7 +17,7 @@ const SimpleRouteMap = dynamic(() => import('./SimpleRouteMap'), {
 
 export default function RouteMapPreview({ pickup, dropoff }) {
   return (
-    <div className="h-80 rounded-xl overflow-hidden shadow-lg border border-gray-300">
+    <div className="h-96 rounded-xl overflow-hidden shadow-lg border border-gray-300">
       <SimpleRouteMap pickup={pickup} dropoff={dropoff} />
     </div>
   );

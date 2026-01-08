@@ -1,25 +1,37 @@
 'use client';
-import { useState } from 'react';
-import { tablesDB } from '@/lib/config/Appwriteconfig';
+import { useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 
 export default function DropoffDetailsModal({
   isOpen,
   onClose,
   delivery,
+  initialData,
   onSave,
 }) {
   const [formData, setFormData] = useState({
-    dropoffContactName: delivery?.dropoffContactName || '',
-    dropoffPhone: delivery?.dropoffPhone || '',
-    dropoffStoreName: delivery?.dropoffStoreName || '',
-    dropoffUnitFloor: delivery?.dropoffUnitFloor || '',
-    dropoffOption: delivery?.dropoffOption || 'door',
-    dropoffInstructions: delivery?.dropoffInstructions || '',
-    recipientPermission: delivery?.recipientPermission || false,
+    dropoffContactName: initialData?.dropoffContactName || '',
+    dropoffPhone: initialData?.dropoffPhone || '',
+    dropoffStoreName: initialData?.dropoffStoreName || '',
+    dropoffUnitFloor: initialData?.dropoffUnitFloor || '',
+    dropoffOption: initialData?.dropoffOption || 'door',
+    dropoffInstructions: initialData?.dropoffInstructions || '',
+    recipientPermission: initialData?.recipientPermission || false,
   });
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        dropoffContactName: initialData?.dropoffContactName || '',
+        dropoffPhone: initialData?.dropoffPhone || '',
+        dropoffStoreName: initialData?.dropoffStoreName || '',
+        dropoffUnitFloor: initialData?.dropoffUnitFloor || '',
+        dropoffOption: initialData?.dropoffOption || 'door',
+        dropoffInstructions: initialData?.dropoffInstructions || '',
+        recipientPermission: initialData?.recipientPermission || false,
+      });
+    }
+  }, [isOpen, initialData]);
 
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
@@ -36,8 +48,19 @@ export default function DropoffDetailsModal({
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!formData.dropoffContactName.trim()) {
+      alert("Please enter the recipient's name");
+      return;
+    }
+
+    if (!formData.dropoffPhone.trim()) {
+      alert("Please enter the recipient's phone number");
+      return;
+    }
 
     if (!formData.recipientPermission) {
       alert(
@@ -46,39 +69,8 @@ export default function DropoffDetailsModal({
       return;
     }
 
-    setLoading(true);
-
-    try {
-      const updatedData = {
-        dropoffContactName: formData.dropoffContactName,
-        dropoffPhone: formData.dropoffPhone,
-        dropoffStoreName: formData.dropoffStoreName,
-        dropoffUnitFloor: formData.dropoffUnitFloor,
-        dropoffOption: formData.dropoffOption,
-        dropoffInstructions: formData.dropoffInstructions,
-        recipientPermission: formData.recipientPermission,
-      };
-
-      const result = await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: delivery.$id,
-        data: updatedData,
-      });
-
-      console.log('Dropoff details updated:', result);
-
-      if (onSave) {
-        onSave(result);
-      }
-
-      onClose();
-    } catch (error) {
-      console.error('Error updating dropoff details:', error);
-      alert('Failed to save dropoff details. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    onSave(formData);
+    onClose(); // Close modal after saving
   };
 
   if (!isOpen) return null;
@@ -119,6 +111,7 @@ export default function DropoffDetailsModal({
                   value={formData.dropoffContactName}
                   onChange={handleInputChange}
                   placeholder="Recipient's name"
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
                 />
                 <input
@@ -127,6 +120,7 @@ export default function DropoffDetailsModal({
                   value={formData.dropoffPhone}
                   onChange={handleInputChange}
                   placeholder="Recipient's phone number"
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
                 />
               </div>
@@ -144,7 +138,7 @@ export default function DropoffDetailsModal({
                       Delivery Address
                     </p>
                     <p className="text-gray-900">
-                      {delivery.dropoff.address || 'No address provided'}
+                      {delivery.dropoff?.place_name || 'No address provided'}
                     </p>
                   </div>
                 </div>
@@ -226,6 +220,7 @@ export default function DropoffDetailsModal({
                 name="recipientPermission"
                 checked={formData.recipientPermission}
                 onChange={handleInputChange}
+                required
                 className="h-5 w-5 text-[#3A0A21] mt-0.5 flex-shrink-0"
               />
               <p className="text-sm text-gray-600">
@@ -237,10 +232,9 @@ export default function DropoffDetailsModal({
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition disabled:opacity-50"
+                className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
               >
-                {loading ? 'Saving...' : 'Save dropoff details'}
+                Save dropoff details
               </button>
             </div>
           </form>

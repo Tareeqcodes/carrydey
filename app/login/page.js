@@ -9,7 +9,7 @@ function LoginFormContent() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,9 +69,9 @@ function LoginFormContent() {
           <span className="relative bg-white px-3 text-xs text-gray-400">
             Or continue with
           </span>
-        </div> */}
+        </div>
 
-        {/* <button
+        <button
           onClick={handleGoogleLogin}
           className="w-full border border-gray-300 rounded-xl py-3 flex items-center justify-center gap-2 hover:bg-gray-100 transition-all"
         >

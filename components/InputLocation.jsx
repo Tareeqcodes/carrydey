@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, } from 'lucide-react';
 
 export default function InputLocation({
   onLocationSelect,
@@ -19,12 +19,12 @@ export default function InputLocation({
     pickup: false,
     dropoff: false,
   });
+  const [routeInfo, setRouteInfo] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Manual search function as fallback
   const searchAddress = async (query, type) => {
     if (!query || query.length < 3) {
       setSuggestions((prev) => ({ ...prev, [type]: [] }));
@@ -118,16 +118,18 @@ export default function InputLocation({
         const duration = Math.round(route.duration / 60);
         const baseFare = 100;
         const perKm = 50;
-        const estimatedFare = Math.round(baseFare + distance * perKm);
+        const suggestedFare = Math.round(baseFare + distance * perKm);
 
-        const routeInfo = {
+        const calculatedRouteInfo = {
           distance,
           duration,
-          estimatedFare,
+          estimatedFare: suggestedFare,
+          suggestedFare: suggestedFare,
           polyline,
         };
 
-        onRouteCalculated(routeInfo);
+        setRouteInfo(calculatedRouteInfo);
+        onRouteCalculated(calculatedRouteInfo);
       }
     } catch (error) {
       console.error('Error calculating route:', error);
@@ -136,7 +138,6 @@ export default function InputLocation({
     }
   };
 
-  // Calculate route automatically when both locations are selected
   useEffect(() => {
     if (pickup && dropoff) {
       calculateRoute();
@@ -167,7 +168,6 @@ export default function InputLocation({
     );
   }
 
-  // Client-side only Mapbox import
   let AddressAutofill;
   try {
     const MapboxSearch = require('@mapbox/search-js-react');
@@ -177,8 +177,6 @@ export default function InputLocation({
   }
 
   const handleRetrieve = (result, type) => {
-    console.log('Mapbox retrieve result:', result, type);
-
     const locationData = {
       ...result,
       geometry: {
@@ -203,7 +201,7 @@ export default function InputLocation({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Pickup Location
         </label>
-        <div className="relative ">
+        <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#3A0A21]" />
           {AddressAutofill ? (
             <AddressAutofill
@@ -230,12 +228,11 @@ export default function InputLocation({
               placeholder="Enter pickup location"
               value={pickupAddress}
               onChange={(e) => handleInputChange(e.target.value, 'pickup')}
-              className="flex-1 bg-transparent outline-none text-[#3A0A21] placeholder-gray-500 w-full"
+              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent outline-none transition-all text-gray-900"
             />
           )}
         </div>
 
-        {/* Manual Suggestions for Pickup */}
         {showSuggestions.pickup && suggestions.pickup.length > 0 && (
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
             {suggestions.pickup.map((suggestion, index) => (
@@ -293,12 +290,11 @@ export default function InputLocation({
               placeholder="Enter dropoff location"
               value={dropoffAddress}
               onChange={(e) => handleInputChange(e.target.value, 'dropoff')}
-              className="flex-1 bg-transparent outline-none text-[#3A0A21] placeholder-gray-500 w-full"
+              className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent outline-none transition-all text-gray-900"
             />
           )}
         </div>
 
-        {/* Manual Suggestions for Dropoff */}
         {showSuggestions.dropoff && suggestions.dropoff.length > 0 && (
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
             {suggestions.dropoff.map((suggestion, index) => (
@@ -324,21 +320,22 @@ export default function InputLocation({
         )}
       </div>
 
-      {showNextButton && pickup && dropoff && (
+      {calculatingRoute && (
+        <div className="text-center py-4">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#3A0A21] border-t-transparent"></div>
+          <p className="mt-2 text-gray-600">Calculating route...</p>
+        </div>
+      )}
+
+      {showNextButton && pickup && dropoff && routeInfo && (
         <button
           onClick={onCalculate}
           disabled={!pickup || !dropoff || calculatingRoute}
           className="w-full py-4 bg-[#3A0A21] text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-90 transition"
         >
-          {calculatingRoute ? 'Processing...' : 'Next'}
+          {calculatingRoute ? 'Processing...' : 'Next: Package Details'}
         </button>
       )}
-
-      {calculatingRoute && (
-        <div className="space-y-4">
-          <div className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
-        </div>
-      )} 
     </div>
   );
 }
