@@ -19,7 +19,9 @@ const ChooseTraveler = () => {
       const transformedTravelers = agencies.map((agency) => ({
         id: agency.$id,
         name: agency.name || agency.contactPerson,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${agency.name || agency.contactPerson}`,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${
+          agency.name || agency.contactPerson
+        }`,
         rating: agency.rating || 4.5,
         verified: agency.verified || false,
         route: `${agency.city} → ${agency.state}`,
@@ -31,8 +33,11 @@ const ChooseTraveler = () => {
         phone: agency.phone,
         email: agency.email,
         services: agency.services ? JSON.parse(agency.services) : [],
-        vehicleTypes: agency.vehicleTypes ? JSON.parse(agency.vehicleTypes) : [],
-        totalDeliveries: agency.totalDeliveries || Math.floor(Math.random() * 100 + 20),
+        vehicleTypes: agency.vehicleTypes
+          ? JSON.parse(agency.vehicleTypes)
+          : [],
+        totalDeliveries:
+          agency.totalDeliveries || Math.floor(Math.random() * 100 + 20),
       }));
       setTravelers(transformedTravelers);
     }
@@ -59,15 +64,13 @@ const ChooseTraveler = () => {
   }
 
   return (
-    <div className="h-screen my-24 mx-2 md:mx-36 flex flex-col bg-white overflow-hidden">
+    <div className="min-h-screen pt-4 md:my-24 mx-2 md:mx-36 flex flex-col bg-white overflow-hidden">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
         <div className="flex items-center gap-3 mb-3">
-          
           <div className="flex-1">
-            
             <p className="text-sm text-gray-500">
-              {loading ? "Finding travelers..." : "Travelers heading your way"}
+              {loading ? 'Finding couriers and travelers...' : 'Couriers and travelers heading your way'}
             </p>
           </div>
         </div>

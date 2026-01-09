@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { Navigation, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Navigation } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import InputLocation from '@/components/InputLocation';
 
@@ -17,24 +17,70 @@ const RouteMapPreview = dynamic(() => import('./RouteMapPreview'), {
   ),
 });
 
+// Utility function to format duration
+const formatDuration = (minutes) => {
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+  
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  if (remainingMinutes === 0) {
+    return `${hours} hr${hours > 1 ? 's' : ''}`;
+  }
+  
+  return `${hours} hr${hours > 1 ? 's' : ''} ${remainingMinutes} min`;
+};
+
 export default function LocationAndPreviewScreen({
   pickup,
   dropoff,
   routeData,
   onLocationsConfirmed,
 }) {
-  const [localPickup, setLocalPickup] = useState(pickup);
-  const [localDropoff, setLocalDropoff] = useState(dropoff);
-  const [localRouteData, setLocalRouteData] = useState(routeData);
+  const [localPickup, setLocalPickup] = useState(null);
+  const [localDropoff, setLocalDropoff] = useState(null);
+  const [localRouteData, setLocalRouteData] = useState(null);
   const [showMapPreview, setShowMapPreview] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // const formatCurrency = (amount) => {
-  //   return new Intl.NumberFormat('en-NG', {
-  //     style: 'currency',
-  //     currency: 'NGN',
-  //     minimumFractionDigits: 0,
-  //   }).format(amount);
-  // };
+  // Load data from sessionStorage on mount
+  useEffect(() => {
+    const loadStoredData = () => {
+      try {
+        const storedData = sessionStorage.getItem('deliveryData');
+        if (storedData) {
+          const { pickup: storedPickup, dropoff: storedDropoff, routeData: storedRouteData } = JSON.parse(storedData);
+          
+          if (storedPickup) setLocalPickup(storedPickup);
+          if (storedDropoff) setLocalDropoff(storedDropoff);
+          if (storedRouteData) setLocalRouteData(storedRouteData);
+          
+          // Show map preview if we have both locations
+          if (storedPickup && storedDropoff) {
+            setShowMapPreview(true);
+          }
+        } else {
+          // Fallback to props if no sessionStorage data
+          if (pickup) setLocalPickup(pickup);
+          if (dropoff) setLocalDropoff(dropoff);
+          if (routeData) setLocalRouteData(routeData);
+          if (pickup && dropoff) setShowMapPreview(true);
+        }
+      } catch (error) {
+        console.error('Error loading delivery data:', error);
+        // Fallback to props on error
+        if (pickup) setLocalPickup(pickup);
+        if (dropoff) setLocalDropoff(dropoff);
+        if (routeData) setLocalRouteData(routeData);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStoredData();
+  }, [pickup, dropoff, routeData]);
 
   const handleLocationSelect = (type, location) => {
     if (type === 'pickup') {
@@ -65,11 +111,28 @@ export default function LocationAndPreviewScreen({
 
   const handleConfirmLocations = () => {
     if (localPickup && localDropoff && localRouteData) {
+      // Update sessionStorage with latest data
+      const locationData = {
+        pickup: localPickup,
+        dropoff: localDropoff,
+        routeData: localRouteData
+      };
+      sessionStorage.setItem('deliveryData', JSON.stringify(locationData));
+      
       onLocationsConfirmed(localPickup, localDropoff, localRouteData);
     }
   };
 
   const renderMapPreview = () => {
+    if (isLoading) {
+      return (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#3A0A21] border-t-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading your delivery details...</p>
+        </div>
+      );
+    }
+
     if (!showMapPreview || !localPickup || !localDropoff || !localRouteData) {
       return (
         <div className="text-center py-12">
@@ -122,7 +185,7 @@ export default function LocationAndPreviewScreen({
                 <div>
                   <div className="flex items-center justify-center gap-1 text-gray-600 mb-1"></div>
                   <p className="text-lg font-bold text-gray-900">
-                    {localRouteData.duration} min
+                    {formatDuration(localRouteData.duration)}
                   </p>
                   <p className="text-xs text-gray-500">Duration</p>
                 </div>
@@ -146,35 +209,38 @@ export default function LocationAndPreviewScreen({
   };
 
   return (
-    <div className="min-h-screen mt-28 bg-white">
+    <div className="min-h-screen pt-5 pb-28 md:pt-28 bg-white">
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Map Preview Section */}
         {renderMapPreview()}
 
-        <div className="mb-8">
-          <InputLocation
-            onLocationSelect={handleLocationSelect}
-            onRouteCalculated={handleRouteCalculated}
-            pickup={localPickup}
-            dropoff={localDropoff}
-            onCalculate={handleCalculate}
-            showNextButton={false}
-          />
-        </div>
+        {!isLoading && (
+          <div className="mb-8">
+            <InputLocation
+              onLocationSelect={handleLocationSelect}
+              onRouteCalculated={handleRouteCalculated}
+              pickup={localPickup}
+              dropoff={localDropoff}
+              onCalculate={handleCalculate}
+              showNextButton={false}
+            />
+          </div>
+        )}
 
         {/* Action Buttons */}
-        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-lg">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleConfirmLocations}
-              disabled={!localPickup || !localDropoff || !localRouteData}
-              className="px-6 py-3 bg-[#3A0A21] hover:bg-[#4A0A31] text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-1"
-            >
-              Enter pickup & dropoff
-            </button>
+        {!isLoading && (
+          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-lg">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleConfirmLocations}
+                disabled={!localPickup || !localDropoff || !localRouteData}
+                className="px-6 py-3 bg-[#3A0A21] hover:bg-[#4A0A31] text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+              >
+                Continue to Package Details
+              </button>
+            </div>
           </div>
-
-        </div>
+        )}
       </div>
     </div>
   );

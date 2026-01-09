@@ -32,6 +32,12 @@ export default function CreateDelivery() {
           dropoff: data.dropoff,
           routeData: data.routeData,
         }));
+        
+        // If skipLocationScreen flag is set, go directly to package screen
+        if (data.skipLocationScreen && data.pickup && data.dropoff && data.routeData) {
+          setCurrentScreen('package');
+        }
+        
         sessionStorage.removeItem('deliveryData');
       } catch (error) {
         console.error('Error parsing stored delivery data:', error);
@@ -110,7 +116,6 @@ export default function CreateDelivery() {
         packageSize: packageDetails?.size,
         packageDescription: packageDetails?.description,
         isFragile: packageDetails?.isFragile || false,
-        // pinConfirmation: packageDetails?.pinConfirmation || false,
         pickupTime: packageDetails?.pickupTime || 'courier',
       };
 
@@ -122,11 +127,7 @@ export default function CreateDelivery() {
       });
 
       console.log('Delivery created successfully:', result);
-
-      // Show success message
-      alert('Delivery created successfully! Finding travelers for you...');
-
-      // Navigate to check/tracking page or dashboard
+      // alert('Delivery created successfully! Finding travelers for you...');
       router.push('/check');
     } catch (error) {
       console.error('Error saving delivery:', error);

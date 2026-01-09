@@ -570,7 +570,7 @@ const DeliveryDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen pb-14 bg-gray-50">
       {/* Top Navigation */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
@@ -582,15 +582,7 @@ const DeliveryDashboard = () => {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#3A0A21] rounded-xl">
-                  <Truck className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="font-bold text-xl">LogiTrack Pro</h1>
-                  <p className="text-sm text-gray-500">Delivery Agency Dashboard</p>
-                </div>
-              </div>
+              
             </div>
 
             <div className="flex items-center gap-4">

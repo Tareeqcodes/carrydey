@@ -23,19 +23,15 @@ export default function Main() {
   };
 
   const handleFindTraveler = () => {
-    // Navigate to CreateDelivery page with location data
     if (pickup && dropoff) {
-      // You can pass data via URL params or store in sessionStorage
       const locationData = {
         pickup,
         dropoff,
-        routeData
+        routeData,
+        skipLocationScreen: true,
       };
-      
-      // Store in sessionStorage for the next page
+
       sessionStorage.setItem('deliveryData', JSON.stringify(locationData));
-      
-      // Navigate to CreateDelivery page
       router.push('/send');
     }
   };
@@ -61,11 +57,7 @@ export default function Main() {
                 <br />
                 <span className="text-[#3A0A21]/80">Their Journey</span>
               </h1>
-              {/* <p className="text-xl text-gray-600 leading-relaxed max-w-xl">
-                  Connect with travelers heading your way. Send packages faster,
-                  cheaper, and more reliably with people already making the
-                  trip.
-                </p> */}
+              
             </div>
             <InputLocation
               onLocationSelect={handleLocationSelect}

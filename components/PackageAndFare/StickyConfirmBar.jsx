@@ -2,7 +2,7 @@
 
 export default function StickyConfirmBar({ isValid, loading, onConfirm }) {
   return (
-    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 max-w-3xl mx-auto">
+    <div className=" pb-28 bg-white border-t border-gray-200 p-4 max-w-3xl mx-auto">
       <div className="max-w-3xl mx-auto">
         <button
           onClick={onConfirm}

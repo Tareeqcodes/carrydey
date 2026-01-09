@@ -1,5 +1,5 @@
 'use client';
-import { Info, X, Clock, Navigation, DollarSign } from 'lucide-react';
+import { Info, X, Navigation, DollarSign } from 'lucide-react';
 
 function FareCalculationBottomSheet({ isOpen, onClose, routeData }) {
   const calculateFareBreakdown = () => {

@@ -123,7 +123,7 @@ const SettingsComponent = () => {
   };
 
   return (
-    <div className="max-w-full my-20 mx-4 md:mx-48 min-h-screen relative overflow-hidden">
+    <div className="max-w-full my-16 md:my-20 mx-4 md:mx-48 min-h-screen relative overflow-hidden">
       <div 
         className="absolute inset-0 opacity-5"
         style={{

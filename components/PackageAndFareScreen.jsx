@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useFareCalculator } from '@/hooks/useFareCalculator';
-import { usePackageValidation } from '@/hooks/usePackageValidation'; 
+import { usePackageValidation } from '@/hooks/usePackageValidation';
 import DeliverySummaryCard from '@/components/PackageAndFare/DeliverySummaryCard';
 import PackageSection from '@/components/PackageAndFare/PackageSection';
 import FareSection from '@/components/PackageAndFare/FareSection';
@@ -15,12 +15,15 @@ export default function PackageAndFareScreen({
   onPackageConfirmed,
   loading,
 }) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const [packageDetails, setPackageDetails] = useState({
     size: '',
     description: '',
     isFragile: false,
     pickupTime: 'courier',
-    // Add contact details here
     pickupContact: {
       pickupContactName: '',
       pickupPhone: '',
@@ -63,7 +66,6 @@ export default function PackageAndFareScreen({
     setPackageDetails((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Add handlers for contact details
   const handlePickupContactChange = (contactDetails) => {
     setPackageDetails((prev) => ({
       ...prev,
@@ -84,25 +86,10 @@ export default function PackageAndFareScreen({
   };
 
   return (
-    <div className="min-h-screen mt-28 bg-gray-50 pb-32">
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-8">
+    <div className="min-h-screen bg-gray-50 py-0 md:py-32">
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <section className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={onBack}
-              className="text-[#3A0A21] font-semibold flex items-center"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back
-            </button>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-gray-900">
-                  Delivery Route
-                </h3>
-              </div>
-            </div>
-          </div>
+          <h2 className="font-bold text-lg text-gray-900">Delivery Route</h2>
 
           <DeliverySummaryCard
             delivery={delivery}
@@ -118,10 +105,12 @@ export default function PackageAndFareScreen({
           onPackageDetailChange={handlePackageDetailChange}
           errors={errors}
         />
+
         <PickupOptions
           packageDetails={packageDetails}
           onPackageDetailChange={handlePackageDetailChange}
         />
+
         <FareSection
           fareDetails={fareDetails}
           onFareChange={handleFareChange}
