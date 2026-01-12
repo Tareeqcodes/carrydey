@@ -1,4 +1,4 @@
-import Trackdelivery from "@/components/courier/trackdelivery"
+import Trackdelivery from "@/components/courier/Trackdelivery"
 
 export default function page() {
   return (
