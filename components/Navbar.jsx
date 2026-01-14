@@ -11,7 +11,7 @@ const getNavLinks = (user, role) => {
   if (!user) {
     return [
       { href: '/send', label: 'Send', icon: Send },
-      { href: '/travel', label: 'Earn', icon: MapPin },
+      { href: '/onboardagency', label: 'Earn', icon: MapPin },
     ];
   }
 
