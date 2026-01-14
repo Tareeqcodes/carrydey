@@ -1,5 +1,5 @@
 'use client';
-import { DollarSign, TrendingUp, Plus, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function FareSection({
   fareDetails,
@@ -7,19 +7,7 @@ export default function FareSection({
   suggestedFare,
   errors,
 }) {
-  const fareIncrease =
-    fareDetails.suggestedFare > 0
-      ? (
-          ((fareDetails.offeredFare - fareDetails.suggestedFare) /
-            fareDetails.suggestedFare) *
-          100
-        ).toFixed(0)
-      : 0;
-
-  const handleQuickAdd = (amount) => {
-    const newFare = fareDetails.offeredFare + amount;
-    onFareChange(newFare);
-  };
+  
 
   return (
     <section className="space-y-4">
@@ -70,19 +58,7 @@ export default function FareSection({
             </div>
           )}
           
-          {fareDetails.offeredFare > suggestedFare && (
-            <div className="mt-4 bg-white/15 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5" />
-                <span className="font-semibold">Increased Visibility!</span>
-              </div>
-              <p className="text-sm text-white/90">
-                Your offer is {fareIncrease}% higher than suggested. This
-                significantly increases your chances of finding a traveler
-                quickly!
-              </p>
-            </div>
-          )}
+         
         </div>
       </div>
     </section>

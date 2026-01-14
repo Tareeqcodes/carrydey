@@ -6,13 +6,13 @@ const ContactDetailsStep = ({ formData, errors, onInputChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900">Contact Details</h2>
-        <p className="text-gray-600 text-sm md:text-lg mt-2">Primary contact information for your organization</p>
+        <h2 className="text-lg font-semibold text-gray-900">Primary contact information for your organization</h2>
+        
       </div>
 
       <div className="space-y-4">
         <Input
-          label="Contact Person Name"
+          label="Contact Name"
           value={formData.contactPerson}
           onChange={(e) => onInputChange('contactPerson', e.target.value)}
           placeholder="Full name of contact person"
@@ -38,7 +38,7 @@ const ContactDetailsStep = ({ formData, errors, onInputChange }) => {
             type="tel"
             value={formData.phone}
             onChange={(e) => onInputChange('phone', e.target.value)}
-            placeholder="+1 (555) 123-4567"
+            placeholder="+2349124498160"
             icon={Phone}
             error={errors.phone}
             required
@@ -49,7 +49,7 @@ const ContactDetailsStep = ({ formData, errors, onInputChange }) => {
             type="tel"
             value={formData.alternatePhone}
             onChange={(e) => onInputChange('alternatePhone', e.target.value)}
-            placeholder="+1 (555) 987-6543"
+            placeholder="+2349124498160"
             icon={Phone}
           />
         </div>

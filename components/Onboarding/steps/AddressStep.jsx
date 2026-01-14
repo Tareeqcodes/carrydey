@@ -5,8 +5,8 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900">Business Address</h2>
-        <p className="text-gray-600 text-sm md:text-lg mt-2">Primary business location for official correspondence</p>
+        <h2 className="text-lg font-semibold text-gray-900">Primary business location for official correspondence</h2>
+        
       </div>
 
       <div className="space-y-4">

@@ -25,8 +25,8 @@ const DocumentsStep = ({ formData, errors, onFileUpload }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Required Documents</h2>
-        <p className="text-gray-600 mt-2">Upload necessary documents for verification</p>
+        <h2 className="text-lg font-semibold text-gray-900">Upload necessary documents for verification</h2>
+       
         <p className="text-sm text-gray-500 mt-1">
           Max file size: 5MB each. Supported formats: PDF, JPG, PNG
         </p>

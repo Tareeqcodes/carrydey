@@ -1,6 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { tablesDB } from '@/lib/config/Appwriteconfig';
 import useChooseTraveler from '@/hooks/useChooseTraveler';
 import AgencyLoadingSkeleton from '@/ui/AgencyLoadingSkeleton';
 import AgencyEmptyState from '@/ui/AgencyEmptyState';
@@ -11,9 +12,19 @@ const ChooseTraveler = () => {
   const [travelers, setTravelers] = useState([]);
   const [selectedTraveler, setSelectedTraveler] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+   const [bookingLoading, setBookingLoading] = useState(false); 
+  const [deliveryId, setDeliveryId] = useState(null);
   const { agencies, loading, error } = useChooseTraveler();
+  const router = useRouter(); 
 
-  // Transform agencies data to match the expected traveler format
+
+  useEffect(() => {
+    const latestDeliveryId = sessionStorage.getItem('latestDeliveryId');
+    if (latestDeliveryId) {
+      setDeliveryId(latestDeliveryId);
+    }
+  }, []);  
+
   useEffect(() => {
     if (agencies && agencies.length > 0) {
       const transformedTravelers = agencies.map((agency) => ({
@@ -48,10 +59,42 @@ const ChooseTraveler = () => {
     setShowConfirmation(true);
   };
 
-  const handleConfirmBooking = () => {
-    alert(`Booking confirmed with ${selectedTraveler.name}!`);
-    setShowConfirmation(false);
+   const handleConfirmBooking = async () => {
+    if (!selectedTraveler || !deliveryId) {
+      alert('Missing delivery or agency information');
+      return;
+    }
+
+    setBookingLoading(true);
+    
+    try {
+      // Update the delivery with the assigned agency
+      await tablesDB.updateRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId: deliveryId,
+        data: {
+          assignedAgencyId: selectedTraveler.id,
+         
+          status: 'pending', 
+        },
+      });
+
+      sessionStorage.removeItem('latestDeliveryId');
+      sessionStorage.setItem('agencyId', selectedTraveler.id);
+      sessionStorage.setItem('agencyName', selectedTraveler.name);
+
+      alert(`Delivery request sent to ${selectedTraveler.name}!`);
+      setShowConfirmation(false);
+      router.push('/trackcourier');
+    } catch (error) {
+      console.error('Error assigning delivery to agency:', error);
+      alert('Failed to assign delivery. Please try again.');
+    } finally {
+      setBookingLoading(false);
+    }
   };
+
 
   if (error) {
     return (
@@ -106,6 +149,7 @@ const ChooseTraveler = () => {
           traveler={selectedTraveler}
           onCancel={() => setShowConfirmation(false)}
           onConfirm={handleConfirmBooking}
+          loading={bookingLoading}
         />
       )}
     </div>

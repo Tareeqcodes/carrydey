@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Package, ArrowRight } from 'lucide-react';
+import { User, Package, Building } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
@@ -12,11 +12,36 @@ export default function Onboarding() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
-  const [userName, setUserName] = useState('');
   const [role, setRole] = useState('');
-  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
+
+  const roles = [
+    {
+      id: 'sender',
+      title: 'Sender',
+      description: 'Send packages & items',
+      icon: User,
+      color: 'bg-blue-50 border-blue-200 text-blue-700',
+      activeColor: 'bg-blue-600 border-blue-600 text-white',
+    },
+    {
+      id: 'courier',
+      title: 'Independent Courier',
+      description: 'Deliver & earn money',
+      icon: Package,
+      color: 'bg-green-50 border-green-200 text-green-700',
+      activeColor: 'bg-green-600 border-green-600 text-white',
+    },
+    {
+      id: 'agency',
+      title: 'Agency',
+      description: 'Manage couriers & logistics',
+      icon: Building,
+      color: 'bg-purple-50 border-purple-200 text-purple-700',
+      activeColor: 'bg-purple-600 border-purple-600 text-white',
+    },
+  ];
 
   useEffect(() => {
     if (loading) {
@@ -43,7 +68,9 @@ export default function Onboarding() {
       });
 
       if (response.rows.length > 0 && response.rows[0].onboardingCompleted) {
-        router.push('/send');
+        // If already onboarded, redirect based on role
+        const userRole = response.rows[0].role;
+        handleRoleBasedRedirect(userRole);
       }
     } catch (err) {
       console.error('Failed to check onboarding status:', err);
@@ -52,46 +79,63 @@ export default function Onboarding() {
     }
   };
 
+  const handleRoleBasedRedirect = (userRole) => {
+    switch (userRole) {
+      case 'sender':
+        router.push('/send');
+        break;
+      case 'courier':
+      case 'agency':
+        router.push('/onboardagency');
+        break;
+      default:
+        router.push('/');
+    }
+  };
+
   const handleSubmit = async () => {
-    // Add null check at the beginning of handleSubmit
     if (!user) {
-      console.error('No user found');
       router.push('/login');
       return;
     }
 
-    if (!userName.trim() || !role) return;
+    if (!role) return;
 
     try {
       setIsLoading(true);
+      
       await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
         rowId: ID.unique(),
         data: {
           userId: user.$id,
-          userName: userName || user.email.split('@')[0],
+          userName: user.email.split('@')[0], 
           role,
-          phone,
+          phone: null,
           onboardingCompleted: true,
         },
       });
 
+      // Create wallet for user
       const walletResult = await WalletService.createWallet(
         user.$id,
         user.email,
-        userName || user.name
+        user.email.split('@')[0] 
       );
 
       if (!walletResult.success) {
         console.error('Wallet creation failed:', walletResult.error);
-        // Don't block onboarding, but log the error
-        alert(
-          'Profile created but wallet setup incomplete. You can set it up later.'
-        );
       }
 
-      router.push('/send');
+      if (role === 'sender') {
+        router.push('/send');
+      } else if (role === 'courier' || role === 'agency') {
+        router.push('/onboardagency');
+      } else {
+        router.push('/');
+      }
+      
     } catch (err) {
       console.error('Failed to save onboarding:', err);
       alert('Failed to save profile. Please try again.');
@@ -100,164 +144,112 @@ export default function Onboarding() {
     }
   };
 
-  // Don't render the form if user is null
   if (loading || checkingProfile || !user) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#3A0A21] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 min-h-screen bg-white p-6 flex flex-col justify-between">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mt-10"
-      >
-        <h1 className="text-2xl font-bold text-[#3A0A21]">
-          Welcome to Carrydey 👋
-        </h1>
-        <p className="text-gray-600 mt-2 text-sm">
-          Let's quickly set up your profile
-        </p>
-      </motion.div>
+    <div className="min-h-screen bg-white pb-28 pt-5 md:py-20">
+      <div className="max-w-md mx-auto px-6 py-10">
 
-      <div className="space-y-4 mt-10">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-2"
-        >
-          <label className="text-sm font-medium text-[#3A0A21]">
-            Your Full Name
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-2xl font-bold text-[#3A0A21]">
+            Welcome to Carrydey 🖐️
+          </h1>
+          <p className="text-gray-600 text-sm font-semibold mt-1">
+            Let's set up your account
+          </p>
+        </div>
+
+        {/* Role Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-4">
+            What describes you best?
           </label>
-          <input
-            type="text"
-            placeholder="Enter your name"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#3A0A21] text-[15px] text-[#3A0A21] placeholder:text-gray-400"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-          />
-        </motion.div>
+          <div className="space-y-3">
+            {roles.map((item) => {
+              const Icon = item.icon;
+              const isActive = role === item.id;
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-2"
-        >
-          <label className="text-sm font-medium text-[#3A0A21]">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            placeholder="Enter your phone number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#3A0A21] text-[15px] text-[#3A0A21] placeholder:text-gray-400"
-          />
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <label className="text-sm font-semibold text-[#3A0A21]">
-            Choose Your Role
-          </label>
-
-          <div className="grid grid-cols-2 gap-4 mt-3 pb-8 pt-2">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setRole('sender')}
-              className={`cursor-pointer border-2 rounded-2xl p-5 flex flex-col items-center justify-center transition-all ${
-                role === 'sender'
-                  ? 'border-[#3A0A21] bg-[#3A0A21] shadow-lg'
-                  : 'border-[#3A0A21] bg-white hover:bg-gray-50'
-              }`}
-            >
-              <User
-                size={26}
-                className={
-                  role === 'sender' ? 'text-white mb-2' : 'text-[#3A0A21] mb-2'
-                }
-              />
-              <span
-                className={`font-medium ${
-                  role === 'sender' ? 'text-white' : 'text-[#3A0A21]'
-                }`}
-              >
-                Sender
-              </span>
-              <p
-                className={`text-xs text-center mt-1 leading-tight ${
-                  role === 'sender' ? 'text-white/80' : 'text-gray-500'
-                }`}
-              >
-                Send packages fast & cheap
-              </p>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setRole('traveler')}
-              className={`cursor-pointer border-2 rounded-2xl p-5 flex flex-col items-center justify-center transition-all ${
-                role === 'traveler'
-                  ? 'border-[#3A0A21] bg-[#3A0A21] shadow-lg'
-                  : 'border-[#3A0A21] bg-white hover:bg-gray-50'
-              }`}
-            >
-              <Package
-                size={26}
-                className={
-                  role === 'traveler'
-                    ? 'text-white mb-2'
-                    : 'text-[#3A0A21] mb-2'
-                }
-              />
-              <span
-                className={`font-medium ${
-                  role === 'traveler' ? 'text-white' : 'text-[#3A0A21]'
-                }`}
-              >
-                Traveler
-              </span>
-              <p
-                className={`text-xs text-center mt-1 leading-tight ${
-                  role === 'traveler' ? 'text-white/80' : 'text-gray-500'
-                }`}
-              >
-                Earn money delivering items
-              </p>
-            </motion.div>
+              return (
+                <motion.button
+                  key={item.id}
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setRole(item.id)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-all ${
+                    isActive
+                      ? item.activeColor
+                      : `${item.color} hover:opacity-90`
+                  }`}
+                >
+                  <div
+                    className={`p-2 rounded-lg ${
+                      isActive ? 'bg-white/20' : 'bg-white'
+                    }`}
+                  >
+                    <Icon size={20} />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">{item.title}</div>
+                    <div
+                      className={`text-xs ${
+                        isActive ? 'text-white/90' : 'opacity-70'
+                      }`}
+                    >
+                      {item.description}
+                    </div>
+                  </div>
+                  {isActive && (
+                    <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-current"></div>
+                    </div>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
-        </motion.div>
-      </div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="pb-6"
-      >
-        <motion.button
-          whileHover={
-            !isLoading && userName.trim() && role ? { scale: 1.02 } : {}
-          }
-          whileTap={
-            !isLoading && userName.trim() && role ? { scale: 0.98 } : {}
-          }
-          onClick={handleSubmit}
-          disabled={isLoading || !userName.trim() || !role}
-          className={`w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all
-            ${
-              !userName.trim() || !role
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-[#3A0A21] text-white hover:bg-[#4A1231] active:scale-95 shadow-lg'
+          
+        
+        </div>
+
+        <div className="mt-12 pt-4">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSubmit}
+            disabled={isLoading || !role}
+            className={`w-full py-3.5 rounded-lg font-medium transition-colors ${
+              !role
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-[#3A0A21] text-white hover:bg-[#4A0A31]'
             }`}
-        >
-          {isLoading ? 'Saving...' : 'Continue'}
-          <ArrowRight size={18} />
-        </motion.button>
-      </motion.div>
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Setting up...
+              </span>
+            ) : (
+              `Continue as ${role === 'sender' ? 'Sender' : role === 'courier' ? 'Independent Courier' : 'Agency'}`
+            )}
+          </motion.button>
+
+          <button
+            onClick={() => router.push('/')}
+            className="w-full mt-3 py-3 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+          >
+            Skip for now
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -16,12 +16,10 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg md:text-2xl font-bold text-gray-900">
-          Basic Organization Information
-        </h2>
-        <p className="text-gray-600 text-sm md:text-lg mt-2">
+        <h2 className="text-lg font-semibold text-gray-900">
           Tell us about your logistics company
-        </p>
+        </h2>
+        
       </div>
 
       <div className="space-y-4">

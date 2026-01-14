@@ -73,10 +73,10 @@ const BusinessDetailsStep = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-          Business Details
+        <h2 className="text-lg font-semibold text-gray-900">
+         Tell us more about your operations
         </h2>
-        <p className="text-gray-600 mt-2">Tell us more about your operations</p>
+      
       </div>
 
       <div className="space-y-6">

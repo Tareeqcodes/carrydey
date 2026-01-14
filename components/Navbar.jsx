@@ -1,44 +1,45 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, Send, MapPin, Package, User, Plus } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Home, Send, MapPin, Package, User } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useUserRole } from '@/hooks/useUserRole';
 import NavbarMorphism from '@/ui/NavbarMorphism';
 
-// Define navigation links based on user role
 const getNavLinks = (user, role) => {
   if (!user) {
     return [
-      { href: '/', label: 'Home', icon: Home },
       { href: '/send', label: 'Send', icon: Send },
-      { href: '/travel', label: 'Travel', icon: MapPin },
+      { href: '/travel', label: 'Earn', icon: MapPin },
     ];
   }
 
   if (role === 'sender') {
     return [
-      { href: '/', label: 'Home', icon: Home },
       { href: '/send', label: 'Send', icon: Send },
       { href: '/track', label: 'Track', icon: Package },
-      { href: '/hub', label: 'Hub', icon: User },
+      { href: '/hub', label: 'Hub', icon: User }
     ];
-  }
-
-  if (role === 'traveler') {
+  } else if (role === 'traveler') {
     return [
-      { href: '/', label: 'Home', icon: Home },
-      { href: '/send', label: 'Send', icon: Send },
-      { href: '/travel', label: 'Travel', icon: MapPin },
       { href: '/track', label: 'Track', icon: Package },
       { href: '/hub', label: 'Hub', icon: User },
+      
     ];
+  } else if (role === 'agency') {
+    return [
+      { href: '/track', label: 'Track', icon: Package },
+       { href: '/agency/couriers', label: 'Couriers', icon: User },
+      { href: '/hub', label: 'Hub', icon: User }
+    ];
+  } else {
+    return [
+        { href: '/', label: 'Home', icon: Home },
+        { href: '/hub', label: 'Hub', icon: User },
+      ];
   }
 
-  return [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/hub', label: 'Hub', icon: User },
-  ];
 };
 
 const MobileNavItem = ({ href, label, icon: Icon, isActive, onClick }) => (
@@ -65,20 +66,37 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive, onClick }) => (
   </Link>
 );
 
-const DesktopNavLink = ({ href, label, icon: Icon }) => (
-  <Link
-    href={href}
-    className="flex items-center space-x-2 text-gray-700 hover:text-[#3A0A21] transition-colors font-medium px-4 py-2 rounded-lg hover:bg-gray-50"
-  >
-    <Icon size={20} />
-    <span>{label}</span>
-  </Link>
-);
+const DesktopNavLink = ({ href, label, icon: Icon, isActive }) => {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+        isActive
+          ? 'text-[#3A0A21] bg-[#3A0A21]/5'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+      }`}
+    >
+      <Icon size={18} />
+      <span>{label}</span>
+    </Link>
+  );
+};
 
 const Navbar = () => {
-  const [activeTab, setActiveTab] = useState('/');
+  const pathname = usePathname();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('/');
   const { role, loading } = useUserRole();
+
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (loading) {
     return <NavbarMorphism />;
@@ -88,58 +106,47 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-        <div className="flex items-center justify-between px-6 h-16">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-[#3A0A21]">Carrydey</span>
-          </Link>
-          
-          {!user && (
-            <Link
-              href="/login"
-              className="bg-[#3A0A21] text-white text-xs px-4 py-2 rounded-full hover:bg-[#4A0A31] transition-colors font-semibold"
-            >
-              Login
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Spacer for mobile top bar */}
-      <div className="md:hidden h-16" />
-
-      {/* Desktop Navbar - Top */}
-      <nav className="hidden md:block fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <Link href="/" className="flex items-center space-x-2">
+      {/* Desktop Navbar */}
+      <nav
+        className={`hidden md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-white/95 backdrop-blur-sm border-b border-gray-200'
+            : 'bg-white border-b border-gray-100'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="flex items-center gap-2">
               <span className="text-xl font-bold text-[#3A0A21]">Carrydey</span>
             </Link>
 
-            <div className="flex items-center space-x-2">
-              {navLinks.slice(1).map((link) => (
+            {/* Navigation Links */}
+            <div className="flex items-center gap-1">
+              {navLinks.map((link) => (
                 <DesktopNavLink
                   key={link.href}
                   href={link.href}
                   label={link.label}
                   icon={link.icon}
+                  isActive={pathname === link.href}
                 />
               ))}
-
-              {!user && (
-                <Link
-                  href="/login"
-                  className="ml-4 bg-[#3A0A21] text-white text-sm px-6 py-2.5 rounded-full hover:bg-[#4A0A31] transition-colors font-semibold"
-                >
-                  Get Started
-                </Link>
-              )}
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Navbar - Bottom */}
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 h-14">
+          <Link href="/" className="text-lg font-bold text-[#3A0A21]">
+            Carrydey
+          </Link>
+          
+        </div>
+      </div>
+ 
+      {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div className="bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg">
           <div className="flex items-center justify-around px-2 pb-safe">
@@ -156,6 +163,10 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Spacers */}
+      <div className="md:hidden h-14" />
+      <div className="hidden md:block h-16" />
     </>
   );
 };

@@ -19,7 +19,7 @@ export default function NotUser() {
             <h1 className="text-3xl font-bold text-[#3A0A21] mb-3">
               Sign in Required
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-sm font-semibold">
               Please sign in to create a delivery and send your package
             </p>
           </div>

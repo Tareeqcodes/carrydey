@@ -22,8 +22,8 @@ const StepNavigation = ({
         
         <Button
           onClick={currentStep === 6 ? onSubmit : onNext}
-          loading={isSubmitting}  // Changed from 'loading' to 'isSubmitting'
-          disabled={isSubmitting}  // Add disabled state
+          loading={isSubmitting}  
+          disabled={isSubmitting} 
           className="flex items-center gap-2"
         >
           {currentStep === 6 ? (
@@ -54,16 +54,6 @@ const StepNavigation = ({
             }`}
           ></div>
         ))}
-      </div>
-      
-      {/* Bottom note */}
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-500">
-          Already have an account?{' '}
-          <a href="#" className="text-[#3A0A21] hover:underline font-medium">
-            Sign in here
-          </a>
-        </p>
       </div>
     </>
   );

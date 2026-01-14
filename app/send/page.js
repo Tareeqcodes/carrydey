@@ -32,12 +32,17 @@ export default function CreateDelivery() {
           dropoff: data.dropoff,
           routeData: data.routeData,
         }));
-        
+
         // If skipLocationScreen flag is set, go directly to package screen
-        if (data.skipLocationScreen && data.pickup && data.dropoff && data.routeData) {
+        if (
+          data.skipLocationScreen &&
+          data.pickup &&
+          data.dropoff &&
+          data.routeData
+        ) {
           setCurrentScreen('package');
         }
-        
+
         sessionStorage.removeItem('deliveryData');
       } catch (error) {
         console.error('Error parsing stored delivery data:', error);
@@ -78,6 +83,8 @@ export default function CreateDelivery() {
 
     setLoading(true);
     try {
+      const deliveryId = ID.unique();
+
       const deliveryDataToSave = {
         pickupAddress:
           pickup.place_name?.substring(0, 500) || 'Pickup location',
@@ -117,17 +124,19 @@ export default function CreateDelivery() {
         packageDescription: packageDetails?.description,
         isFragile: packageDetails?.isFragile || false,
         pickupTime: packageDetails?.pickupTime || 'courier',
+        userId: user.$id,
+        assignedAgencyId: null,
       };
 
       const result = await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: ID.unique(),
+        rowId: deliveryId,
         data: deliveryDataToSave,
       });
 
       console.log('Delivery created successfully:', result);
-      // alert('Delivery created successfully! Finding travelers for you...');
+      sessionStorage.setItem('latestDeliveryId', deliveryId);
       router.push('/check');
     } catch (error) {
       console.error('Error saving delivery:', error);

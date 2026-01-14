@@ -37,7 +37,7 @@ export default function Main() {
   };
 
   return (
-    <main className="pt-32 pb-20 px-6 lg:px-8">
+    <main className="pt-8 md:pt-12 pb-20 px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Content */}
@@ -71,7 +71,7 @@ export default function Main() {
               disabled={!pickup || !dropoff}
               className="w-full bg-[#3A0A21] text-white py-4 rounded-lg hover:bg-[#4A0A31] transition-colors font-medium text-lg cursor-pointer shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {pickup && dropoff ? 'Find a Traveler' : 'Enter pickup & dropoff'}
+              {pickup && dropoff ? 'Find a Courier' : 'Enter pickup & dropoff'}
             </button>
 
             {/* Feature Pills */}
@@ -216,7 +216,7 @@ export default function Main() {
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-gray-700">
-                  12 travelers nearby
+                  12 courier nearby
                 </span>
               </div>
             </div>

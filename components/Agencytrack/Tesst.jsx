@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   MapPin,
   Package,
@@ -29,19 +29,16 @@ import {
   User,
   LogOut,
   AlertCircle,
-  RefreshCw,
   Settings,
 } from 'lucide-react';
 import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
-import { useAuth } from '@/hooks/Authcontext';
 
 const TrackAgencyDelivery = () => {
   // State for navigation
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
 
-   const { requests, loading: requestsLoading, error: requestsError, refreshRequests } = useAgencyDeliveries(user?.$id);
+   const { requests, loading: requestsLoading, error: requestsError, refreshRequests } = useAgencyDeliveries(agencyId);
 
   // Assignment modal state
   const [assignmentModal, setAssignmentModal] = useState({
@@ -53,15 +50,35 @@ const TrackAgencyDelivery = () => {
     packageDetails: null,
   });
 
-  const [deliveryRequests, setDeliveryRequests] = useState([]);
-  
-  // Update delivery requests when data is fetched
-  useEffect(() => {
-    if (requests && requests.length > 0) {
-      setDeliveryRequests(requests);
-    }
-  }, [requests]);
-  
+  // Mock data state
+  const [deliveryRequests, setDeliveryRequests] = useState([
+    {
+      id: 1,
+      pickup: '123 Main St, Downtown',
+      dropoff: '456 Oak Ave, Uptown',
+      distance: '5.2 km',
+      payout: '$45.00',
+      packageSize: 'Medium',
+      sender: "John's Electronics",
+      status: 'pending',
+      customerName: 'John Smith',
+      customerPhone: '+1 (555) 123-4567',
+      instructions: 'Ring bell twice, leave at front door',
+    },
+    {
+      id: 2,
+      pickup: '789 Market St',
+      dropoff: '101 Business Park',
+      distance: '12.8 km',
+      payout: '$68.50',
+      packageSize: 'Large',
+      sender: 'Tech Supplies Co',
+      status: 'pending',
+      customerName: 'Sarah Johnson',
+      customerPhone: '+1 (555) 987-6543',
+      instructions: 'Call upon arrival',
+    },
+  ]);
 
   const [activeDeliveries, setActiveDeliveries] = useState([
     {
@@ -227,11 +244,11 @@ const TrackAgencyDelivery = () => {
   ];
 
   // Handle delivery request actions
-  
   const handleAcceptRequest = (id) => {
     const request = deliveryRequests.find((r) => r.id === id);
     setDeliveryRequests((prev) => prev.filter((r) => r.id !== id));
 
+    // Add to active deliveries as pending assignment
     const newDeliveryId = Date.now();
     setActiveDeliveries((prev) => [
       ...prev,
@@ -253,6 +270,7 @@ const TrackAgencyDelivery = () => {
       },
     ]);
 
+    // Auto-open assignment modal
     setTimeout(() => {
       setAssignmentModal({
         isOpen: true,
@@ -266,22 +284,26 @@ const TrackAgencyDelivery = () => {
   };
 
   const handleDeclineRequest = (id) => {
-    if (confirm('Are you sure you want to decline this delivery request?')) {
-      setDeliveryRequests((prev) => prev.filter((r) => r.id !== id));
-    }
+    setDeliveryRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
+  // Handle driver assignment
   const completeAssignment = () => {
     if (!assignmentModal.selectedDriver) return;
 
+    // Find the pending delivery
     const pendingDeliveryIndex = activeDeliveries.findIndex(
-      (d) => d.id === assignmentModal.deliveryId && d.status === 'pending_assignment'
+      (d) =>
+        d.id === assignmentModal.deliveryId && d.status === 'pending_assignment'
     );
 
     if (pendingDeliveryIndex !== -1) {
-      const selectedDriver = drivers.find((d) => d.id === assignmentModal.selectedDriver);
+      const selectedDriver = drivers.find(
+        (d) => d.id === assignmentModal.selectedDriver
+      );
       const updatedDeliveries = [...activeDeliveries];
 
+      // Update the delivery with assigned driver
       updatedDeliveries[pendingDeliveryIndex] = {
         ...updatedDeliveries[pendingDeliveryIndex],
         driver: selectedDriver.name,
@@ -295,6 +317,7 @@ const TrackAgencyDelivery = () => {
 
       setActiveDeliveries(updatedDeliveries);
 
+      // Update driver status
       setDrivers((prev) =>
         prev.map((driver) =>
           driver.id === assignmentModal.selectedDriver
@@ -320,6 +343,7 @@ const TrackAgencyDelivery = () => {
     });
   };
 
+  // Handle delivery status updates (simulating driver actions)
   const updateDeliveryStatus = (deliveryId, newStatus) => {
     setActiveDeliveries((prev) =>
       prev.map((delivery) => {
@@ -333,11 +357,12 @@ const TrackAgencyDelivery = () => {
 
           const newProgress = progressMap[newStatus] || delivery.progress;
 
+          // If delivered, update driver status and earnings
           if (newStatus === 'delivered') {
             setDrivers((prevDrivers) =>
               prevDrivers.map((driver) => {
                 if (driver.id === delivery.driverId) {
-                  const payout = parseFloat(delivery.payout.replace(/[₦$,]/g, ''));
+                  const payout = parseFloat(delivery.payout.replace('$', ''));
                   return {
                     ...driver,
                     status: 'available',
@@ -350,13 +375,22 @@ const TrackAgencyDelivery = () => {
                 return driver;
               })
             );
+
+            // Update total earnings
+            const payout = parseFloat(delivery.payout.replace('$', ''));
+            setEarnings((prev) => ({
+              ...prev,
+              today: prev.today + payout,
+              walletBalance: prev.walletBalance + payout,
+            }));
           }
 
           return {
             ...delivery,
             status: newStatus,
             progress: newProgress,
-            estimatedTime: newStatus === 'delivered' ? 'Completed' : delivery.estimatedTime,
+            estimatedTime:
+              newStatus === 'delivered' ? 'Completed' : delivery.estimatedTime,
           };
         }
         return delivery;
@@ -520,15 +554,18 @@ const TrackAgencyDelivery = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold">Delivery Requests</h2>
-                <p className="text-gray-500">Manage incoming delivery requests</p>
+                <p className="text-gray-500">
+                  Manage incoming delivery requests
+                </p>
               </div>
               <div className="flex gap-2">
-                <button onClick={refreshRequests} className="p-2 border border-gray-300 rounded-xl hover:bg-gray-50" title="Refresh">
-                  <RefreshCw className={`w-5 h-5 ${requestsLoading ? 'animate-spin' : ''}`} />
-                </button>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input type="text" placeholder="Search requests..." className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent" />
+                  <input
+                    type="text"
+                    placeholder="Search requests..."
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent"
+                  />
                 </div>
                 <button className="p-2 border border-gray-300 rounded-xl">
                   <Filter className="w-5 h-5" />
@@ -536,97 +573,102 @@ const TrackAgencyDelivery = () => {
               </div>
             </div>
 
-            {requestsError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">
-                Error loading requests: {requestsError}
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {deliveryRequests.map((request) => (
+                <div
+                  key={request.id}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                        Pending
+                      </span>
+                      <p className="text-sm text-gray-500 mt-1">
+                        From: {request.sender}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Customer: {request.customerName}
+                      </p>
+                    </div>
+                    <button className="p-2 hover:bg-gray-100 rounded-lg">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                  </div>
 
-            {requestsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
-              </div>
-            ) : deliveryRequests.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center">
-                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Pending Requests</h3>
-                <p className="text-gray-500">New delivery requests will appear here</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {deliveryRequests.map((request) => (
-                  <div key={request.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-start justify-between mb-4">
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-green-600" />
                       <div>
-                        <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-                          Pending
-                        </span>
-                        <p className="text-sm text-gray-500 mt-1">From: {request.sender}</p>
-                        <p className="text-sm text-gray-500">Customer: {request.customerName}</p>
-                      </div>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                        <div>
-                          <p className="text-sm font-medium">Pickup:</p>
-                          <p className="text-sm text-gray-600">{request.pickup}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-red-600" />
-                        <div>
-                          <p className="text-sm font-medium">Dropoff:</p>
-                          <p className="text-sm text-gray-600">{request.dropoff}</p>
-                        </div>
-                      </div>
-                      {request.instructions && (
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />
-                          <p className="text-sm text-gray-600">{request.instructions}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-3 bg-gray-50 rounded-xl">
-                        <p className="text-sm text-gray-500">Distance</p>
-                        <p className="font-semibold">{request.distance}</p>
-                      </div>
-                      <div className="text-center p-3 bg-gray-50 rounded-xl">
-                        <p className="text-sm text-gray-500">Package</p>
-                        <p className="font-semibold">{request.packageSize}</p>
-                      </div>
-                      <div className="text-center p-3 bg-gray-50 rounded-xl">
-                        <p className="text-sm text-gray-500">Customer</p>
-                        <p className="font-semibold text-xs">{request.customerPhone}</p>
+                        <p className="text-sm font-medium">Pickup:</p>
+                        <p className="text-sm text-gray-600">
+                          {request.pickup}
+                        </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-red-600" />
                       <div>
-                        <p className="text-sm text-gray-500">Estimated Payout</p>
-                        <p className="text-xl font-bold text-[#3A0A21]">{request.payout}</p>
+                        <p className="text-sm font-medium">Dropoff:</p>
+                        <p className="text-sm text-gray-600">
+                          {request.dropoff}
+                        </p>
                       </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => handleDeclineRequest(request.id)} className="px-4 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
-                          <XCircle className="w-4 h-4 inline mr-1" />
-                          Decline
-                        </button>
-                        <button onClick={() => handleAcceptRequest(request.id)} className="btn-primary flex items-center">
-                          <CheckCircle className="w-4 h-4 inline mr-1" />
-                          Accept & Assign
-                        </button>
+                    </div>
+                    {request.instructions && (
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />
+                        <p className="text-sm text-gray-600">
+                          {request.instructions}
+                        </p>
                       </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="text-center p-3 bg-gray-50 rounded-xl">
+                      <p className="text-sm text-gray-500">Distance</p>
+                      <p className="font-semibold">{request.distance}</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-xl">
+                      <p className="text-sm text-gray-500">Package</p>
+                      <p className="font-semibold">{request.packageSize}</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-xl">
+                      <p className="text-sm text-gray-500">Customer</p>
+                      <p className="font-semibold text-xs">
+                        {request.customerPhone}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Estimated Payout</p>
+                      <p className="text-xl font-bold text-[#3A0A21]">
+                        {request.payout}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDeclineRequest(request.id)}
+                        className="px-4 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                      >
+                        <XCircle className="w-4 h-4 inline mr-1" />
+                        Decline
+                      </button>
+                      <button
+                        onClick={() => handleAcceptRequest(request.id)}
+                        className="btn-primary flex items-center"
+                      >
+                        <CheckCircle className="w-4 h-4 inline mr-1" />
+                        Accept & Assign
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         );
 

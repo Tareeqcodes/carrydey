@@ -1,7 +1,7 @@
 import React from 'react';
 import { Star, CheckCircle } from 'lucide-react';
 
-const SelectAgencyModal = ({ traveler, onCancel, onConfirm }) => {
+const SelectAgencyModal = ({ traveler, onCancel, loading, onConfirm }) => {
   if (!traveler) return null;
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-NG', {
@@ -88,9 +88,10 @@ const SelectAgencyModal = ({ traveler, onCancel, onConfirm }) => {
           </button>
           <button
             onClick={onConfirm}
+            disabled={loading}
             className="flex-1 py-2 text-sm md:py-3 bg-[#3A0A21] text-white rounded-lg font-medium hover:bg-[#4a0a2a] transition-colors"
           >
-            Confirm Booking
+            {loading ? 'Sending...' : 'Confirm Booking'}
           </button>
         </div>
       </div>
