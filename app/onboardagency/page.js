@@ -10,11 +10,11 @@ import AccountSetupStep from '@/components/Onboarding/steps/AccountSetupStep';
 import SuccessStep from '@/components/Onboarding/steps/SuccessStep';
 import StepNavigation from '@/components/Onboarding/steps/StepNavigation';
 import useOnboardingForm from '@/hooks/useOnboardingForm';
-// import { useAuth } from '@/hooks/Authcontext';
-// import NotUser from '@/hooks/NotUser';
+import { useAuth } from '@/hooks/Authcontext';
+import NotUser from '@/hooks/NotUser';
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   const {
     formData,
@@ -53,9 +53,9 @@ const OnboardingPage = () => {
     }
   };
 
-  //  if (!user) {
-  //   return <NotUser />;
-  // }
+   if (!user) {
+    return <NotUser />;
+  }
 
   const renderStep = () => {
     switch (currentStep) {
