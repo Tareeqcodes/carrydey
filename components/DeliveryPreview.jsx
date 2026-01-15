@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import FareCalculationBottomSheet from './FareCalculationBottomSheet';
 
 // Dynamically import the map
-const RouteMapPreview = dynamic(() => import('./RouteMapPreview'), {
+const RouteMapPreview = dynamic(() => import('../hooks/RouteMapPreview'), {
   ssr: false,
   loading: () => (
     <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center animate-pulse">

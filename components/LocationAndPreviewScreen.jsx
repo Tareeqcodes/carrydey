@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { Navigation } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import InputLocation from '@/components/InputLocation';
+import { formatNairaSimple } from '@/hooks/currency';
 
-const RouteMapPreview = dynamic(() => import('./RouteMapPreview'), {
+const RouteMapPreview = dynamic(() => import('../hooks/RouteMapPreview'), {
   ssr: false,
   loading: () => (
     <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center animate-pulse">
@@ -192,7 +193,7 @@ export default function LocationAndPreviewScreen({
                 <div>
                   <div className="flex items-center justify-center gap-1 text-gray-600 mb-1"></div>
                   <p className="text-lg font-bold text-gray-900">
-                    ₦{localRouteData.estimatedFare?.toLocaleString() || '0'}
+                    {formatNairaSimple(localRouteData.estimatedFare)}
                   </p>
                   <p className="text-xs text-gray-500">Est. fare</p>
                 </div>

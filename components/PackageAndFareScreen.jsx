@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { useFareCalculator } from '@/hooks/useFareCalculator';
 import { usePackageValidation } from '@/hooks/usePackageValidation';
 import DeliverySummaryCard from '@/components/PackageAndFare/DeliverySummaryCard';
@@ -11,7 +10,6 @@ import StickyConfirmBar from '@/components/PackageAndFare/StickyConfirmBar';
 
 export default function PackageAndFareScreen({
   delivery,
-  onBack,
   onPackageConfirmed,
   loading,
 }) {

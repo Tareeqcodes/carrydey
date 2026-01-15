@@ -8,7 +8,6 @@ export const useAgencyDeliveries = (userId) => {
   const [error, setError] = useState(null);
   const [agencyId, setAgencyId] = useState(null);
 
-  // First, fetch the agency that belongs to this user
   const fetchUserAgency = async () => {
     if (!userId) {
       console.warn('No userId provided to useAgencyDeliveries');
@@ -32,7 +31,6 @@ export const useAgencyDeliveries = (userId) => {
     }
   };
 
-  // Then fetch delivery requests for that agency
   const fetchDeliveryRequests = async (fetchedAgencyId) => {
     if (!fetchedAgencyId) {
       console.log('No agency found for this user');

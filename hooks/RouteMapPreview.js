@@ -1,7 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
 
-// Dynamically import SimpleRouteMap to avoid SSR issues
 const SimpleRouteMap = dynamic(() => import('./SimpleRouteMap'), {
   ssr: false,
   loading: () => (

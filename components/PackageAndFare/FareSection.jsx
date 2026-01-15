@@ -1,5 +1,6 @@
 'use client';
 import { AlertCircle } from 'lucide-react';
+import { formatNairaSimple } from '@/hooks/currency';
 
 export default function FareSection({
   fareDetails,
@@ -7,8 +8,6 @@ export default function FareSection({
   suggestedFare,
   errors,
 }) {
-  
-
   return (
     <section className="space-y-4">
       <div className="rounded-2xl bg-gradient-to-br from-[#3A0A21] to-[#4A0A31] p-6 text-white shadow-xl">
@@ -17,22 +16,20 @@ export default function FareSection({
             <span className="text-sm py-3 text-white/80">Suggested Fare</span>
           </div>
           <div className="text-4xl font-bold">
-            ₦{suggestedFare.toLocaleString()}
+            {formatNairaSimple(suggestedFare)}
           </div>
           <p className="text-sm text-white/70 mt-1">
             Based on distance, package size & weight
           </p>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-white/20 my-4" />
 
-        {/* Your Offer */}
         <div>
           <label className="block text-sm font-medium text-white mb-3">
             Your Offer
             <span className="ml-2 text-white/70">
-              (Minimum: ₦{suggestedFare.toLocaleString()})
+              (Minimum: {formatNairaSimple(suggestedFare)})
             </span>
           </label>
 
@@ -46,7 +43,8 @@ export default function FareSection({
               onChange={(e) => onFareChange(parseInt(e.target.value) || 0)}
               min={suggestedFare}
               className="w-full pl-12 pr-4 py-4 text-3xl font-bold bg-white/10 border-2 border-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-white/50 focus:bg-white/15 transition-all"
-              placeholder={suggestedFare.toString()}
+              placeholder={`Enter fare (min ₦${formatNairaSimple(suggestedFare)})`}
+              
             />
           </div>
 
@@ -57,8 +55,6 @@ export default function FareSection({
               <span>{errors.fare}</span>
             </div>
           )}
-          
-         
         </div>
       </div>
     </section>

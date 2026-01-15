@@ -20,7 +20,6 @@ export default function CreateDelivery() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  // Check for location data passed from homepage
   useEffect(() => {
     const storedData = sessionStorage.getItem('deliveryData');
     if (storedData) {
@@ -33,7 +32,6 @@ export default function CreateDelivery() {
           routeData: data.routeData,
         }));
 
-        // If skipLocationScreen flag is set, go directly to package screen
         if (
           data.skipLocationScreen &&
           data.pickup &&

@@ -1,9 +1,9 @@
-import Trackdelivery from "@/components/courier/Trackdelivery"
+import TrackCourierDelivery from "@/components/Tracking/TrackCourierDelivery"
 
 export default function page() {
   return (
     <div>
-      <Trackdelivery />
+      <TrackCourierDelivery />
     </div>
   )
 }

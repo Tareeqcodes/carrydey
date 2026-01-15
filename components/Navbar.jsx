@@ -2,7 +2,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Send, MapPin, Package, User } from 'lucide-react';
+import { 
+  Home, 
+  Send, 
+  PackageSearch, 
+  LayoutDashboard,
+  TrendingUp
+} from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useUserRole } from '@/hooks/useUserRole';
 import NavbarMorphism from '@/ui/NavbarMorphism';
@@ -11,35 +17,33 @@ const getNavLinks = (user, role) => {
   if (!user) {
     return [
       { href: '/send', label: 'Send', icon: Send },
-      { href: '/onboardagency', label: 'Earn', icon: MapPin },
+      { href: '/onboardagency', label: 'Earn', icon: TrendingUp },
     ];
   }
 
   if (role === 'sender') {
     return [
       { href: '/send', label: 'Send', icon: Send },
-      { href: '/track', label: 'Track', icon: Package },
-      { href: '/hub', label: 'Hub', icon: User }
+      { href: '/track', label: 'Track', icon: PackageSearch },
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard }
     ];
   } else if (role === 'traveler') {
     return [
-      { href: '/track', label: 'Track', icon: Package },
-      { href: '/hub', label: 'Hub', icon: User },
-      
+      { href: '/track', label: 'Track', icon: PackageSearch },
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard },
     ];
   } else if (role === 'agency') {
     return [
-      { href: '/track', label: 'Track', icon: Package },
-       { href: '/agency/couriers', label: 'Couriers', icon: User },
-      { href: '/hub', label: 'Hub', icon: User }
+      { href: '/track', label: 'Track', icon: PackageSearch },
+      // { href: '/agency/couriers', label: 'Couriers', icon: Users },
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard }
     ];
   } else {
     return [
-        { href: '/', label: 'Home', icon: Home },
-        { href: '/hub', label: 'Hub', icon: User },
-      ];
+      { href: '/', label: 'Home', icon: Home },
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard },
+    ];
   }
-
 };
 
 const MobileNavItem = ({ href, label, icon: Icon, isActive, onClick }) => (
@@ -142,7 +146,6 @@ const Navbar = () => {
           <Link href="/" className="text-lg font-bold text-[#3A0A21]">
             Carrydey
           </Link>
-          
         </div>
       </div>
  

@@ -86,7 +86,7 @@ const ChooseTraveler = () => {
 
       alert(`Delivery request sent to ${selectedTraveler.name}!`);
       setShowConfirmation(false);
-      router.push('/trackcourier');
+      router.push('/track');
     } catch (error) {
       console.error('Error assigning delivery to agency:', error);
       alert('Failed to assign delivery. Please try again.');
@@ -108,7 +108,6 @@ const ChooseTraveler = () => {
 
   return (
     <div className="min-h-screen pt-4 md:my-24 mx-2 md:mx-36 flex flex-col bg-white overflow-hidden">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1">
@@ -119,7 +118,6 @@ const ChooseTraveler = () => {
         </div>
       </header>
 
-      {/* Traveler Cards Section */}
       <div className="flex-1 overflow-hidden bg-white rounded-t-3xl -mt-6 shadow-2xl relative z-10">
         <div className="h-full overflow-y-auto px-4 pt-6 pb-24">
           {loading ? (
@@ -143,7 +141,6 @@ const ChooseTraveler = () => {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
       {showConfirmation && (
         <SelectAgencyModal
           traveler={selectedTraveler}
