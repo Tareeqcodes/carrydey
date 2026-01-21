@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 
 export const useDriverManagement = () => {
   const [drivers, setDrivers] = useState([
@@ -40,17 +41,7 @@ export const useDriverManagement = () => {
       deliveriesToday: 5,
       lastUpdate: '10 min ago',
     },
-    {
-      id: 4,
-      name: 'Lisa Brown',
-      phone: '+1 (555) 789-0123',
-      status: 'available',
-      assignedDelivery: null,
-      vehicle: 'Van #A-104',
-      earningsToday: 0,
-      deliveriesToday: 0,
-      lastUpdate: 'Just now',
-    },
+    
   ]);
 
   const addDriver = () => {

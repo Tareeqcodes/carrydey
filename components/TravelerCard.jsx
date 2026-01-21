@@ -67,7 +67,7 @@ const TravelerCard = ({ traveler, index, isSelected, onSelect, onBook }) => {
           }}
           className="flex-1 bg-[#3A0A21] text-white py-3 rounded-lg font-medium hover:bg-[#4a0a2a] transition-colors"
         >
-          Book Traveler
+          Book Now
         </button>
       </div>
 

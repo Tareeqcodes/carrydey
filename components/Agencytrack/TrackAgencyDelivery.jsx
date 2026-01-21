@@ -12,14 +12,13 @@ import RequestsPage from './RequestsPage';
 import ActiveDeliveriesPage from './ActiveDeliveriesPage';
 import DriversPage from './DriversPage';
 import TrackingPage from './TrackingPage';
-// import MobileNav from './MobileNav';
+import AgencySettingsPage from '../AgencySettingsPage';
 
 const TrackAgencyDelivery = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
 
-  
   const { 
     requests, 
     loading: requestsLoading, 
@@ -174,6 +173,9 @@ const TrackAgencyDelivery = () => {
           />
         );
 
+      case 'settings': // NEW CASE
+        return <AgencySettingsPage />;
+
       default:
         return (
           <div className="text-center py-12">
@@ -188,7 +190,7 @@ const TrackAgencyDelivery = () => {
     <div className="min-h-screen pb-14 bg-gray-50">
       {/* Top Navigation */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -244,8 +246,6 @@ const TrackAgencyDelivery = () => {
         }
         onAddDriver={addDriver}
       />
-{/* 
-      <MobileNav activePage={activePage} onPageChange={setActivePage} /> */}
     </div>
   );
 };

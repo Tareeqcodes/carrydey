@@ -19,7 +19,7 @@ const DashboardPage = ({ activeDeliveries, drivers, onNavigateToTracking }) => {
         {/* Map Preview */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-lg">Active Delivery Routes</h3>
+            <h3 className="font-semibold text-sm">Active Delivery Routes</h3>
             <button
               onClick={onNavigateToTracking}
               className="px-4 py-2 bg-[#3A0A21] text-white rounded-xl text-sm hover:bg-[#4A0A31] transition-colors flex items-center gap-2"

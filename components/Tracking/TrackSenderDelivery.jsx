@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Package,
   MapPin,
@@ -11,17 +12,16 @@ import {
   Truck,
   CheckCircle,
   AlertCircle,
-  Calendar,
   DollarSign,
   Menu,
-  Home,
   User,
   History,
   RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
-import { useRouter } from 'next/navigation';
+import { formatNairaSimple } from '@/hooks/currency';
+
 
 const TrackSenderDelivery = () => {
   const { user } = useAuth();
@@ -173,7 +173,7 @@ const TrackSenderDelivery = () => {
         <div className="bg-gray-50 p-3 rounded-xl text-center">
           <p className="text-xs text-gray-500 mb-1">Cost</p>
           <p className="font-semibold text-sm text-green-600">
-            ₦{delivery.offeredFare || delivery.suggestedFare}
+            ₦{formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
           </p>
         </div>
       </div>
@@ -217,17 +217,20 @@ const TrackSenderDelivery = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">
+                <h2 className="text-sm md:text-xl font-bold">
                   {' '}
-                  Track your ongoing deliveries in real-time
+                  Track your ongoing deliveries
                 </h2>
               </div>
               <button
                 onClick={() => router.push('/send')}
-                className="px-4 py-2 bg-[#3A0A21] text-white rounded-xl hover:bg-[#4A0A31] transition-colors flex items-center gap-2"
+                className="px-2 md:px-4 text-xs py-2 bg-[#3A0A21] text-white rounded-xl hover:bg-[#4A0A31] transition-colors flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" />
-                New Delivery
+                <p className="flex items-center gap-1">
+                  <Plus className="w-4 h-4" />
+                  <span className='text-xs'>New Delivery</span>
+                </p>
+       
               </button>
             </div>
 
@@ -418,7 +421,7 @@ const TrackSenderDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen pb-14 bg-gray-50">
+    <div className="min-h-screen pb-32 md:pb-14 bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
@@ -429,7 +432,7 @@ const TrackSenderDelivery = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-bold">My Deliveries</h1>
+          
           </div>
         </div>
       </header>

@@ -1,4 +1,4 @@
-// utils/currency.js
+
 export function formatNaira(amount) {
   if (!amount && amount !== 0) return '₦0.00';
   

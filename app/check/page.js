@@ -112,7 +112,7 @@ const ChooseTraveler = () => {
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1">
             <p className="text-sm text-gray-500">
-              {loading ? 'Finding couriers and travelers...' : 'Couriers and travelers heading your way'}
+              {loading ? 'Searching for available couriers and agencies...' : 'Select a courier or agency to handle your delivery'}
             </p>
           </div>
         </div>

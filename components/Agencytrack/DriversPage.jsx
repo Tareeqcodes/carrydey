@@ -13,8 +13,8 @@ const DriversPage = ({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Drivers Management</h2>
-          <p className="text-gray-500">Manage your delivery fleet</p>
+          <h2 className="text-2xl md:text-xl font-bold">Manage your delivery fleet</h2>
+         
         </div>
         <button
           onClick={onAddDriver}

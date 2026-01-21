@@ -3,22 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   MapPin, 
-  Clock, 
   Phone, 
-  Navigation,
   CheckCircle,
-  Truck,
   DollarSign,
   Calendar,
   Menu,
-  Home,
   User,
-  Settings,
-  LogOut,
-  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
+import { formatNairaSimple } from '@/hooks/currency';
 
 const TrackCourierDelivery = () => {
   const { user } = useAuth();
@@ -153,7 +147,7 @@ const TrackCourierDelivery = () => {
                       </div>
                       <div className="bg-gray-50 p-3 rounded-xl">
                         <p className="text-xs text-gray-500">Payout</p>
-                        <p className="font-semibold text-green-600">₦{delivery.offeredFare}</p>
+                        <p className="font-semibold text-green-600">₦{formatNairaSimple(delivery.offeredFare)}</p>
                       </div>
                     </div>
 

@@ -8,7 +8,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+ 
   useEffect(() => {
     checkSession();
   }, []);
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       await account.createMagicURLToken({
         userId: ID.unique(),
         email: email,
-        url: 'https://www.carrydey.tech/emailVerification',
+        url: 'http://localhost:3000/emailVerification',
       });
     } catch (error) {
       alert(error.message);
@@ -40,8 +40,8 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: OAuthProvider.Google,
-        success: 'https://www.carrydey.tech',
-        failure: 'https://www.carrydey.tech/login',
+        success: 'http://localhost:3000',
+        failure: 'http://localhost:3000/login',
       });
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);

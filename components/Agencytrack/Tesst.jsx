@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, MapPin, User, Clock, Star, CheckCircle, AlertCircle, Home, Receipt, ArrowLeft } from 'lucide-react';
+import { Package, MapPin, User, Star, CheckCircle, AlertCircle, Home, Receipt, ArrowLeft } from 'lucide-react';
 
 // Mock data - Replace with Appwrite data
 const mockDeliveryData = {

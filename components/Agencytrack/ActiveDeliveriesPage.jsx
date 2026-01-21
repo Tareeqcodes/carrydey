@@ -12,19 +12,19 @@ const ActiveDeliveriesPage = ({
   const activeOnes = activeDeliveries.filter((d) => d.status !== 'pending_assignment');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Active Deliveries</h2>
-          <p className="text-gray-500">Track and manage ongoing deliveries</p>
+          <h2 className="text-xl font-bold">Track and manage ongoing deliveries</h2>
+         
         </div>
-        <button
+        {/* <button
           onClick={onNavigateToTracking}
           className="px-4 py-2 bg-[#3A0A21] text-white rounded-xl hover:bg-[#4A0A31] transition-colors flex items-center gap-2"
         >
           <Navigation className="w-4 h-4" />
           Live Tracking Map
-        </button>
+        </button> */}
       </div>
 
       {/* Pending Assignments */}
@@ -73,7 +73,7 @@ const ActiveDeliveriesPage = ({
 
       {/* Active Deliveries List */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="font-semibold text-lg mb-6">All Active Deliveries</h3>
+        {/* <h3 className="font-semibold text-lg mb-6">All Active Deliveries</h3> */}
         <div className="space-y-4">
           {activeOnes.map((delivery) => (
             <div
