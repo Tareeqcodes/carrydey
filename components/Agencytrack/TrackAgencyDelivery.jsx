@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
@@ -12,28 +12,33 @@ import RequestsPage from './RequestsPage';
 import ActiveDeliveriesPage from './ActiveDeliveriesPage';
 import DriversPage from './DriversPage';
 import TrackingPage from './TrackingPage';
+import AddDriverModal from '../AddDriverModal';
 import AgencySettingsPage from '../AgencySettingsPage';
 
 const TrackAgencyDelivery = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [addDriverModalOpen, setAddDriverModalOpen] = useState(false); // ADD THIS
   const { user } = useAuth();
 
-  const { 
-    requests, 
-    loading: requestsLoading, 
-    error: requestsError, 
-    refreshRequests 
+  const {
+    requests,
+    loading: requestsLoading,
+    error: requestsError,
+    refreshRequests,
   } = useAgencyDeliveries(user?.$id);
 
   // Driver management hook
   const {
     drivers,
+    loading: driversLoading, 
+    error: driversError, 
     addDriver,
+    fetchDrivers,
     toggleDriverStatus,
     assignDriverToDelivery,
     updateDriverEarnings,
-  } = useDriverManagement();
+  } = useDriverManagement(user?.$id);
 
   // Delivery management hook
   const {
@@ -53,10 +58,23 @@ const TrackAgencyDelivery = () => {
     deliveryDetails: null,
   });
 
+  useEffect(() => {
+    console.log('Active page changed to:', activePage);
+    if (activePage === 'drivers' && user?.$id) {
+      console.log('Refetching drivers for page:', user.$id);
+      fetchDrivers();
+    }
+  }, [activePage, user?.$id]);
+
+
+  const handleAddDriverClick = () => {
+    setAddDriverModalOpen(true);
+  };
+
   // Handle accept delivery request
   const handleAcceptRequest = (requestId) => {
     const newDelivery = acceptRequest(requestId);
-    
+
     if (newDelivery) {
       setTimeout(() => {
         setAssignmentModal({
@@ -80,16 +98,23 @@ const TrackAgencyDelivery = () => {
   const handleCompleteAssignment = () => {
     if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
 
-    const selectedDriver = drivers.find((d) => d.id === assignmentModal.selectedDriver);
-    
+    const selectedDriver = drivers.find(
+      (d) =>
+        d.$id === assignmentModal.selectedDriver ||
+        d.id === assignmentModal.selectedDriver
+    );
+
     if (selectedDriver) {
       assignDelivery(
         assignmentModal.deliveryId,
-        selectedDriver.id,
+        selectedDriver.$id || selectedDriver.id,
         selectedDriver.name
       );
-      
-      assignDriverToDelivery(selectedDriver.id, assignmentModal.deliveryId);
+
+      assignDriverToDelivery(
+        selectedDriver.$id || selectedDriver.id,
+        assignmentModal.deliveryId
+      );
     }
 
     setAssignmentModal({
@@ -103,9 +128,9 @@ const TrackAgencyDelivery = () => {
   // Handle delivery status update
   const handleUpdateDeliveryStatus = (deliveryId, newStatus) => {
     const delivery = updateDeliveryStatus(deliveryId, newStatus);
-    
+
     if (newStatus === 'delivered' && delivery?.driverId) {
-      const payout = parseFloat(delivery.payout.replace(/[₦$,]/g, ''));
+      const payout = parseFloat(delivery.payout?.replace(/[₦$,]/g, '') || 0);
       updateDriverEarnings(delivery.driverId, payout);
     }
   };
@@ -120,14 +145,42 @@ const TrackAgencyDelivery = () => {
     });
   };
 
+  // Handle toggle driver status
+  // const handleToggleDriverStatus = async (driverId) => {
+  //   const driver = drivers.find((d) => d.$id === driverId || d.id === driverId);
+  //   if (driver) {
+  //     await toggleDriverStatus(driver.$id || driver.id, driver.status);
+  //   }
+  // };
+
+  // Format drivers for display (to match the DriversPage component expectations)
+  const formatDriversForDisplay = () => {
+    return drivers.map((driver) => ({
+      id: driver.$id,
+      name: driver.name,
+      phone: driver.phone,
+      status: driver.status,
+      assignedDelivery: driver.assignedDelivery || null,
+      vehicle: driver.vehicleType
+        ? `Van #${driver.vehicleType.toUpperCase()}`
+        : 'No vehicle',
+      earningsToday: 0, // You'll need to add this field to your schema
+      deliveriesToday: 0, // You'll need to add this field to your schema
+      lastUpdate: 'Just now', // You'll need to calculate this from $updatedAt
+      // Add other fields as needed
+    }));
+  };
+
   // Render current page
   const renderPage = () => {
+    const formattedDrivers = formatDriversForDisplay();
+
     switch (activePage) {
       case 'dashboard':
         return (
           <DashboardPage
             activeDeliveries={activeDeliveries}
-            drivers={drivers}
+            drivers={formattedDrivers}
             onNavigateToTracking={() => setActivePage('tracking')}
           />
         );
@@ -158,8 +211,10 @@ const TrackAgencyDelivery = () => {
         return (
           <DriversPage
             drivers={drivers}
+            loading={driversLoading} // ADD THIS
+            error={driversError} // ADD THIS
             activeDeliveries={activeDeliveries}
-            onAddDriver={addDriver}
+            onAddDriver={handleAddDriverClick} // CHANGE THIS
             onToggleStatus={toggleDriverStatus}
             onAssignDelivery={handleOpenAssignmentModal}
           />
@@ -169,11 +224,11 @@ const TrackAgencyDelivery = () => {
         return (
           <TrackingPage
             activeDeliveries={activeDeliveries}
-            drivers={drivers}
+            drivers={formattedDrivers}
           />
         );
 
-      case 'settings': // NEW CASE
+      case 'settings':
         return <AgencySettingsPage />;
 
       default:
@@ -198,6 +253,7 @@ const TrackAgencyDelivery = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
+            
           </div>
         </div>
       </header>
@@ -230,7 +286,7 @@ const TrackAgencyDelivery = () => {
       <AssignmentModal
         isOpen={assignmentModal.isOpen}
         deliveryDetails={assignmentModal.deliveryDetails}
-        drivers={drivers}
+        drivers={formatDriversForDisplay()}
         selectedDriver={assignmentModal.selectedDriver}
         onSelectDriver={(driverId) =>
           setAssignmentModal((prev) => ({ ...prev, selectedDriver: driverId }))
@@ -244,7 +300,16 @@ const TrackAgencyDelivery = () => {
             deliveryDetails: null,
           })
         }
+        onAddDriver={() => setAddDriverModalOpen(true)}
+      />
+
+      {/* Add Driver Modal */}
+      <AddDriverModal
+        isOpen={addDriverModalOpen}
+        onClose={() => setAddDriverModalOpen(false)}
         onAddDriver={addDriver}
+        agencyId={user?.$id}
+        loading={driversLoading}
       />
     </div>
   );

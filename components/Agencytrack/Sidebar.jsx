@@ -17,7 +17,7 @@ const Sidebar = ({ activePage, onPageChange, drivers, isOpen }) => {
     { id: 'active', label: 'Active', icon: PackageCheck },
     { id: 'drivers', label: 'Drivers', icon: Users, badge: drivers.length },
     { id: 'tracking', label: 'Tracking', icon: MapPin },
-    { id: 'settings', label: 'Settings', icon: Settings }, // NEW
+    { id: 'settings', label: 'Settings', icon: Settings }, 
   ];
 
   return (
