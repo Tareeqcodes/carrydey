@@ -130,7 +130,9 @@ export default function Onboarding() {
 
       if (role === 'sender') {
         router.push('/send');
-      } else if (role === 'courier' || role === 'agency') {
+      } else if (role === 'courier') {
+        router.push('/track');
+      } else if (role === 'agency') {
         router.push('/onboardagency');
       } else {
         router.push('/');
