@@ -1,7 +1,15 @@
-import React from 'react';
-import { CheckCircle, Mail, Clock, Shield } from 'lucide-react';
+'use client';
+import { useRouter } from 'next/navigation';
+import { CheckCircle, Mail, Shield } from 'lucide-react';
 
 const SuccessStep = () => {
+  const router = useRouter();
+
+  const handleBackToHome = () => {
+    router.push('/home');
+    router.refresh();
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-8">
@@ -35,8 +43,7 @@ const SuccessStep = () => {
 
         <div className="pt-4 space-y-3">
           <button
-            
-            onClick={() => window.location.reload()}
+            onClick={handleBackToHome}
             className="w-full py-3 bg-[#3A0A21] text-white rounded-lg font-medium hover:bg-[#4A0A31] transition-colors"
           >
             Back to Home
