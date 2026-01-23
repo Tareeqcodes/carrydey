@@ -14,12 +14,6 @@ export default function sitemap() {
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
       priority: 0.8,
-    }, 
-    {
-      url: `${baseUrl}/travel`,
-      lastModified: new Date().toISOString(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/send`,
