@@ -6,7 +6,7 @@ const SuccessStep = () => {
   const router = useRouter();
 
   const handleBackToHome = () => {
-    router.push('/home');
+    router.push('/');
     router.refresh();
   };
 
