@@ -106,7 +106,6 @@ export const useAgencyDeliveries = (userId) => {
     }
   };
 
-  // Main effect to fetch agency and deliveries
   useEffect(() => {
     const loadData = async () => {
       if (!userId) {
@@ -134,12 +133,12 @@ export const useAgencyDeliveries = (userId) => {
 
     loadData();
 
-    // Set up polling to check for new requests every 30 seconds
+    // Set up polling to check for new requests every 10 seconds
     const interval = setInterval(() => {
       if (agencyId) {
         fetchDeliveryRequests(agencyId);
       }
-    }, 30000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [userId]);

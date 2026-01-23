@@ -1,21 +1,16 @@
 'use client';
 import React from 'react';
-import { Navigation, Activity, ChevronRight, Truck } from 'lucide-react';
+import { Navigation, Truck } from 'lucide-react';
 import DashboardSummary from './DashboardSummary';
 
 const DashboardPage = ({ activeDeliveries, drivers, onNavigateToTracking }) => {
-  const recentActivities = [
-    { id: 1, action: 'Delivery #101 completed', time: '10 min ago', driver: 'Michael Chen' },
-    { id: 2, action: 'New delivery request received', time: '25 min ago', location: 'Downtown' },
-    { id: 3, action: 'Driver Sarah started delivery', time: '45 min ago', delivery: '#102' },
-    { id: 4, action: 'Driver David assigned to new delivery', time: '1 hour ago', delivery: '#103' },
-  ];
+  
 
   return (
     <div className="space-y-6">
       <DashboardSummary activeDeliveries={activeDeliveries} drivers={drivers} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1">
         {/* Map Preview */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
@@ -66,27 +61,6 @@ const DashboardPage = ({ activeDeliveries, drivers, onNavigateToTracking }) => {
           </div>
         </div>
 
-        {/* Recent Activities */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">Recent Activities</h3>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0"
-              >
-                <div className="p-2 bg-[#3A0A21] bg-opacity-10 rounded-lg">
-                  <Activity className="w-4 h-4 text-[#3A0A21]" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{activity.action}</p>
-                  <p className="text-sm text-gray-500">{activity.time}</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

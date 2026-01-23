@@ -79,9 +79,11 @@ export default function TrackPage() {
       return <TrackAgencyDelivery />;
     
     case 'courier':
+      // This renders the courier's view of their assigned deliveries
       return <TrackCourierDelivery />;
     
     case 'sender':
+      // This renders the sender's view of their delivery tracking
       return <TrackSenderDelivery />;
     
     default:

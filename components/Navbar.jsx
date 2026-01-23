@@ -27,7 +27,7 @@ const getNavLinks = (user, role) => {
       { href: '/track', label: 'Track', icon: PackageSearch },
       { href: '/hub', label: 'Hub', icon: LayoutDashboard }
     ];
-  } else if (role === 'traveler') {
+  } else if (role === 'courier') {
     return [
       { href: '/track', label: 'Track', icon: PackageSearch },
       { href: '/hub', label: 'Hub', icon: LayoutDashboard },
@@ -112,7 +112,7 @@ const Navbar = () => {
     <>
       {/* Desktop Navbar */}
       <nav
-        className={`hidden md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`hidden w-full md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
             ? 'bg-white/95 backdrop-blur-sm border-b border-gray-200'
             : 'bg-white border-b border-gray-100'

@@ -18,7 +18,6 @@ const RouteMapPreview = dynamic(() => import('../hooks/RouteMapPreview'), {
   ),
 });
 
-// Utility function to format duration
 const formatDuration = (minutes) => {
   if (minutes < 60) {
     return `${minutes} min`;

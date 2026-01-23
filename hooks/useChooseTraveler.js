@@ -8,28 +8,53 @@ export default function useChooseTraveler() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAgencies = async () => {
-      try {
+    const fetchAgenciesAndCouriers = async () => {
+      try { 
         setLoading(true);
-        const response = await tablesDB.listRows({
+        
+        // Fetch agencies
+        const agenciesResponse = await tablesDB.listRows({
           databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
           tableId: process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID,
           queries: [
-            // Query.equal('status', 'available'),
             Query.equal('verified', true), 
             Query.orderDesc('$createdAt'),
           ]
         });
-        setAgencies(response.rows);
+
+        // Fetch courier users
+        const couriersResponse = await tablesDB.listRows({
+          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+          tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+          queries: [
+            Query.equal('role', 'courier'),
+            Query.equal('verified', true), 
+            Query.orderDesc('$createdAt'),
+          ]
+        });
+
+        // Combine both arrays
+        const combined = [
+          ...agenciesResponse.rows.map(agency => ({
+            ...agency,
+            entityType: 'agency'
+          })),
+          ...couriersResponse.rows.map(courier => ({
+            ...courier,
+            entityType: 'courier'
+          }))
+        ];
+
+        setAgencies(combined);
       } catch (error) {
-        console.error('Error fetching agencies:', error);
+        console.error('Error fetching agencies and couriers:', error);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAgencies();
+    fetchAgenciesAndCouriers();
   }, []);
 
   return {

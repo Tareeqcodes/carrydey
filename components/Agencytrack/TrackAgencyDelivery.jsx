@@ -11,14 +11,14 @@ import DashboardPage from './DashboardPage';
 import RequestsPage from './RequestsPage';
 import ActiveDeliveriesPage from './ActiveDeliveriesPage';
 import DriversPage from './DriversPage';
-import TrackingPage from './TrackingPage';
+import TrackingPage from './TrackingPage'; 
 import AddDriverModal from '../AddDriverModal';
 import AgencySettingsPage from '../AgencySettingsPage';
 
 const TrackAgencyDelivery = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [addDriverModalOpen, setAddDriverModalOpen] = useState(false); // ADD THIS
+  const [addDriverModalOpen, setAddDriverModalOpen] = useState(false); 
   const { user } = useAuth();
 
   const {
@@ -28,7 +28,6 @@ const TrackAgencyDelivery = () => {
     refreshRequests,
   } = useAgencyDeliveries(user?.$id);
 
-  // Driver management hook
   const {
     drivers,
     loading: driversLoading, 
@@ -40,7 +39,6 @@ const TrackAgencyDelivery = () => {
     updateDriverEarnings,
   } = useDriverManagement(user?.$id);
 
-  // Delivery management hook
   const {
     deliveryRequests,
     activeDeliveries,
@@ -145,15 +143,7 @@ const TrackAgencyDelivery = () => {
     });
   };
 
-  // Handle toggle driver status
-  // const handleToggleDriverStatus = async (driverId) => {
-  //   const driver = drivers.find((d) => d.$id === driverId || d.id === driverId);
-  //   if (driver) {
-  //     await toggleDriverStatus(driver.$id || driver.id, driver.status);
-  //   }
-  // };
-
-  // Format drivers for display (to match the DriversPage component expectations)
+  
   const formatDriversForDisplay = () => {
     return drivers.map((driver) => ({
       id: driver.$id,
@@ -166,12 +156,10 @@ const TrackAgencyDelivery = () => {
         : 'No vehicle',
       earningsToday: 0, // You'll need to add this field to your schema
       deliveriesToday: 0, // You'll need to add this field to your schema
-      lastUpdate: 'Just now', // You'll need to calculate this from $updatedAt
-      // Add other fields as needed
+      lastUpdate: 'Just now', 
     }));
   };
 
-  // Render current page
   const renderPage = () => {
     const formattedDrivers = formatDriversForDisplay();
 
@@ -211,10 +199,10 @@ const TrackAgencyDelivery = () => {
         return (
           <DriversPage
             drivers={drivers}
-            loading={driversLoading} // ADD THIS
-            error={driversError} // ADD THIS
+            loading={driversLoading} 
+            error={driversError} 
             activeDeliveries={activeDeliveries}
-            onAddDriver={handleAddDriverClick} // CHANGE THIS
+            onAddDriver={handleAddDriverClick}
             onToggleStatus={toggleDriverStatus}
             onAssignDelivery={handleOpenAssignmentModal}
           />

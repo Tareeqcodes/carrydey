@@ -1,15 +1,10 @@
 'use client';
 import React from 'react';
-import { Package, Truck, Users } from 'lucide-react';
+import { Truck, Users } from 'lucide-react';
 
 const DashboardSummary = ({ activeDeliveries, drivers }) => {
   const summaryCards = [
-    {
-      title: 'Total Deliveries Today',
-      value: '24',
-      icon: Package,
-      color: 'bg-purple-100 text-purple-600',
-    },
+  
     {
       title: 'Active Deliveries',
       value: activeDeliveries.filter((d) => d.status !== 'delivered').length.toString(),
@@ -27,7 +22,7 @@ const DashboardSummary = ({ activeDeliveries, drivers }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {summaryCards.map((card, index) => (
-        <div
+        <div 
           key={index}
           className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
         >

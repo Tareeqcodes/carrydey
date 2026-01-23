@@ -12,44 +12,84 @@ const ChooseTraveler = () => {
   const [travelers, setTravelers] = useState([]);
   const [selectedTraveler, setSelectedTraveler] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
-   const [bookingLoading, setBookingLoading] = useState(false); 
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [deliveryId, setDeliveryId] = useState(null);
   const { agencies, loading, error } = useChooseTraveler();
-  const router = useRouter(); 
-
+  const router = useRouter();
 
   useEffect(() => {
     const latestDeliveryId = sessionStorage.getItem('latestDeliveryId');
     if (latestDeliveryId) {
       setDeliveryId(latestDeliveryId);
     }
-  }, []);  
+  }, []);
 
   useEffect(() => {
     if (agencies && agencies.length > 0) {
-      const transformedTravelers = agencies.map((agency) => ({
-        id: agency.$id,
-        name: agency.name || agency.contactPerson,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${
-          agency.name || agency.contactPerson
-        }`,
-        rating: agency.rating || 4.5,
-        verified: agency.verified || false,
-        route: `${agency.city} → ${agency.state}`,
-        distance: (Math.random() * 3 + 0.5).toFixed(1),
-        pickupTime: Math.floor(Math.random() * 20 + 10),
-        lat: 6.5244 + (Math.random() * 0.04 - 0.02),
-        lng: 3.3792 + (Math.random() * 0.04 - 0.02),
-        type: agency.type,
-        phone: agency.phone,
-        email: agency.email,
-        services: agency.services ? JSON.parse(agency.services) : [],
-        vehicleTypes: agency.vehicleTypes
-          ? JSON.parse(agency.vehicleTypes)
-          : [],
-        totalDeliveries:
-          agency.totalDeliveries || Math.floor(Math.random() * 100 + 20),
-      }));
+      const transformedTravelers = agencies.map((entity) => {
+        const isAgency = entity.entityType === 'agency';
+
+        // Parse service cities for agencies
+        let serviceCities = [];
+        if (isAgency && entity.serviceCities) {
+          try {
+            serviceCities = JSON.parse(entity.serviceCities);
+          } catch (error) {
+            console.error('Error parsing serviceCities:', error);
+            serviceCities = [];
+          }
+        }
+
+        // Generate route display
+        let routeDisplay = 'Kano'; // Default fallback
+        if (isAgency) {
+          if (serviceCities.length > 0) {
+            // Show first service city or "Multiple cities" if more than one
+            routeDisplay =
+              serviceCities.length === 1
+                ? serviceCities[0]
+                : `${serviceCities[0]} + ${serviceCities.length - 1} more`;
+          }
+        } else {
+          // For courier users
+          routeDisplay = entity.currentCity || entity.operatingArea || 'Kano';
+        }
+
+        return {
+          id: entity.$id,
+          entityType: entity.entityType,
+          name: isAgency
+            ? entity.name || entity.contactPerson || 'Agency'
+            : entity.userName || 'Courier',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${
+            isAgency ? entity.name || entity.contactPerson : entity.userName
+          }`,
+          rating: entity.rating || 4.5,
+          verified: entity.verified || false,
+          route: routeDisplay,
+          serviceCities: serviceCities,
+          distance: (Math.random() * 3 + 0.5).toFixed(1),
+          pickupTime: Math.floor(Math.random() * 20 + 10),
+          lat: 6.5244 + (Math.random() * 0.04 - 0.02),
+          lng: 3.3792 + (Math.random() * 0.04 - 0.02),
+          type: isAgency ? entity.type : 'Individual Courier',
+          phone: entity.phone || entity.phoneNumber,
+          email: entity.email,
+          services: isAgency
+            ? entity.services
+              ? JSON.parse(entity.services)
+              : []
+            : ['Package Delivery', 'Express Delivery'],
+          vehicleTypes: isAgency
+            ? entity.vehicleTypes
+              ? JSON.parse(entity.vehicleTypes)
+              : []
+            : [entity.vehicleType || 'Motorcycle'],
+          totalDeliveries:
+            entity.totalDeliveries || Math.floor(Math.random() * 100 + 20),
+        };
+      });
+
       setTravelers(transformedTravelers);
     }
   }, [agencies]);
@@ -59,48 +99,61 @@ const ChooseTraveler = () => {
     setShowConfirmation(true);
   };
 
-   const handleConfirmBooking = async () => {
+  const handleConfirmBooking = async () => {
     if (!selectedTraveler || !deliveryId) {
-      alert('Missing delivery or agency information');
+      alert('Missing delivery or traveler information');
       return;
     }
 
     setBookingLoading(true);
-    
+
     try {
-      // Update the delivery with the assigned agency
+      const isAgency = selectedTraveler.entityType === 'agency';
+
+      // Update the delivery with the assigned agency or courier
+      const updateData = {
+        status: 'pending',
+      };
+
+      if (isAgency) {
+        updateData.assignedAgencyId = selectedTraveler.id;
+      } else {
+        updateData.assignedCourierId = selectedTraveler.id;
+      }
+
       await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
-        data: {
-          assignedAgencyId: selectedTraveler.id,
-         
-          status: 'pending', 
-        },
+        data: updateData,
       });
 
       sessionStorage.removeItem('latestDeliveryId');
-      sessionStorage.setItem('agencyId', selectedTraveler.id);
-      sessionStorage.setItem('agencyName', selectedTraveler.name);
+
+      if (isAgency) {
+        sessionStorage.setItem('agencyId', selectedTraveler.id);
+        sessionStorage.setItem('agencyName', selectedTraveler.name);
+      } else {
+        sessionStorage.setItem('courierId', selectedTraveler.id);
+        sessionStorage.setItem('courierName', selectedTraveler.name);
+      }
 
       alert(`Delivery request sent to ${selectedTraveler.name}!`);
       setShowConfirmation(false);
       router.push('/track');
     } catch (error) {
-      console.error('Error assigning delivery to agency:', error);
+      console.error('Error assigning delivery:', error);
       alert('Failed to assign delivery. Please try again.');
     } finally {
       setBookingLoading(false);
     }
   };
 
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-red-600 p-4 rounded-md bg-red-50 max-w-md w-full">
-          Error loading agencies: {error}
+          Error loading agencies and couriers: {error}
         </div>
       </div>
     );
@@ -112,7 +165,9 @@ const ChooseTraveler = () => {
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1">
             <p className="text-sm text-gray-500">
-              {loading ? 'Searching for available couriers and agencies...' : 'Select a courier or agency to handle your delivery'}
+              {loading
+                ? 'Searching for available couriers and agencies...'
+                : 'Select a courier or agency to handle your delivery'}
             </p>
           </div>
         </div>
