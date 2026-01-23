@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       await account.createMagicURLToken({
         userId: ID.unique(),
         email: email,
-        url: 'http://localhost:3000/emailVerification',
+        url: 'https://www.carrydey.tech/emailVerification',
       });
     } catch (error) {
       alert(error.message);
