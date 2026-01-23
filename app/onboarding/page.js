@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Package, Building } from 'lucide-react';
@@ -11,7 +10,6 @@ import { WalletService } from '@/lib/WalletService';
 export default function Onboarding() {
   const router = useRouter();
   const { user, loading } = useAuth();
-
   const [role, setRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
@@ -48,13 +46,11 @@ export default function Onboarding() {
       setCheckingProfile(true);
       return;
     }
-
     if (!user) {
       setCheckingProfile(false);
       router.push('/login');
       return;
     }
-
     checkOnboardingStatus();
   }, [user, loading]);
 
@@ -85,6 +81,8 @@ export default function Onboarding() {
         router.push('/send');
         break;
       case 'courier':
+        router.push('/track');
+        break;
       case 'agency':
         router.push('/onboardagency');
         break;
@@ -98,7 +96,6 @@ export default function Onboarding() {
       router.push('/login');
       return;
     }
-
     if (!role) return;
 
     try {
@@ -128,6 +125,7 @@ export default function Onboarding() {
         console.error('Wallet creation failed:', walletResult.error);
       }
 
+      // Route based on role
       if (role === 'sender') {
         router.push('/send');
       } else if (role === 'courier') {
@@ -160,7 +158,6 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-white pb-28 pt-5 md:py-20">
       <div className="max-w-md mx-auto px-6 py-10">
-
         {/* Header */}
         <div className="mb-10 text-center">
           <h1 className="text-2xl font-bold text-[#3A0A21]">
@@ -180,7 +177,6 @@ export default function Onboarding() {
             {roles.map((item) => {
               const Icon = item.icon;
               const isActive = role === item.id;
-
               return (
                 <motion.button
                   key={item.id}
@@ -219,8 +215,6 @@ export default function Onboarding() {
               );
             })}
           </div>
-          
-        
         </div>
 
         <div className="mt-12 pt-4">
@@ -243,7 +237,6 @@ export default function Onboarding() {
               `Continue as ${role === 'sender' ? 'Sender' : role === 'courier' ? 'Independent Courier' : 'Agency'}`
             )}
           </motion.button>
-
           <button
             onClick={() => router.push('/')}
             className="w-full mt-3 py-3 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
