@@ -12,12 +12,8 @@ const useOnboardingForm = () => {
     website: '',
     contactPerson: '',
     email: '',
-
     street: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    businessType: '',
+
     vehicleTypes: [],
     services: [],
     registrationCertificate: null,
@@ -25,6 +21,7 @@ const useOnboardingForm = () => {
     ownerNiN: null,
     phone: '',
     alternatePhone: '',
+    serviceCities: [],
     termsAccepted: false,
     privacyPolicyAccepted: false,
     dataProcessingAgreement: false,
@@ -84,8 +81,7 @@ const useOnboardingForm = () => {
       case 1:
         if (!formData.organizationName.trim())
           newErrors.organizationName = 'Organization name is required';
-        if (!formData.organizationType)
-          newErrors.organizationType = 'Please select organization type';
+
         if (
           !formData.yearEstablished ||
           formData.yearEstablished < 1900 ||
@@ -95,8 +91,6 @@ const useOnboardingForm = () => {
         }
         break;
       case 2:
-        if (!formData.contactPerson.trim())
-          newErrors.contactPerson = 'Contact person name is required';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
         else if (!emailRegex.test(formData.email))
           newErrors.email = 'Please enter a valid email';
@@ -106,15 +100,10 @@ const useOnboardingForm = () => {
           newErrors.phone = 'Please enter a valid phone number';
         break;
       case 3:
-        if (!formData.street.trim())
-          newErrors['street'] = 'Street address is required';
-        if (!formData.city.trim()) newErrors['city'] = 'City is required';
-        if (!formData.state.trim()) newErrors.state = 'State is required';
-
+        if (!formData.serviceCities || formData.serviceCities.length === 0)
+          newErrors.serviceCities = 'Please select at least one service city';
         break;
       case 4:
-        if (!formData.businessType)
-          newErrors.businessType = 'Please select business type';
         if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
           newErrors.vehicleTypes = 'Please select at least one vehicle type';
         }
@@ -141,7 +130,6 @@ const useOnboardingForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Upload file to Appwrite Storage
   const uploadFile = async (file, bucketId) => {
     try {
       const response = await storage.createFile({
@@ -162,7 +150,7 @@ const useOnboardingForm = () => {
       let registrationCertificateId = null;
       let taxCertificateId = null;
       let ownerNiN = null;
-      
+
       const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_LISENCE_BUCKET_ID;
       if (formData.registrationCertificate) {
         registrationCertificateId = await uploadFile(
@@ -178,8 +166,6 @@ const useOnboardingForm = () => {
         ownerNiN = await uploadFile(formData.ownerNiN, BUCKET_ID);
       }
 
-
-      // Prepare data for Appwrite
       const organizationData = {
         name: formData.organizationName,
         type: formData.organizationType,
@@ -189,8 +175,7 @@ const useOnboardingForm = () => {
         email: formData.email,
 
         address: formData.street,
-        city: formData.city || null,
-        state: formData.state,
+
         businessType: formData.businessType,
         vehicleTypes:
           formData.vehicleTypes.length > 0
@@ -211,10 +196,12 @@ const useOnboardingForm = () => {
         minPrice: null,
         status: true,
         verified: false,
-
+        serviceCities:
+          formData.serviceCities.length > 0
+            ? JSON.stringify(formData.serviceCities)
+            : null,
       };
 
-      // Create document in Appwrite
       const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
       const cll = process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID;
 

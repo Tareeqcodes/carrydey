@@ -55,7 +55,7 @@ const ProgressSidebar = ({ currentStep }) => {
 
         <div className="bg-white/90 border border-blue-200 rounded-2xl p-6">
           <h4 className="font-bold text-shadow-gray-500 mb-3">Need Help?</h4>
-          <p className="text-sm font-semibold text-shadow-gray-500 mb-4">
+          <p className="text-xs font-semibold text-shadow-gray-500 mb-4">
             Our support team is here to assist you with the registration process.
           </p>
           <button className="w-full py-2 border border-blue-300 text-blue-700 rounded-xl text-sm hover:bg-blue-100 transition-colors">

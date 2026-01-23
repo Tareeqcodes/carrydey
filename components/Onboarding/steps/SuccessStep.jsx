@@ -35,8 +35,8 @@ const SuccessStep = () => {
 
         <div className="pt-4 space-y-3">
           <button
-            onClick={() => (window.location.href = '/')}
-            // onClick={() => window.location.reload()}
+            
+            onClick={() => window.location.reload()}
             className="w-full py-3 bg-[#3A0A21] text-white rounded-lg font-medium hover:bg-[#4A0A31] transition-colors"
           >
             Back to Home

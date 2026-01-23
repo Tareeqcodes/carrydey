@@ -6,7 +6,7 @@ const ContactDetailsStep = ({ formData, errors, onInputChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Primary contact information for your organization</h2>
+        <h2 className="text-sm font-semibold text-gray-600">Primary contact information for your organization</h2>
         
       </div>
 

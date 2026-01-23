@@ -4,19 +4,12 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
   const organizationTypes = [
     'Courier Service',
     'Logistics Company',
-    'Freight Forwarder',
-    'Delivery Agency',
-    'E-commerce Logistics',
-    'Same-day Delivery',
-    'Medical Courier',
-    'Food Delivery',
-    'Other',
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-sm font-semibold text-gray-600">
           Tell us about your logistics company
         </h2>
         
@@ -24,7 +17,7 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-xs font-medium text-gray-700 mb-2">
             Organization Name
           </label>
           <div className="relative">
@@ -50,7 +43,7 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-xs font-medium text-gray-700 mb-2">
             Organization Type
           </label>
           <select
@@ -77,7 +70,7 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-2">
               Year Established
             </label>
             <input
@@ -99,7 +92,7 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-2">
               Website (Optional)
             </label>
             <div className="relative">

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Building2, Truck, CheckCircle, X, Plus } from 'lucide-react';
+import { Truck, CheckCircle, X, Plus } from 'lucide-react';
 
 const BusinessDetailsStep = ({
   formData,
@@ -10,33 +10,17 @@ const BusinessDetailsStep = ({
 }) => {
   const [newVehicleType, setNewVehicleType] = useState('');
 
-  const businessTypes = [
-    { value: 'partnership', label: 'Partnership' },
-    { value: 'sole_proprietorship', label: 'Sole Proprietorship' },
-  ];
 
   const serviceOptions = [
     'Express Delivery',
     'Same-day Delivery',
-    'Next-day Delivery',
-    'Freight Services',
-    'Warehousing',
-    'Cold Chain',
-    'Medical Transport',
-    'International Shipping',
-    'Last-mile Delivery',
-    'Bulk Cargo',
+   
   ];
 
   const commonVehicleTypes = [
     'Car/Van',
-    'Motorcycle/Bike',
-    'Truck',
+    'Motorcycle',
     'Pickup Truck',
-    'SUV',
-    'Minivan',
-    'Cargo Van',
-    'Box Truck',
   ];
 
 
@@ -72,53 +56,13 @@ const BusinessDetailsStep = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">
-         Tell us more about your operations
-        </h2>
       
-      </div>
 
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Business Type
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {businessTypes.map((type) => (
-              <button
-                key={type.value}
-                type="button"
-                onClick={() => onInputChange('businessType', type.value)}
-                className={`p-4 border rounded-xl text-left transition-all ${
-                  formData.businessType === type.value
-                    ? 'border-[#3A0A21] bg-[#3A0A21] bg-opacity-5 ring-2 ring-[#3A0A21] text-white/95 ring-opacity-20'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      formData.businessType === type.value
-                        ? 'bg-[#3A0A21] text-white'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <span className="font-medium">{type.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-          {errors.businessType && (
-            <p className="mt-2 text-sm text-red-600">{errors.businessType}</p>
-          )}
-        </div>
+        
 
-        {/* Vehicle Types Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-xs font-medium text-gray-700 mb-3">
             Select all vehicle types in your fleet
           </label>
 
@@ -156,7 +100,7 @@ const BusinessDetailsStep = ({
 
           {/* Custom vehicle type input */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-xs font-medium text-gray-700">
               Add Custom Vehicle Type
             </label>
             <div className="flex gap-2">
@@ -216,7 +160,7 @@ const BusinessDetailsStep = ({
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-xs font-medium text-gray-700 mb-3">
             Services Offered
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
