@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: OAuthProvider.Google,
-        success: 'https://www.carrydey.tech/',
+        success: 'https://www.carrydey.tech/oauthcallback',
         failure: 'https://www.carrydey.tech/login',
       });
     } catch (error) {
@@ -48,37 +48,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const listSessions = async () => {
-    try {
-      return await account.listSessions();
-    } catch (error) {
-      console.error('Failed to list sessions:', error);
-      return [];
-    }
-  };
+  // const listSessions = async () => {
+  //   try {
+  //     return await account.listSessions();
+  //   } catch (error) {
+  //     console.error('Failed to list sessions:', error);
+  //     return [];
+  //   }
+  // };
 
-  const logoutAllDevices = async () => {
-    try {
-      await account.deleteSessions();
-      setUser(null);
-      redirect('/');
-    } catch (error) {
-      console.error('Failed to logout all devices:', error);
-    }
-  };
+  // const logoutAllDevices = async () => {
+  //   try {
+  //     await account.deleteSessions();
+  //     setUser(null);
+  //     redirect('/');
+  //   } catch (error) {
+  //     console.error('Failed to logout all devices:', error);
+  //   }
+  // };
   
 
-  const refreshSession = async () => {
-    try {
+  // const refreshSession = async () => {
+  //   try {
       
-      const session = await account.getSession({ sessionId: 'current' });
-      if (session) {
-        await checkSession();
-      }
-    } catch (error) {
-      console.error('Failed to refresh session:', error);
-    }
-  };
+  //     const session = await account.updateSession({ sessionId: 'current' });
+  //     if (session) {
+  //       await checkSession();
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to refresh session:', error);
+  //   }
+  // };
 
   const logout = async () => {
     await account.deleteSession({
@@ -97,9 +97,9 @@ export const AuthProvider = ({ children }) => {
         loginWithGoogle,
         logout,
         checkSession,
-        listSessions,
-        logoutAllDevices,
-        refreshSession,
+        // listSessions,
+        // logoutAllDevices,
+        // refreshSession,
       }}
     >
       {children}
