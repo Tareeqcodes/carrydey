@@ -125,7 +125,6 @@ export default function Onboarding() {
         console.error('Wallet creation failed:', walletResult.error);
       }
 
-      // Route based on role
       if (role === 'sender') {
         router.push('/send');
       } else if (role === 'courier') {
@@ -237,12 +236,12 @@ export default function Onboarding() {
               `Continue as ${role === 'sender' ? 'Sender' : role === 'courier' ? 'Independent Courier' : 'Agency'}`
             )}
           </motion.button>
-          <button
+          {/* <button
             onClick={() => router.push('/')}
             className="w-full mt-3 py-3 text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
           >
             Skip for now
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
