@@ -3,24 +3,22 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Package,
-  MapPin,
-  Clock,
-  Phone,
   Plus,
   Search,
-  Filter,
   Truck,
   CheckCircle,
-  AlertCircle,
   DollarSign,
   Menu,
   User,
   History,
   RefreshCw,
+  Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import { formatNairaSimple } from '@/hooks/currency';
+import SenderTrackingView from './SenderTrackingView';
 
 const TrackSenderDelivery = () => {
   const { user } = useAuth();
@@ -30,6 +28,8 @@ const TrackSenderDelivery = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -58,13 +58,44 @@ const TrackSenderDelivery = () => {
     }
   };
 
+  const handleUpdateDelivery = async (deliveryId, newStatus) => {
+    try {
+      const response = await tablesDB.updateRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId: deliveryId,
+        data: {
+          status: newStatus,
+        },
+      });
+
+      // Update local state
+      setDeliveries((prev) =>
+        prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
+      );
+
+      // Update selected delivery if it's the one being tracked
+      if (selectedDelivery?.$id === deliveryId) {
+        setSelectedDelivery((prev) => ({ ...prev, ...response }));
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Error updating delivery:', error);
+      throw error;
+    }
+  };
+
+  const handleTrackDelivery = (delivery) => {
+    setSelectedDelivery(delivery);
+    setShowTrackingModal(true);
+  };
+
   const activeDeliveries = deliveries.filter(
     (d) => !['delivered', 'cancelled'].includes(d.status)
   );
 
-  const completedDeliveries = deliveries.filter(
-    (d) => d.status === 'delivered'
-  );
+  const completedDeliveries = deliveries.filter((d) => d.status === 'delivered');
 
   const getStatusColor = (status) => {
     const colors = {
@@ -97,7 +128,6 @@ const TrackSenderDelivery = () => {
 
   const navItems = [
     { id: 'active', label: 'Active Deliveries', icon: Truck },
-    
     { id: 'history', label: 'Delivery History', icon: History },
     { id: 'profile', label: 'Profile', icon: User },
   ];
@@ -139,26 +169,18 @@ const TrackSenderDelivery = () => {
           </p>
         </div>
       </div>
-      <div className="flex items-center justify-between mb-4">
-        {/* {delivery.pickupCode && (
-          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-900 font-medium">Pickup Code</p>
-            <p className="text-lg font-mono font-bold text-blue-900">
-              {delivery.pickupCode}
-            </p>
-          </div>
-        )} */}
 
-        {delivery.isFragile && (
-          <span className="inline-block mb-3 px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">
+      {delivery.isFragile && (
+        <div className="mb-3">
+          <span className="inline-block px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">
             Fragile
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Primary action */}
       <button
-        onClick={() => router.push(`/delivery/${delivery.$id}`)}
+        onClick={() => handleTrackDelivery(delivery)}
         className="w-full py-2.5 bg-[#3A0A21] text-white rounded-xl text-sm font-medium hover:bg-[#4A0A31] transition"
       >
         Track delivery
@@ -174,7 +196,6 @@ const TrackSenderDelivery = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm md:text-xl font-bold">
-                  {' '}
                   Track your ongoing deliveries
                 </h2>
               </div>
@@ -198,9 +219,7 @@ const TrackSenderDelivery = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Active</p>
-                    <p className="text-2xl font-bold">
-                      {activeDeliveries.length}
-                    </p>
+                    <p className="text-2xl font-bold">{activeDeliveries.length}</p>
                   </div>
                 </div>
               </div>
@@ -447,6 +466,19 @@ const TrackSenderDelivery = () => {
           ))}
         </div>
       </nav>
+
+      {/* Tracking Modal */}
+      {showTrackingModal && selectedDelivery && (
+        <SenderTrackingView
+          delivery={selectedDelivery}
+          onClose={() => {
+            setShowTrackingModal(false);
+            setSelectedDelivery(null);
+            fetchUserDeliveries(); // Refresh deliveries after closing
+          }}
+          onUpdateDelivery={handleUpdateDelivery}
+        />
+      )}
     </div>
   );
 };
