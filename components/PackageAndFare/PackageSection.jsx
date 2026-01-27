@@ -80,7 +80,7 @@ export default function PackageSection({
           rows="3"
         />
         <p className="text-xs text-gray-500 mt-2">
-          This helps travelers understand what they're carrying
+          This helps couriers understand what they're carrying
         </p>
       </div>
 

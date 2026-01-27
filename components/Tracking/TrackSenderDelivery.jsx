@@ -327,8 +327,8 @@ const TrackSenderDelivery = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold">Delivery History</h2>
-              <p className="text-gray-500">View all your past deliveries</p>
+             
+              <h2 className="text-gray-500 text-sm md:text-xl">View all your past deliveries</h2>
             </div>
 
             {loading ? (
@@ -365,7 +365,7 @@ const TrackSenderDelivery = () => {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold">{user?.name || 'N/A'}</p>
+                  <p className="font-semibold">{user?.userName || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Email</p>

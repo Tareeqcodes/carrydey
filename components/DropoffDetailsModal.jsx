@@ -127,7 +127,7 @@ export default function DropoffDetailsModal({
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-sm text-gray-900 mb-4">
                 Delivery Location
               </h3>
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -175,11 +175,11 @@ export default function DropoffDetailsModal({
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-sm text-gray-900 mb-4">
                 Dropoff options
               </h3>
               <div className="space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer">
+                <label className="flex items-center text-sm space-x-3 cursor-pointer">
                   <input
                     type="radio"
                     checked={formData.dropoffOption === 'curb'}
@@ -201,7 +201,7 @@ export default function DropoffDetailsModal({
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-sm text-gray-900 mb-4">
                 Instructions for driver
               </h3>
               <textarea
@@ -232,7 +232,7 @@ export default function DropoffDetailsModal({
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
+                className="w-full text-sm bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
               >
                 Save dropoff details
               </button>

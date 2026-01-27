@@ -71,9 +71,7 @@ export default function PickupDetailsModal({
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
-                Contact Information
-              </h3>
+             
 
               <div className="space-y-4">
                 <div>
@@ -114,7 +112,7 @@ export default function PickupDetailsModal({
 
             {/* PICKUP LOCATION */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-sm text-gray-700 mb-4">
                 Pickup Location
               </h3>
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -163,7 +161,7 @@ export default function PickupDetailsModal({
 
             {/* PICKUP OPTIONS */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-sm text-gray-700 mb-4">
                 Pickup options
               </h3>
               <div className="space-y-3">
@@ -176,7 +174,7 @@ export default function PickupDetailsModal({
                   />
                   <span>Meet at curb</span>
                 </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
+                <label className="flex text-sm items-center space-x-3 cursor-pointer">
                   <input
                     type="radio"
                     checked={formData.pickupOption === 'door'}
@@ -190,8 +188,8 @@ export default function PickupDetailsModal({
 
             {/* INSTRUCTIONS */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
-                Instructions for Traveler
+              <h3 className="font-semibold text-sm text-gray-700 mb-4">
+                Instructions for courier (optional)
               </h3>
               <textarea
                 name="pickupInstructions"
@@ -207,7 +205,7 @@ export default function PickupDetailsModal({
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
+                className="w-full text-sm bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
               >
                 Save pickup details
               </button>

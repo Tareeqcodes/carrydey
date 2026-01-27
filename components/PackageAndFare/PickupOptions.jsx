@@ -46,7 +46,7 @@ export default function PickupOptions({
               <div className="mt-3 bg-blue-50 rounded-lg p-3">
                 <p className="text-sm text-blue-700">
                   <span className="font-semibold">Faster matching:</span>{' '}
-                  Available travelers can accept your delivery immediately
+                  Available couriers can accept your delivery immediately
                 </p>
               </div>
             </div>
