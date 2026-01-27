@@ -22,12 +22,13 @@ const TrackAgencyDelivery = () => {
   const { user } = useAuth();
 
   const {
-    requests,
     loading: requestsLoading,
     error: requestsError,
+    agencyId, 
     refreshRequests,
   } = useAgencyDeliveries(user?.$id);
 
+  // Then pass agencyId to other hooks
   const {
     drivers,
     loading: driversLoading, 
@@ -39,6 +40,7 @@ const TrackAgencyDelivery = () => {
     updateDriverEarnings,
   } = useDriverManagement(user?.$id);
 
+  // Pass agencyId (not requests) to useDeliveryManagement
   const {
     deliveryRequests,
     activeDeliveries,
@@ -46,7 +48,7 @@ const TrackAgencyDelivery = () => {
     declineRequest,
     assignDelivery,
     updateDeliveryStatus,
-  } = useDeliveryManagement(requests);
+  } = useDeliveryManagement(agencyId);
 
   // Assignment modal state
   const [assignmentModal, setAssignmentModal] = useState({
@@ -58,11 +60,11 @@ const TrackAgencyDelivery = () => {
 
   useEffect(() => {
     console.log('Active page changed to:', activePage);
-    if (activePage === 'drivers' && user?.$id) {
-      console.log('Refetching drivers for page:', user.$id);
+    if (activePage === 'drivers' && agencyId) {
+      // console.log('Refetching drivers for agency:', agencyId);
       fetchDrivers();
     }
-  }, [activePage, user?.$id]);
+  }, [activePage, agencyId]);
 
 
   const handleAddDriverClick = () => {
@@ -70,19 +72,21 @@ const TrackAgencyDelivery = () => {
   };
 
   // Handle accept delivery request
-  const handleAcceptRequest = (requestId) => {
-    const newDelivery = acceptRequest(requestId);
+  const handleAcceptRequest = async (requestId) => {
+    const result = await acceptRequest(requestId);
 
-    if (newDelivery) {
+    if (result?.success) {
       setTimeout(() => {
         setAssignmentModal({
           isOpen: true,
-          deliveryId: newDelivery.id,
+          deliveryId: result.data.$id,
           selectedDriver: null,
-          deliveryDetails: newDelivery,
+          deliveryDetails: result.data,
         });
       }, 300);
     }
+    
+    return result;
   };
 
   // Handle decline delivery request
@@ -106,7 +110,8 @@ const TrackAgencyDelivery = () => {
       assignDelivery(
         assignmentModal.deliveryId,
         selectedDriver.$id || selectedDriver.id,
-        selectedDriver.name
+        selectedDriver.name,
+        selectedDriver.phone
       );
 
       assignDriverToDelivery(
@@ -137,7 +142,7 @@ const TrackAgencyDelivery = () => {
   const handleOpenAssignmentModal = (delivery) => {
     setAssignmentModal({
       isOpen: true,
-      deliveryId: delivery.id,
+      deliveryId: delivery.id || delivery.$id,
       selectedDriver: null,
       deliveryDetails: delivery,
     });
@@ -179,6 +184,7 @@ const TrackAgencyDelivery = () => {
             deliveryRequests={deliveryRequests}
             loading={requestsLoading}
             error={requestsError}
+            agencyId={agencyId} 
             onRefresh={refreshRequests}
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
@@ -296,7 +302,7 @@ const TrackAgencyDelivery = () => {
         isOpen={addDriverModalOpen}
         onClose={() => setAddDriverModalOpen(false)}
         onAddDriver={addDriver}
-        agencyId={user?.$id}
+        agencyId={agencyId}
         loading={driversLoading}
       />
     </div>

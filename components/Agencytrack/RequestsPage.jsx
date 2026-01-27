@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { RefreshCw, Search, Filter, Package } from 'lucide-react';
+import { RefreshCw, Package } from 'lucide-react';
 import DeliveryRequestCard from './DeliveryRequestCard';
 
 const RequestsPage = ({
@@ -20,7 +20,6 @@ const RequestsPage = ({
           </h2>
         </div>
         <div className="flex gap-2">
-          
           <button
             onClick={onRefresh}
             className="p-2 border border-gray-300 rounded-xl hover:bg-gray-50"
@@ -28,7 +27,6 @@ const RequestsPage = ({
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          
         </div>
       </div>
 
@@ -56,7 +54,7 @@ const RequestsPage = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {deliveryRequests.map((request) => (
             <DeliveryRequestCard
-              key={request.id}
+              key={request.id || request.$id}
               request={request}
               onAccept={onAccept}
               onDecline={onDecline}

@@ -53,7 +53,7 @@ export const useAgencyDeliveries = (userId) => {
         queries: queries,
       });
 
-      console.log('Appwrite response:', response);
+      // console.log('Appwrite response:', response);
 
       if (!response || !response.rows || response.rows.length === 0) {
         console.log('No deliveries found');
@@ -61,7 +61,7 @@ export const useAgencyDeliveries = (userId) => {
         return;
       }
 
-      console.log('Found deliveries:', response.rows);
+      // console.log('Found deliveries:', response.rows);
 
       const transformedRequests = response.rows.map((doc) => ({
         id: doc.$id,

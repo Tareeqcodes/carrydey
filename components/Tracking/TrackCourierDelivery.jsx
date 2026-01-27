@@ -66,7 +66,7 @@ const updateDeliveryStatus = async (deliveryId, status) => {
         rowId: deliveryId,
         data: {
           status: 'assigned',
-          assignedAt: new Date().toISOString(),
+          $createdAt: new Date().toISOString(),
         },
       });
 

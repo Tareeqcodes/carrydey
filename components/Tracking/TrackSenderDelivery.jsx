@@ -22,7 +22,6 @@ import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import { formatNairaSimple } from '@/hooks/currency';
 
-
 const TrackSenderDelivery = () => {
   const { user } = useAuth();
   const router = useRouter();
@@ -98,6 +97,7 @@ const TrackSenderDelivery = () => {
 
   const navItems = [
     { id: 'active', label: 'Active Deliveries', icon: Truck },
+    
     { id: 'history', label: 'Delivery History', icon: History },
     { id: 'profile', label: 'Profile', icon: User },
   ];
@@ -105,108 +105,64 @@ const TrackSenderDelivery = () => {
   const renderDeliveryCard = (delivery) => (
     <div
       key={delivery.$id}
-      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+      className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-sm transition"
     >
-      <div className="flex items-start justify-between mb-4">
+      {/* Top row */}
+      <div className="flex items-center justify-between mb-3">
+        <span
+          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+            delivery.status
+          )}`}
+        >
+          {getStatusIcon(delivery.status)}
+          {delivery.status.replace('_', ' ')}
+        </span>
+
+        <p className="text-xs text-gray-400">
+          {new Date(delivery.$createdAt).toLocaleDateString()}
+        </p>
+      </div>
+
+      {/* Middle content */}
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-bold">#{delivery.$id.slice(0, 8)}</h3>
-            <span
-              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                delivery.status
-              )}`}
-            >
-              {getStatusIcon(delivery.status)}
-              {delivery.status.replace('_', ' ')}
-            </span>
-          </div>
-          <p className="text-sm text-gray-500">
-            Created: {new Date(delivery.$createdAt).toLocaleDateString()}
+          <p className="text-sm text-gray-500">Delivery fee</p>
+          <p className="text-lg font-semibold text-gray-900">
+            {formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
           </p>
         </div>
-        <button className="p-2 hover:bg-gray-100 rounded-lg">
-          <Phone className="w-5 h-5 text-gray-600" />
-        </button>
-      </div>
 
-      <div className="space-y-3 mb-4">
-        <div className="flex items-start gap-2">
-          <MapPin className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">Pickup Location</p>
-            <p className="text-sm text-gray-600">{delivery.pickupAddress}</p>
-            {delivery.pickupContactName && (
-              <p className="text-xs text-gray-500 mt-1">
-                Contact: {delivery.pickupContactName} - {delivery.pickupPhone}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-start gap-2">
-          <MapPin className="w-4 h-4 text-red-600 mt-1 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">Dropoff Location</p>
-            <p className="text-sm text-gray-600">{delivery.dropoffAddress}</p>
-            {delivery.dropoffContactName && (
-              <p className="text-xs text-gray-500 mt-1">
-                Contact: {delivery.dropoffContactName} - {delivery.dropoffPhone}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-gray-50 p-3 rounded-xl text-center">
-          <p className="text-xs text-gray-500 mb-1">Distance</p>
-          <p className="font-semibold text-sm">
-            {(delivery.distance / 1000).toFixed(1)} km
-          </p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-xl text-center">
-          <p className="text-xs text-gray-500 mb-1">Package</p>
-          <p className="font-semibold text-sm">
-            {delivery.packageSize || 'Medium'}
-          </p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-xl text-center">
-          <p className="text-xs text-gray-500 mb-1">Cost</p>
-          <p className="font-semibold text-sm text-green-600">
-            ₦{formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
+        <div className="text-right">
+          <p className="text-xs text-gray-500">Package</p>
+          <p className="text-sm font-medium">
+            {delivery.packageSize || 'Standard'}
           </p>
         </div>
       </div>
+      <div className="flex items-center justify-between mb-4">
+        {/* {delivery.pickupCode && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-900 font-medium">Pickup Code</p>
+            <p className="text-lg font-mono font-bold text-blue-900">
+              {delivery.pickupCode}
+            </p>
+          </div>
+        )} */}
 
-      {delivery.packageDescription && (
-        <div className="bg-blue-50 p-3 rounded-xl mb-4">
-          <p className="text-xs text-blue-800 font-medium mb-1">
-            Package Details
-          </p>
-          <p className="text-sm text-blue-700">{delivery.packageDescription}</p>
-          {delivery.isFragile && (
-            <span className="inline-block mt-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
-              ⚠️ Fragile
-            </span>
-          )}
-        </div>
-      )}
+        {delivery.isFragile && (
+          <span className="inline-block mb-3 px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">
+            Fragile
+          </span>
+        )}
+      </div>
 
-      {delivery.status !== 'delivered' && delivery.status !== 'cancelled' && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => router.push(`/delivery/${delivery.$id}`)}
-            className="flex-1 py-2 bg-[#3A0A21] text-white rounded-xl text-sm hover:bg-[#4A0A31] transition-colors"
-          >
-            Track Delivery
-          </button>
-          {delivery.status === 'pending' && (
-            <button className="px-4 py-2 border border-red-300 text-red-600 rounded-xl text-sm hover:bg-red-50 transition-colors">
-              Cancel
-            </button>
-          )}
-        </div>
-      )}
+      {/* Primary action */}
+      <button
+        onClick={() => router.push(`/delivery/${delivery.$id}`)}
+        className="w-full py-2.5 bg-[#3A0A21] text-white rounded-xl text-sm font-medium hover:bg-[#4A0A31] transition"
+      >
+        Track delivery
+      </button>
     </div>
   );
 
@@ -228,9 +184,8 @@ const TrackSenderDelivery = () => {
               >
                 <p className="flex items-center gap-1">
                   <Plus className="w-4 h-4" />
-                  <span className='text-xs'>New Delivery</span>
+                  <span className="text-xs">New Delivery</span>
                 </p>
-       
               </button>
             </div>
 
@@ -305,9 +260,6 @@ const TrackSenderDelivery = () => {
                 <RefreshCw
                   className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
                 />
-              </button>
-              <button className="p-2 border border-gray-300 rounded-xl hover:bg-gray-50">
-                <Filter className="w-5 h-5" />
               </button>
             </div>
 
@@ -432,7 +384,6 @@ const TrackSenderDelivery = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
-          
           </div>
         </div>
       </header>
