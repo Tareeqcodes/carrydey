@@ -69,7 +69,6 @@ const TrackSenderDelivery = () => {
         },
       });
 
-      // Update local state
       setDeliveries((prev) =>
         prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
