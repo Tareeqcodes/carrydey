@@ -18,7 +18,7 @@ import {
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import { formatNairaSimple } from '@/hooks/currency';
-import SenderTrackingView from './SenderTrackingView';
+import Sendertrackingview from './Sendertrackingview';
 
 const TrackSenderDelivery = () => {
   const { user } = useAuth();
@@ -73,7 +73,6 @@ const TrackSenderDelivery = () => {
         prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
 
-      // Update selected delivery if it's the one being tracked
       if (selectedDelivery?.$id === deliveryId) {
         setSelectedDelivery((prev) => ({ ...prev, ...response }));
       }
@@ -468,7 +467,7 @@ const TrackSenderDelivery = () => {
 
       {/* Tracking Modal */}
       {showTrackingModal && selectedDelivery && (
-        <SenderTrackingView
+        <Sendertrackingview
           delivery={selectedDelivery}
           onClose={() => {
             setShowTrackingModal(false);
