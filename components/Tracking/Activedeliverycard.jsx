@@ -1,13 +1,8 @@
 'use client';
-import React, { useState } from 'react';
 import { MapPin, Truck, Phone, Package, CheckCircle } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
-import PickupotpModal from './PickupotpModal';
-import DropoffotpPModal from './DropoffotpPModal';
 
-const ActiveDeliveryCard = ({ delivery, onConfirmPickup, onConfirmDelivery, onViewDetails }) => {
-  const [showPickupModal, setShowPickupModal] = useState(false);
-  const [showDropoffModal, setShowDropoffModal] = useState(false);
+const ActiveDeliveryCard = ({ delivery, onViewDetails }) => {
 
   const getStatusColor = (status) => {
     const colors = {
@@ -163,20 +158,7 @@ const ActiveDeliveryCard = ({ delivery, onConfirmPickup, onConfirmDelivery, onVi
         </div>
       </div>
 
-      {/* Modals */}
-      <PickupotpModal
-        isOpen={showPickupModal}
-        onClose={() => setShowPickupModal(false)}
-        delivery={delivery}
-        onConfirmPickup={onConfirmPickup}
-      />
-
-      <DropoffotpPModal
-        isOpen={showDropoffModal}
-        onClose={() => setShowDropoffModal(false)}
-        delivery={delivery}
-        onConfirmDelivery={onConfirmDelivery}
-      />
+      
     </>
   );
 };

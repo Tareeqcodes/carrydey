@@ -9,7 +9,6 @@ export const useDeliveryManagement = (agencyId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch delivery requests from the hook
   useEffect(() => {
     if (agencyId) {
       console.log('Fetching deliveries for agencyId:', agencyId);
