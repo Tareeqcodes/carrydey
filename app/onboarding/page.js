@@ -111,6 +111,7 @@ export default function Onboarding() {
           role,
           phone: null,
           onboardingCompleted: true,
+          isAvailable: true,
         },
       });
 
