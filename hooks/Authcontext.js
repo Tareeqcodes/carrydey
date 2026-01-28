@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       await account.createMagicURLToken({
         userId: ID.unique(),
         email: email,
-        url: 'http://localhost:3000/emailVerification',
+        url: 'https://www.carrydey.tech/emailVerification',
       });
     } catch (error) {
       alert(error.message);
@@ -40,8 +40,8 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: OAuthProvider.Google,
-        success: 'http://localhost:3000/OAuthCallback',
-        failure: 'http://localhost:3000/login',
+        success: 'https://www.carrydey.tech/OAuthCallback',
+        failure: 'https://www.carrydey.tech/login',
       });
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);
