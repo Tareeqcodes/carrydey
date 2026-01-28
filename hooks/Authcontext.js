@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      account.createOAuth2Session({
+      account.createOAuth2Token({
         provider: OAuthProvider.Google,
         success: 'https://www.carrydey.tech/OAuthCallback',
         failure: 'https://www.carrydey.tech/login',
