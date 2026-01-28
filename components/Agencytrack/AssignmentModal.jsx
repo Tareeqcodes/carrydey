@@ -21,7 +21,7 @@ const AssignmentModal = ({
       <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold">Assign to Driver</h3>
+            <h3 className="text-xl font-bold">Select available courier</h3>
             <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-lg">
               <XCircle className="w-5 h-5" />
             </button>
@@ -33,11 +33,11 @@ const AssignmentModal = ({
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-green-600" />
-                  <span>Pickup: {deliveryDetails?.pickup}</span>
+                  <span>Pickup: {deliveryDetails?.pickupAddress}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-red-600" />
-                  <span>Dropoff: {deliveryDetails?.dropoff}</span>
+                  <span>Dropoff: {deliveryDetails?.dropoffAddress}</span>
                 </div>
                 {deliveryDetails?.payout && (
                   <div className="flex items-center gap-2">
@@ -54,25 +54,23 @@ const AssignmentModal = ({
               </div>
             </div>
 
-            <p className="font-medium mb-3">Select Available Driver:</p>
+            <p className="font-medium mb-3">Assign courier:</p>
             <div className="space-y-3">
               {availableDrivers.map((driver) => (
                 <button
                   key={driver.id}
                   onClick={() => onSelectDriver(driver.id)}
-                  className={`w-full p-4 border rounded-xl text-left transition-colors ${
+                  className={`w-full p-4 text-[#3A0A21] border rounded-xl text-left transition-colors ${
                     selectedDriver === driver.id
-                      ? 'border-[#3A0A21] bg-[#3A0A21] bg-opacity-5'
+                      ? 'border-[#3A0A21] bg-[#3A0A21] text-white bg-opacity-5'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{driver.name}</p>
-                      <p className="text-sm text-gray-500">{driver.vehicle}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Earnings today: ${driver.earningsToday.toFixed(2)}
-                      </p>
+                      <p className="text-sm text-gray-400">{driver.vehicle}</p>
+                      
                     </div>
                     {selectedDriver === driver.id && (
                       <CheckCircle className="w-5 h-5 text-[#3A0A21]" />
@@ -84,7 +82,7 @@ const AssignmentModal = ({
               {availableDrivers.length === 0 && (
                 <div className="text-center py-6 border border-gray-200 rounded-xl">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500">No available drivers</p>
+                  <p className="text-gray-500">No available couriers</p>
                   <p className="text-sm text-gray-400 mt-1">
                     All drivers are currently busy
                   </p>
@@ -93,7 +91,7 @@ const AssignmentModal = ({
                     className="mt-4 px-4 py-2 border border-[#3A0A21] text-[#3A0A21] rounded-xl hover:bg-[#3A0A21] hover:text-white transition-colors"
                   >
                     <Plus className="w-4 h-4 inline mr-1" />
-                    Add New Driver
+                    Add New courier
                   </button>
                 </div>
               )}

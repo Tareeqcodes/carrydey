@@ -291,23 +291,17 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        {/* Back Button */}
-        <button
-          onClick={() => setActiveTab('tracking')}
-          className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-        >
-          ← Back to Tracking
-        </button>
+        
 
         {/* Instructions */}
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
           <div className="flex gap-3">
             <Package className="w-6 h-6 text-blue-600 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-blue-900 mb-2">
+              <h3 className="font-semibold text-sm text-blue-900 mb-2">
                 Pickup Confirmation
               </h3>
-              <p className="text-sm text-blue-700">
+              <p className="text-xs text-blue-700">
                 Your courier has arrived at the pickup location. Share your 6-character
                 pickup code with them to confirm they have received your package.
               </p>
@@ -389,13 +383,7 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        {/* Back Button */}
-        <button
-          onClick={() => setActiveTab('tracking')}
-          className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-        >
-          ← Back to Tracking
-        </button>
+       
 
         {/* Instructions */}
         <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6">
@@ -493,7 +481,7 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Track Delivery</h2>
-            <p className="text-sm text-gray-500">ID: {delivery?.$id?.slice(-8)}</p>
+            {/* <p className="text-sm text-gray-500">ID: {delivery?.$id?.slice(-8)}</p> */}
           </div>
           <button
             onClick={onClose}

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { 
   Package, 
   MapPin, 
-  Phone, 
   CheckCircle,
   DollarSign,
   Calendar,
@@ -34,9 +33,9 @@ const TrackCourierDelivery = () => {
 const updateDeliveryStatus = async (deliveryId, status) => {
     try {
       const timestamps = {
-        picked_up: 'pickedUpAt',
-        in_transit: 'inTransitAt',
-        delivered: 'deliveredAt',
+        picked_up: 'createdAt',
+        in_transit: 'createdAt',
+        delivered: 'createdAt',
       };
 
       await tablesDB.updateRow({
@@ -257,9 +256,7 @@ const updateDeliveryStatus = async (deliveryId, status) => {
                           Mark Delivered
                         </button>
                       )}
-                      <button className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm hover:bg-gray-50 transition-colors">
-                        <Phone className="w-4 h-4" />
-                      </button>
+                      
                     </div>
                   </div>
                 ))}

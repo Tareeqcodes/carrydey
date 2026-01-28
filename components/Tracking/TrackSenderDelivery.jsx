@@ -355,7 +355,6 @@ const TrackSenderDelivery = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold">My Profile</h2>
               <p className="text-gray-500">Manage your account information</p>
             </div>
 

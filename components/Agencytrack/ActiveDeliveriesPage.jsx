@@ -5,7 +5,7 @@ import { formatNairaSimple } from '@/hooks/currency';
 
 const ActiveDeliveriesPage = ({ 
   activeDeliveries, 
-  // onAssign, 
+  onAssign, 
   // onUpdateStatus, 
   // onNavigateToTracking 
 }) => {
@@ -109,6 +109,12 @@ const ActiveDeliveriesPage = ({
             <p className="text-lg font-mono font-bold text-blue-900">{delivery.pickupCode}</p>
           </div>
         )}
+        {delivery.dropoffOTP && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-900 font-medium">Dropoff OTP</p>
+            <p className="text-lg font-mono font-bold text-blue-900">{delivery.dropoffOTP}</p>
+          </div>
+        )}
 
         {/* Quick Location Preview */}
         <button 
@@ -152,14 +158,7 @@ const ActiveDeliveriesPage = ({
       {/* Pending Assignments */}
       {pendingDeliveries.length > 0 && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Awaiting Assignment
-            </h3>
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-              {pendingDeliveries.length}
-            </span>
-          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pendingDeliveries.map((delivery) => (
               <DeliveryCard 

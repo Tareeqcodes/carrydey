@@ -28,7 +28,6 @@ const TrackAgencyDelivery = () => {
     refreshRequests,
   } = useAgencyDeliveries(user?.$id);
 
-  // Then pass agencyId to other hooks
   const {
     drivers,
     loading: driversLoading, 
@@ -40,7 +39,6 @@ const TrackAgencyDelivery = () => {
     updateDriverEarnings,
   } = useDriverManagement(user?.$id);
 
-  // Pass agencyId (not requests) to useDeliveryManagement
   const {
     deliveryRequests,
     activeDeliveries,
@@ -58,35 +56,49 @@ const TrackAgencyDelivery = () => {
     deliveryDetails: null,
   });
 
+  // Track pending assignment (after codes are shown)
+  const [pendingAssignment, setPendingAssignment] = useState(null);
+
   useEffect(() => {
-    console.log('Active page changed to:', activePage);
     if (activePage === 'drivers' && agencyId) {
-      // console.log('Refetching drivers for agency:', agencyId);
       fetchDrivers();
     }
   }, [activePage, agencyId]);
-
 
   const handleAddDriverClick = () => {
     setAddDriverModalOpen(true);
   };
 
   // Handle accept delivery request
+  // This returns the result to DeliveryRequestCard which shows the codes modal
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);
 
     if (result?.success) {
-      setTimeout(() => {
-        setAssignmentModal({
-          isOpen: true,
-          deliveryId: result.data.$id,
-          selectedDriver: null,
-          deliveryDetails: result.data,
-        });
-      }, 300);
+      // Store the delivery for later assignment
+      // Don't open assignment modal yet - let the codes modal show first
+      setPendingAssignment({
+        deliveryId: result.data.$id,
+        deliveryDetails: result.data,
+      });
     }
     
+    // Return result so DeliveryRequestCard can show the codes modal
     return result;
+  };
+
+  // This is called from DeliveryRequestCard after the user closes the codes modal
+  const handleCodesModalClosed = (deliveryId) => {
+    // Now open the assignment modal
+    if (pendingAssignment && pendingAssignment.deliveryId === deliveryId) {
+      setAssignmentModal({
+        isOpen: true,
+        deliveryId: pendingAssignment.deliveryId,
+        selectedDriver: null,
+        deliveryDetails: pendingAssignment.deliveryDetails,
+      });
+      setPendingAssignment(null);
+    }
   };
 
   // Handle decline delivery request
@@ -148,7 +160,6 @@ const TrackAgencyDelivery = () => {
     });
   };
 
-  
   const formatDriversForDisplay = () => {
     return drivers.map((driver) => ({
       id: driver.$id,
@@ -159,8 +170,8 @@ const TrackAgencyDelivery = () => {
       vehicle: driver.vehicleType
         ? `Van #${driver.vehicleType.toUpperCase()}`
         : 'No vehicle',
-      earningsToday: 0, // You'll need to add this field to your schema
-      deliveriesToday: 0, // You'll need to add this field to your schema
+      earningsToday: 0,
+      deliveriesToday: 0,
       lastUpdate: 'Just now', 
     }));
   };
@@ -188,6 +199,7 @@ const TrackAgencyDelivery = () => {
             onRefresh={refreshRequests}
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
+            onCodesModalClosed={handleCodesModalClosed}
           />
         );
 
@@ -247,7 +259,6 @@ const TrackAgencyDelivery = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            
           </div>
         </div>
       </header>
