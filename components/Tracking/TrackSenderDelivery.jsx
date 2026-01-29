@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import { formatNairaSimple } from '@/hooks/currency';
 import Sendertrackingview from './Sendertrackingview';
+import Profile from '../setting/Profile';
 
 const TrackSenderDelivery = () => {
   const { user } = useAuth();
@@ -354,32 +355,7 @@ const TrackSenderDelivery = () => {
       case 'profile':
         return (
           <div className="space-y-6">
-            <div>
-              <p className="text-gray-500">Manage your account information</p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold">{user?.userName || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-semibold">{user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Total Deliveries</p>
-                  <p className="font-semibold">{deliveries.length}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Member Since</p>
-                  <p className="font-semibold">
-                    {new Date(user?.$createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Profile />
           </div>
         );
 
@@ -473,7 +449,7 @@ const TrackSenderDelivery = () => {
             setSelectedDelivery(null);
             fetchUserDeliveries(); // Refresh deliveries after closing
           }}
-          onUpdateDelivery={handleUpdateDelivery}
+          onUpdateDelivery={handleUpdateDelivery} 
         />
       )}
     </div>

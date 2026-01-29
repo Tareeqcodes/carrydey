@@ -15,7 +15,7 @@ const ChooseTraveler = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [deliveryId, setDeliveryId] = useState(null);
   const { agencies, loading, error } = useChooseTraveler();
-  const router = useRouter();
+  const router = useRouter(); 
 
   useEffect(() => {
     const latestDeliveryId = sessionStorage.getItem('latestDeliveryId');
@@ -28,12 +28,10 @@ const ChooseTraveler = () => {
     if (agencies && agencies.length > 0) {
       const transformedTravelers = agencies
         .filter((entity) => {
-          // Filter based on availability
-          // Agencies are always shown (or add agency-specific availability field if needed)
-          // Individual couriers must have isAvailable = true
+          
           if (entity.entityType === 'agency') {
-            return true; // Show all agencies
-          } else {
+            return entity.isAvailable === true; // Only show available agencies
+          } else { 
             // For courier users, only show if they are available
             return entity.isAvailable === true;
           }
@@ -43,17 +41,15 @@ const ChooseTraveler = () => {
 
           // Parse service cities for agencies
           let serviceCities = [];
-          if (isAgency && entity.serviceCities) {
-            try {
-              serviceCities = JSON.parse(entity.serviceCities);
-            } catch (error) {
-              console.error('Error parsing serviceCities:', error);
-              serviceCities = [];
-            }
-          }
+           if (isAgency && entity.serviceCities) {
+          serviceCities = entity.serviceCities
+            .split(',')
+            .map((city) => city.trim())
+            .filter((city) => city !== '');
+        }
 
           // Generate route display
-          let routeDisplay = 'Kano'; // Default fallback
+          let routeDisplay = 'Nigeria'; // Default fallback
           if (isAgency) {
             if (serviceCities.length > 0) {
               // Show first service city or "Multiple cities" if more than one

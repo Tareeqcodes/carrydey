@@ -18,9 +18,10 @@ import {
 import { useAuth } from '@/hooks/Authcontext';
 import { formatNairaSimple } from '@/hooks/currency';
 import { useCourierDelivery } from '@/hooks/useCourierDelivery';
+import Profile from '../setting/Profile';
 
 const TrackCourierDelivery = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); 
   const [activePage, setActivePage] = useState('deliveries');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
@@ -667,40 +668,9 @@ const TrackCourierDelivery = () => {
 
       case 'profile':
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">My Profile</h2>
-              <p className="text-gray-500">Manage your courier profile</p>
-            </div>
+          <div className="mb-6">
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold">{courier?.userName || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-semibold">{courier?.email || user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-semibold">{courier?.phone || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Role</p>
-                  <p className="font-semibold capitalize">{courier?.role || 'Courier'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                    courier?.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {courier?.verified ? 'Verified' : 'Pending Verification'}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <Profile />
           </div>
         );
 

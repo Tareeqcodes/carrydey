@@ -13,7 +13,6 @@ const useOnboardingForm = () => {
     contactPerson: '',
     email: '',
     street: '',
-
     vehicleTypes: [],
     services: [],
     registrationCertificate: null,
@@ -21,7 +20,8 @@ const useOnboardingForm = () => {
     ownerNiN: null,
     phone: '',
     alternatePhone: '',
-    serviceCities: [],
+    serviceCities: '',
+    isAvailable: true,
     termsAccepted: false,
     privacyPolicyAccepted: false,
     dataProcessingAgreement: false,
@@ -100,8 +100,8 @@ const useOnboardingForm = () => {
           newErrors.phone = 'Please enter a valid phone number';
         break;
       case 3:
-        if (!formData.serviceCities || formData.serviceCities.length === 0)
-          newErrors.serviceCities = 'Please select at least one service city';
+        if (!formData.serviceCities || formData.serviceCities.trim().length === 0)
+    newErrors.serviceCities = 'Please enter at least one service city';
         break;
       case 4:
         if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
@@ -173,9 +173,7 @@ const useOnboardingForm = () => {
         website: formData.website || null,
         contactPerson: formData.contactPerson,
         email: formData.email,
-
         address: formData.street,
-
         businessType: formData.businessType,
         vehicleTypes:
           formData.vehicleTypes.length > 0
@@ -194,12 +192,10 @@ const useOnboardingForm = () => {
         userId: user.$id,
         rating: null,
         minPrice: null,
-        status: true,
+        status: true, 
         verified: false,
-        serviceCities:
-          formData.serviceCities.length > 0
-            ? JSON.stringify(formData.serviceCities)
-            : null,
+         serviceCities: formData.serviceCities || null, 
+            isAvailable: true,
       };
 
       const db = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;

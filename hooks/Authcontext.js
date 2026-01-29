@@ -38,10 +38,10 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      account.createOAuth2Token({
+      account.createOAuth2Session({
         provider: OAuthProvider.Google,
-        success: 'https://www.carrydey.tech/OAuthCallback',
-        failure: 'https://www.carrydey.tech/login',
+        success: 'http://localhost:3000/OAuthCallback',
+        failure: 'http://localhost:3000/login',
       });
     } catch (error) {
       alert('Failed to login with Google: ' + error.message);

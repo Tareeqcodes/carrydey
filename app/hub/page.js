@@ -1,9 +1,7 @@
-"use client";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+'use client';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User,
-  Shield,
   CreditCard,
   Bell,
   Settings,
@@ -11,112 +9,81 @@ import {
   ArrowLeft,
   ChevronRight,
   LogOut,
-} from "lucide-react";
-import Profile from "@/components/setting/Profile";
-import { useAuth } from "@/hooks/Authcontext";
-import Payment from "@/components/setting/Payment";
-import Notification from "@/components/setting/Notification";
-import Setting from "@/components/setting/Setting";
-import Help from "@/components/setting/Help";
-import VerificationCenter from "@/components/setting/VerificationCenter";
-import NotUser from "@/hooks/NotUser";
+} from 'lucide-react';
+import { useAuth } from '@/hooks/Authcontext';
+import Payment from '@/components/setting/Payment';
+import Notification from '@/components/setting/Notification';
+import Setting from '@/components/setting/Setting';
+import Help from '@/components/setting/Help';
+import NotUser from '@/hooks/NotUser';
 
 const SettingsComponent = () => {
   const [activeSection, setActiveSection] = useState(null);
   const { logout, user } = useAuth();
 
   const menuItems = [
-    { 
-      id: "profile", 
-      label: "Profile", 
-      icon: User, 
-      color: "bg-[#4A1A31]",
-      gradient: "from-[#5A2A41] to-[#3A0A21]"
+    {
+      id: 'payment',
+      label: 'Payment Methods',
+      icon: CreditCard,
+      color: 'bg-[#4A2A31]',
+      gradient: 'from-[#5A3A41] to-[#3A1A21]',
     },
-    { 
-      id: "verification", 
-      label: "Verification Center", 
-      icon: Shield, 
-      color: "bg-[#5A3A31]",
-      gradient: "from-[#6A4A41] to-[#4A2A21]"
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+      color: 'bg-[#3A1A21]',
+      gradient: 'from-[#4A2A31] to-[#2A0A11]',
     },
-    { 
-      id: "payment", 
-      label: "Payment Methods", 
-      icon: CreditCard, 
-      color: "bg-[#4A2A31]",
-      gradient: "from-[#5A3A41] to-[#3A1A21]"
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: Settings,
+      color: 'bg-[#2A0A11]',
+      gradient: 'from-[#3A1A21] to-[#1A0001]',
     },
-    { 
-      id: "notifications", 
-      label: "Notifications", 
-      icon: Bell, 
-      color: "bg-[#3A1A21]",
-      gradient: "from-[#4A2A31] to-[#2A0A11]"
-    },
-    { 
-      id: "settings", 
-      label: "Settings", 
-      icon: Settings, 
-      color: "bg-[#2A0A11]",
-      gradient: "from-[#3A1A21] to-[#1A0001]"
-    },
-    { 
-      id: "help", 
-      label: "Help & Support", 
-      icon: HelpCircle, 
-      color: "bg-[#4A0A31]",
-      gradient: "from-[#5A1A41] to-[#3A0011]"
+    {
+      id: 'help',
+      label: 'Help & Support',
+      icon: HelpCircle,
+      color: 'bg-[#4A0A31]',
+      gradient: 'from-[#5A1A41] to-[#3A0011]',
     },
   ];
 
   const slideVariants = {
-    hidden: { x: "100%", opacity: 0 },
+    hidden: { x: '100%', opacity: 0 },
     visible: {
       x: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: 'spring',
         stiffness: 300,
         damping: 30,
       },
     },
     exit: {
-      x: "100%",
+      x: '100%',
       opacity: 0,
       transition: {
-        type: "spring",
+        type: 'spring',
         stiffness: 300,
         damping: 30,
       },
     },
   };
 
-  if(!user){
-    return <NotUser />
+  if (!user) {
+    return <NotUser />;
   }
-
 
   const renderSectionContent = (sectionId) => {
     const content = {
-      profile: ( 
-        <Profile />
-      ),
-      verification: (
-        <VerificationCenter />
-      ),
-      payment: (
-        <Payment />
-      ),
-      notifications: (
-        <Notification />
-      ),
-      settings: (
-        <Setting />
-      ),
-      help: ( 
-        <Help />
-      ),
+      payment: <Payment />,
+      notifications: <Notification />,
+      settings: <Setting />,
+      help: <Help />,
     };
 
     return content[sectionId] || <div>Content not found</div>;
@@ -124,7 +91,7 @@ const SettingsComponent = () => {
 
   return (
     <div className="max-w-full my-16 md:my-20 mx-4 md:mx-48 min-h-screen relative overflow-hidden">
-      <div 
+      <div
         className="absolute inset-0 opacity-5"
         style={{
           backgroundImage: `radial-gradient(#3A0A21 1px, transparent 1px)`,
@@ -133,9 +100,7 @@ const SettingsComponent = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-br from-white via-[#F8F5F7] to-[#F0EBEF]" />
 
- 
       <div className="relative z-10 p-2 md:p-6 space-y-8">
-
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-[#3A0A21] rounded-xl flex items-center justify-center">
@@ -167,7 +132,9 @@ const SettingsComponent = () => {
                     <div className={`p-3 ${item.color} rounded-lg`}>
                       <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-semibold text-gray-800">{item.label}</span>
+                    <span className="font-semibold text-gray-800">
+                      {item.label}
+                    </span>
                   </div>
                   <div className="p-2 bg-gray-50 rounded-lg">
                     <ChevronRight className="w-4 h-4 text-gray-500" />
@@ -199,7 +166,7 @@ const SettingsComponent = () => {
             exit="exit"
             className="absolute top-0 left-0 w-full h-full z-20"
           >
-            <div 
+            <div
               className="absolute inset-0 opacity-3"
               style={{
                 backgroundImage: `radial-gradient(#3A0A21 1px, transparent 1px)`,
@@ -207,9 +174,8 @@ const SettingsComponent = () => {
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-br from-white via-[#FCFAFC] to-[#F8F5F7]" />
-            
+
             <div className="relative z-10 p-4 md:p-6 h-full overflow-y-auto">
-             
               <div className="bg-white p-4 rounded-xl border border-gray-200 mb-8">
                 <div className="flex items-center space-x-4">
                   <button

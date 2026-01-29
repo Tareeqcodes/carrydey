@@ -33,8 +33,11 @@ const Profile = () => {
     userName: '',
     phone: '',
     email: '',
-    isAvailable: false, // New field for availability toggle
+    isAvailable: false,
   });
+
+  // Check if user is a sender (hide availability for senders)
+  const isSender = role === 'sender';
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -76,7 +79,7 @@ const Profile = () => {
           userName: profileRow.userName || user.name || '',
           phone: profileRow.phone || '',
           email: profileRow.email || user.email || '',
-          isAvailable: profileRow.isAvailable || false, // Load availability status
+          isAvailable: profileRow.isAvailable || false, 
         });
       } else {
         setProfileData({
@@ -227,7 +230,7 @@ const Profile = () => {
               {profileData.userName
                 ? profileData.userName.charAt(0).toUpperCase()
                 : user.name?.charAt(0).toUpperCase() || 'U'}
-              {profileData.isAvailable && (
+              {!isSender && profileData.isAvailable && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
@@ -238,7 +241,7 @@ const Profile = () => {
                 {profileData.userName || user.name || 'User'}
               </h1>
               <p className="text-white/80 text-xs md:text-md">{profileData.email}</p>
-              {profileData.isAvailable && (
+              {!isSender && profileData.isAvailable && (
                 <span className="inline-block mt-1 px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
                   Available
                 </span>
@@ -273,44 +276,46 @@ const Profile = () => {
         </motion.div>
       )}
 
-      {/* Availability Toggle Section */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="p-6 border-b border-gray-100"
-      >
-        <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-1">
-                <CheckCircle className="w-5 h-5 text-[#3A0A21]" />
-                <span className="text-sm font-semibold text-gray-800">
-                  Availability Status
-                </span>
+      {/* Availability Toggle Section - Only show for non-senders */}
+      {!isSender && (
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="p-6 border-b border-gray-100"
+        >
+          <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <CheckCircle className="w-5 h-5 text-[#3A0A21]" />
+                  <span className="text-sm font-semibold text-gray-800">
+                    Availability Status
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600">
+                  {profileData.isAvailable
+                    ? 'Your profile is now visible to customers'
+                    : 'Turn on to receive delivery requests'}
+                </p>
               </div>
-              <p className="text-xs text-gray-600">
-                {profileData.isAvailable
-                  ? 'Your profile is visible to customers in ChooseTraveler'
-                  : 'Turn on to appear in ChooseTraveler and receive delivery requests'}
-              </p>
-            </div>
-            <Switch
-              checked={profileData.isAvailable}
-              onChange={handleAvailabilityToggle}
-              className={`${
-                profileData.isAvailable ? 'bg-green-600' : 'bg-gray-300'
-              } relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#3A0A21] focus:ring-offset-2`}
-            >
-              <span
+              <Switch
+                checked={profileData.isAvailable}
+                onChange={handleAvailabilityToggle}
                 className={`${
-                  profileData.isAvailable ? 'translate-x-7' : 'translate-x-1'
-                } inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg`}
-              />
-            </Switch>
-          </div>
+                  profileData.isAvailable ? 'bg-green-600' : 'bg-gray-300'
+                } relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#3A0A21] focus:ring-offset-2`}
+              >
+                <span
+                  className={`${
+                    profileData.isAvailable ? 'translate-x-7' : 'translate-x-1'
+                  } inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg`}
+                />
+              </Switch>
+            </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
 
       {/* Profile Form */}
       <motion.div
@@ -383,17 +388,15 @@ const Profile = () => {
           className="pt-4 border-t border-gray-100"
         >
           <div className="flex items-center space-x-2 mb-3">
-            <Shield className="w-4 h-4 text-[#3A0A21]" />
-            <span className="text-sm font-medium text-gray-700">
+            <Shield className="w-5 h-5  text-green-700" />
+            <span className="text-sm font-semibold text-green-700">
               Account Security
             </span>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
               Your account is secured with email verification.
-              {status === 'verified'
-                ? ' ✓ Account verified'
-                : ' ⏳ Verification pending'}
+            
             </p>
           </div>
         </motion.div>

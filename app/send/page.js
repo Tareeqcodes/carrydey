@@ -133,7 +133,7 @@ export default function CreateDelivery() {
         data: deliveryDataToSave,
       });
 
-      // console.log('Delivery created successfully:', result);
+       console.log('Delivery created successfully:', result);
       sessionStorage.setItem('latestDeliveryId', deliveryId);
       router.push('/check');
     } catch (error) {
