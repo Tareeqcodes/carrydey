@@ -87,7 +87,7 @@ export default function PackageAndFareScreen({
     <div className="min-h-screen bg-gray-50 py-0 md:py-32">
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <section className="space-y-4">
-          <h2 className="font-bold text-lg text-gray-900">Delivery Route</h2>
+          <h2 className="font-bold text-lg pl-6 md:pl-0 text-gray-900">Delivery Route</h2>
 
           <DeliverySummaryCard
             delivery={delivery}

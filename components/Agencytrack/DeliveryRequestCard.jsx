@@ -1,25 +1,22 @@
 'use client';
-import  { useState } from 'react';
-import { 
-  MapPin,  
-  CheckCircle, 
-  Clock,
-  Loader2,
-} from 'lucide-react';
- import { formatNairaSimple } from '@/hooks/currency';
+import { useState } from 'react';
+import { MapPin, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { formatNairaSimple } from '@/hooks/currency';
 
 const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
   const [isAccepting, setIsAccepting] = useState(false);
   const [showCodesModal, setShowCodesModal] = useState(false);
   const [deliveryData, setDeliveryData] = useState(null);
 
-  const formattedPayout = formatNairaSimple(request.payout || request.offeredFare || request.suggestedFare);
-  
+  const formattedPayout = formatNairaSimple(
+    request.payout || request.offeredFare || request.suggestedFare
+  );
+
   const handleAccept = async () => {
-    setIsAccepting(true); 
+    setIsAccepting(true);
     try {
       const result = await onAccept(request.id || request.$id);
-      
+
       if (result?.success) {
         // Store delivery data with codes
         setDeliveryData({
@@ -35,7 +32,9 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
       }
     } catch (error) {
       console.error('Error accepting delivery:', error);
-      alert('An error occurred while accepting the delivery. Please try again.');
+      alert(
+        'An error occurred while accepting the delivery. Please try again.'
+      );
     } finally {
       setIsAccepting(false);
     }
@@ -43,7 +42,7 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
 
   const handleCloseCodesModal = () => {
     setShowCodesModal(false);
-    
+
     // Notify parent component that codes modal is closed
     // This triggers the assignment modal to open
     if (onCodesModalClosed && deliveryData) {
@@ -59,7 +58,9 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
           <div>
             <p className="text-xs text-gray-500">
               <Clock className="w-3 h-3 inline mr-1" />
-              {new Date(request.createdAt || request.$createdAt).toLocaleString()}
+              {new Date(
+                request.createdAt || request.$createdAt
+              ).toLocaleString()}
             </p>
           </div>
           <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
@@ -76,18 +77,20 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
             </div>
             <div className="flex-1">
               <p className="text-xs font-medium text-gray-500">Pickup</p>
-              <p className="text-sm text-gray-900">{request.pickup || request.pickupAddress}</p>
-              {(request.sender || request.pickupContactName) && (
+              <p className="text-sm text-gray-900">
+                {request.pickup || request.pickupAddress}
+              </p>
+              {(request.guestName || request.pickupContactName) && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Sender: {request.sender || request.pickupContactName}
+                  Sender: {request.guestName || request.pickupContactName}
                 </p>
               )}
             </div>
           </div>
-          
+
           {/* Separator line */}
           <div className="border-l-2 border-dashed border-gray-200 h-4 ml-3"></div>
-          
+
           {/* Dropoff Location */}
           <div className="flex items-start gap-2">
             <div className="p-1 bg-red-100 rounded-full mt-0.5">
@@ -95,28 +98,17 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
             </div>
             <div className="flex-1">
               <p className="text-xs font-medium text-gray-500">Dropoff</p>
-              <p className="text-sm text-gray-900">{request.dropoff || request.dropoffAddress}</p>
-              {(request.customerName || request.dropoffContactName) && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Customer: {request.customerName || request.dropoffContactName}
-                </p>
-              )}
+              <p className="text-sm text-gray-900">
+                {request.dropoff || request.dropoffAddress}
+              </p>
+              
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-gray-50 p-3 rounded-xl text-center">
-            <p className="text-xs text-gray-500 mb-1">Distance</p>
-            <p className="font-semibold">
-              {request.distance 
-                ? typeof request.distance === 'number' 
-                  ? `${(request.distance / 1000).toFixed(1)} km`
-                  : request.distance
-                : 'N/A'}
-            </p>
-          </div>
+         
           <div className="bg-gray-50 p-3 rounded-xl text-center">
             <p className="text-xs text-gray-500 mb-1">Package</p>
             <p className="font-semibold">{request.packageSize || 'Standard'}</p>
@@ -124,7 +116,7 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
           <div className="bg-gray-50 p-3 rounded-xl text-center">
             <p className="text-xs text-gray-500 mb-1">Phone</p>
             <p className="font-semibold text-xs break-all">
-              {request.customerPhone || request.dropoffPhone || 'N/A'}
+              {request.guestPhone || request.pickupPhone || 'N/A'}
             </p>
           </div>
         </div>
@@ -137,7 +129,7 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
               {request.instructions || request.packageDescription}
             </p>
             {request.isFragile && (
-              <span className="inline-block mt-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
+              <span className="inline-block mt-2 text-orange-700 text-xs rounded">
                 ⚠️ Fragile
               </span>
             )}
@@ -148,11 +140,12 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs text-gray-500 mb-1">Estimated Payout</p>
-            <p className="text-2xl font-bold text-green-600">{formattedPayout}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {formattedPayout}
+            </p>
           </div>
-          
+
           <div className="flex gap-2">
-            
             <button
               onClick={handleAccept}
               disabled={isAccepting}

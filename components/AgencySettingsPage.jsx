@@ -165,7 +165,7 @@ const AgencySettingsPage = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 pb-10">
       {/* Success Message */}
       {successMessage && (
         <motion.div
@@ -222,7 +222,7 @@ const AgencySettingsPage = () => {
               <p className="text-xs text-gray-600">
                 {formData.isAvailable
                   ? 'Your agency is visible to customers for booking'
-                  : 'Turn on to make your agency visible to customers'}
+                  : 'Turn on to be visible to customers'}
               </p>
             </div>
             <Switch
@@ -246,8 +246,8 @@ const AgencySettingsPage = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Building2 className="w-6 h-6 text-gray-700" />
-            <h3 className="text-lg font-bold text-gray-900">
+            <Building2 className="w-4 h-4 text-gray-700" />
+            <h3 className="text-sm font-bold text-gray-900">
               Agency Information
             </h3>
           </div>
@@ -404,31 +404,35 @@ const AgencySettingsPage = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
+            
+            <p className="text-sm text-gray-600 mt-1">Total Bookings</p>
             <p className="text-2xl font-bold text-blue-600">
               {agencyData.totalDeliveries || 0}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Total Bookings</p>
           </div>
 
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-2xl font-bold text-green-600">
+          <div className="text-center p-2 bg-green-50 rounded-lg">
+            <p className="text-sm text-gray-600 mt-1">Rating</p>
+            <p className="text-sm font-bold text-green-600">
               {agencyData.rating || '4.5'}⭐
             </p>
-            <p className="text-sm text-gray-600 mt-1">Rating</p>
+            
           </div>
 
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-2xl font-bold text-purple-600">
+          <div className="text-center p-2 bg-purple-50 rounded-lg">
+            <p className="text-sm text-gray-600 mt-1">Verified</p>
+            <p className="text-sm font-bold text-purple-600">
               {agencyData.verified ? 'Yes' : 'No'}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Verified</p>
+            
           </div>
 
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <p className="text-xl font-bold text-orange-600">
+          <div className="text-center p-2 bg-orange-50 rounded-lg">
+            
+            <p className="text-sm text-gray-600 mt-1">Type</p>
+            <p className="text-sm font-bold text-orange-600">
               {agencyData.type || 'Agency'}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Type</p>
           </div>
         </div>
       </div>
