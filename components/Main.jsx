@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Users, Truck, Package, Zap } from 'lucide-react';
+import { Truck, Package, Zap } from 'lucide-react';
 import InputLocation from './InputLocation';
 
 export default function Main() {
@@ -37,17 +37,14 @@ export default function Main() {
   };
 
   return (
-    <main className="pt-8 md:pt-12 pb-20 px-6 lg:px-8">
+    <main className="bg-white rounded-2xl overflow-hidden shadow-lg my-0 md:mx-5 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Content */}
           <div className="space-y-8">
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-[#3A0A21]/5 px-4 py-2 rounded-full">
-              <Zap className="w-4 h-4 text-[#3A0A21]" />
-              <span className="text-sm font-medium text-[#3A0A21]">
-                Fast & Reliable Delivery
-              </span>
+            <div className="inline-flex items-center gap-2 bg-[#FF6B35] bg-opacity-10 text-[#FFF] px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              <span>⚡</span> Fast & Reliable Delivery
             </div>
 
             {/* Heading */}
@@ -57,7 +54,6 @@ export default function Main() {
                 <br />
                 <span className="text-[#3A0A21]/80">Their Journey</span>
               </h1>
-              
             </div>
             <InputLocation
               onLocationSelect={handleLocationSelect}
@@ -76,21 +72,22 @@ export default function Main() {
 
             {/* Feature Pills */}
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-full shadow-sm">
-                <Clock className="w-4 h-4 text-[#3A0A21]" />
-                <span className="text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#10B981]"></div>
+                <span className="text-[#1A1D29] text-sm font-semibold">
                   Same-day delivery
                 </span>
               </div>
-              <div className="flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-full shadow-sm">
-                <Users className="w-4 h-4 text-[#3A0A21]" />
-                <span className="text-sm font-medium text-gray-700">
-                  Verified travelers
+
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#00D9FF]"></div>
+                <span className="text-[#1A1D29] text-sm font-semibold">
+                  Verified Courier
                 </span>
               </div>
-              <div className="flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-full shadow-sm">
-                <Truck className="w-4 h-4 text-[#3A0A21]" />
-                <span className="text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#FF6B35]"></div>
+                <span className="text-[#1A1D29] text-sm font-semibold">
                   Real-time tracking
                 </span>
               </div>
@@ -191,13 +188,14 @@ export default function Main() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-[#3A0A21]/10 rounded-full flex items-center justify-center">
-                      <Package className="w-6 h-6 text-[#3A0A21]" />
+                      <Package className="w-6 h-6 text-[#FF6B35]" />
+                    
                     </div>
                     <div>
-                      <div className="font-semibold text-[#3A0A21]">
+                      <div className="font-bold text-[#FF6B35]">
                         Express Delivery
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm font-bold text-[#FF6B35]">
                         8.5 km • 25 mins
                       </div>
                     </div>
@@ -215,7 +213,7 @@ export default function Main() {
             <div className="absolute -top-4 -left-4 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-bold text-[#10B981]">
                   12 courier nearby
                 </span>
               </div>
@@ -224,7 +222,7 @@ export default function Main() {
             <div className="absolute -bottom-4 -right-4 bg-[#3A0A21] text-white p-2 rounded-xl shadow-lg">
               <div className="flex items-center space-x-2">
                 <Zap className="w-5 h-5" />
-                <span className="text-sm font-medium">
+                <span className="text-sm font-bold">
                   30 min avg. delivery
                 </span>
               </div>

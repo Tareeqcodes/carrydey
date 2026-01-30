@@ -184,11 +184,11 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
               <div className="flex-1">
                 <p className="font-medium text-gray-900">Pickup</p>
                 <p className="text-sm text-gray-500">{delivery?.pickupAddress}</p>
-                {delivery?.pickupContactName && (
+                {/* {delivery?.pickupContactName && (
                   <p className="text-xs text-gray-400 mt-1">
                     {delivery.pickupContactName}
                   </p>
-                )}
+                )} */}
               </div>
             </div>
 
@@ -211,11 +211,11 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
               <div className="flex-1">
                 <p className="font-medium text-gray-900">Dropoff</p>
                 <p className="text-sm text-gray-500">{delivery?.dropoffAddress}</p>
-                {delivery?.dropoffContactName && (
+                {/* {delivery?.dropoffContactName && (
                   <p className="text-xs text-gray-400 mt-1">
                     {delivery.dropoffContactName}
                   </p>
-                )}
+                )} */}
               </div>
             </div>
           </div>

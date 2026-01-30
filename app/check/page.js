@@ -15,7 +15,7 @@ const ChooseTraveler = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [deliveryId, setDeliveryId] = useState(null);
   const { agencies, loading, error } = useChooseTraveler();
-  const router = useRouter(); 
+  const router = useRouter();
 
   useEffect(() => {
     const latestDeliveryId = sessionStorage.getItem('latestDeliveryId');
@@ -28,10 +28,9 @@ const ChooseTraveler = () => {
     if (agencies && agencies.length > 0) {
       const transformedTravelers = agencies
         .filter((entity) => {
-          
           if (entity.entityType === 'agency') {
             return entity.isAvailable === true; // Only show available agencies
-          } else { 
+          } else {
             // For courier users, only show if they are available
             return entity.isAvailable === true;
           }
@@ -41,12 +40,12 @@ const ChooseTraveler = () => {
 
           // Parse service cities for agencies
           let serviceCities = [];
-           if (isAgency && entity.serviceCities) {
-          serviceCities = entity.serviceCities
-            .split(',')
-            .map((city) => city.trim())
-            .filter((city) => city !== '');
-        }
+          if (isAgency && entity.serviceCities) {
+            serviceCities = entity.serviceCities
+              .split(',')
+              .map((city) => city.trim())
+              .filter((city) => city !== '');
+          }
 
           // Generate route display
           let routeDisplay = 'Nigeria'; // Default fallback
@@ -69,7 +68,7 @@ const ChooseTraveler = () => {
             name: isAgency
               ? entity.name || entity.contactPerson || 'Agency'
               : entity.userName || 'Courier',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${
+            avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${
               isAgency ? entity.name || entity.contactPerson : entity.userName
             }`,
             rating: entity.rating || 4.5,
@@ -95,7 +94,7 @@ const ChooseTraveler = () => {
               : [entity.vehicleType || 'Motorcycle'],
             totalDeliveries:
               entity.totalDeliveries || Math.floor(Math.random() * 100 + 20),
-            isAvailable: entity.isAvailable || false, 
+            isAvailable: entity.isAvailable || false,
           };
         });
 

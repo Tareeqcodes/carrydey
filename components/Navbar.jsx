@@ -114,7 +114,7 @@ const Navbar = () => {
       <nav
         className={`hidden w-full md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/95 backdrop-blur-sm border-b border-gray-200'
+            ? 'bg-white overflow-hidden shadow-lg'
             : 'bg-white border-b border-gray-100'
         }`}
       >
