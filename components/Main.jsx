@@ -192,10 +192,10 @@ export default function Main() {
                     
                     </div>
                     <div>
-                      <div className="font-bold text-[#FF6B35]">
+                      <div className="font-bold text-xs text-[#FF6B35]">
                         Express Delivery
                       </div>
-                      <div className="text-sm font-bold text-[#FF6B35]">
+                      <div className="text-xs font-bold text-[#FF6B35]">
                         8.5 km • 25 mins
                       </div>
                     </div>

@@ -19,7 +19,7 @@ export default function Page() {
             </h2>
             <p className="text-[#1A1D29] text-xs md:text-md max-w-2xl mx-auto">
               Experience the future of delivery with our trusted community of
-              travelers and lightning-fast service.
+              couriers and lightning-fast service.
             </p>
           </div>
             
@@ -29,10 +29,10 @@ export default function Page() {
                 <MapPin className="w-7 h-7 text-[#3A0A21]" />
               </div>
               <h3 className="text-sm font-bold text-[#3A0A21] mb-3">
-                Find Travelers Heading Your Way
+                Find couriers Heading Your Way
               </h3>
               <p className="text-[#1A1D29] text-xs">
-                Match with verified travelers already making the trip to your
+                Match with verified couriers already making the trip to your
                 destination
               </p>
             </div>
@@ -58,7 +58,7 @@ export default function Page() {
                 Community You Can Trust
               </h3>
               <p className="text-[#1A1D29] text-xs">
-                Every traveler is verified with ratings and reviews from real
+                Every couriers is verified with ratings and reviews from real
                 users
               </p>
             </div>

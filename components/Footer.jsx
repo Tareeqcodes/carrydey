@@ -7,13 +7,13 @@ export default function Footer() {
   const footerLinks = [
     { href: '/privacy', label: 'Privacy Policy' },
     { href: '/terms', label: 'Terms of Service' },
-    { href: '/contact', label: 'Contact Us' },
-    { href: '/support', label: 'Support Center' },
+    // { href: '/contact', label: 'Contact Us' },
+    // { href: '/support', label: 'Support Center' },
   ];
 
   const socialLinks = [
     { 
-      href: 'https://twitter.com/carrydey', 
+      href: 'https://www.instagram.com/carrydey.ng/', 
       label: 'Twitter', 
       icon: <Twitter size={20} /> 
     },
@@ -23,7 +23,7 @@ export default function Footer() {
       icon: <Linkedin size={20} /> 
     },
     { 
-      href: 'https://instagram.com/carrydey', 
+      href: 'https://www.instagram.com/carrydey.ng/', 
       label: 'Instagram', 
       icon: <Instagram size={20} /> 
     },
@@ -43,7 +43,7 @@ export default function Footer() {
           </div>
           
           <p className="text-gray-600 max-w-md mt-3 text-sm text-start md:text-base leading-relaxed">
-            Making travel seamless and efficient. Experience the future of transportation 
+            Making delivery seamless and efficient. Experience the future of transportation 
             with our innovative solutions that connect people and places effortlessly.
           </p>
         </div>
@@ -53,7 +53,7 @@ export default function Footer() {
             
             <div className="w-full md:w-auto">
               <h3 className="font-semibold text-gray-900 mb-4 text-center md:text-left">Quick Links</h3>
-              <div className="grid grid-cols-1 gap-3 md:flex md:flex-col md:space-y-3">
+              <div className="grid grid-cols-1 gap-3 md:flex md:flex-col md:space-y-2">
                 {footerLinks.map((link) => (
                   <Link
                     key={link.href}
