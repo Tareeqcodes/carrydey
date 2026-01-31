@@ -11,23 +11,25 @@ import {
   Clock,
   Truck,
   History,
+  Loader2,
   Copy,
   Check,
-  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { formatNairaSimple } from '@/hooks/currency';
 import { useCourierDelivery } from '@/hooks/useCourierDelivery';
 import Profile from '../setting/Profile';
+import PickupCodeModal from '../Agencytrack/PickupCodeModal';
+import DropoffOTPModal from '../Agencytrack/DropoffOTPModal';
 
 const TrackCourierDelivery = () => {
   const { user } = useAuth(); 
   const [activePage, setActivePage] = useState('deliveries');
+  const [isAccepting, setIsAccepting] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
-  const [otpInput, setOtpInput] = useState('');
-  const [pickupCodeInput, setPickupCodeInput] = useState('');
-  const [selectedDeliveryForOTP, setSelectedDeliveryForOTP] = useState(null);
+  const [selectedDeliveryForPickup, setSelectedDeliveryForPickup] = useState(null);
+  const [selectedDeliveryForDropoff, setSelectedDeliveryForDropoff] = useState(null);
   
   const {
     courier,
@@ -37,7 +39,7 @@ const TrackCourierDelivery = () => {
     confirmPickup,
     confirmDelivery,
     updateDeliveryStatus,
-    refresh,
+    refresh, 
   } = useCourierDelivery(user?.$id);
 
   // Separate deliveries by status
@@ -56,6 +58,7 @@ const TrackCourierDelivery = () => {
   };
 
   const handleAcceptDelivery = async (deliveryId) => {
+    setIsAccepting(true);
     try {
       const result = await acceptRequest(deliveryId);
       
@@ -68,38 +71,26 @@ const TrackCourierDelivery = () => {
     } catch (err) {
       console.error(err);
       alert('Failed to accept delivery');
+    } finally{
+      setIsAccepting(false);
     }
   };
 
-  const confirmPickupWithCode = async (deliveryId) => {
-    if (pickupCodeInput.length !== 6) {
-      alert('Please enter the complete 6-character pickup code');
-      return;
-    }
-
-    const result = await confirmPickup(deliveryId, pickupCodeInput);
+  const handleConfirmPickup = async (deliveryId, pickupCode) => {
+    const result = await confirmPickup(deliveryId, pickupCode);
     
     if (result.success) {
       alert('Pickup confirmed successfully!');
-      setPickupCodeInput('');
-      setSelectedDeliveryForOTP(null);
     } else {
       alert(result.error || 'Invalid pickup code');
     }
   };
 
-  const confirmDeliveryWithOTP = async (deliveryId) => {
-    if (otpInput.length !== 6) {
-      alert('Please enter the complete 6-digit OTP');
-      return;
-    }
-
-    const result = await confirmDelivery(deliveryId, otpInput);
+  const handleConfirmDelivery = async (deliveryId, otp) => {
+    const result = await confirmDelivery(deliveryId, otp);
     
     if (result.success) {
       alert('Delivery completed successfully!');
-      setOtpInput('');
-      setSelectedDeliveryForOTP(null);
     } else {
       alert(result.error || 'Invalid OTP code');
     }
@@ -223,8 +214,18 @@ const TrackCourierDelivery = () => {
         <button
           onClick={() => handleAcceptDelivery(delivery.$id)}
           className="w-full py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition-colors"
-        >
-          Accept Delivery
+        > 
+          {isAccepting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Accepting...
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Accept delivery
+                </div>
+              )}
         </button>
       );
     }
@@ -257,10 +258,7 @@ const TrackCourierDelivery = () => {
           )}
           
           <button
-            onClick={() => {
-              setSelectedDeliveryForOTP(delivery.$id);
-              setPickupCodeInput('');
-            }}
+            onClick={() => setSelectedDeliveryForPickup(delivery.$id)}
             className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
           >
             Confirm Pickup
@@ -308,10 +306,7 @@ const TrackCourierDelivery = () => {
           )}
           
           <button
-            onClick={() => {
-              setSelectedDeliveryForOTP(delivery.$id);
-              setOtpInput('');
-            }}
+            onClick={() => setSelectedDeliveryForDropoff(delivery.$id)}
             className="w-full py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
@@ -330,8 +325,8 @@ const TrackCourierDelivery = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-bold">Pending Deliveries</h2>
-              <p className="text-gray-500 text-sm">New delivery requests waiting for acceptance</p>
+             
+              <p className="text-gray-500 font-bold pl-4 text-sm">New delivery requests waiting for acceptance</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -669,7 +664,6 @@ const TrackCourierDelivery = () => {
       case 'profile':
         return (
           <div className="mb-6">
-
             <Profile />
           </div>
         );
@@ -756,96 +750,20 @@ const TrackCourierDelivery = () => {
       </nav>
 
       {/* Pickup Code Confirmation Modal */}
-      {selectedDeliveryForOTP && activeDeliveries.find(d => d.$id === selectedDeliveryForOTP)?.status === 'accepted' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <AlertCircle className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-bold">Verify Pickup Code</h3>
-            </div>
-            
-            <p className="text-gray-600 mb-4">
-              Ask the sender for the pickup code and enter it below to confirm package collection.
-            </p>
-            
-            <input
-              type="text"
-              value={pickupCodeInput}
-              onChange={(e) => setPickupCodeInput(e.target.value.toUpperCase())}
-              placeholder="Enter 6-character code"
-              maxLength={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl mb-4 text-center text-2xl font-bold tracking-wider uppercase"
-            />
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setSelectedDeliveryForOTP(null);
-                  setPickupCodeInput('');
-                }}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmPickupWithCode(selectedDeliveryForOTP)}
-                disabled={pickupCodeInput.length !== 6}
-                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Confirm Pickup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PickupCodeModal
+        isOpen={selectedDeliveryForPickup !== null}
+        onClose={() => setSelectedDeliveryForPickup(null)}
+        onConfirm={handleConfirmPickup}
+        deliveryId={selectedDeliveryForPickup}
+      />
 
       {/* Dropoff OTP Confirmation Modal */}
-      {selectedDeliveryForOTP && activeDeliveries.find(d => d.$id === selectedDeliveryForOTP)?.status === 'in_transit' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="text-lg font-bold">Verify Delivery OTP</h3>
-            </div>
-            
-            <p className="text-gray-600 mb-4">
-              Ask the recipient for the 6-digit OTP code to complete the delivery.
-            </p>
-            
-            <input
-              type="text"
-              value={otpInput}
-              onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-              placeholder="Enter 6-digit OTP"
-              maxLength={6}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl mb-4 text-center text-2xl font-bold tracking-wider"
-            />
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setSelectedDeliveryForOTP(null);
-                  setOtpInput('');
-                }}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmDeliveryWithOTP(selectedDeliveryForOTP)}
-                disabled={otpInput.length !== 6}
-                className="flex-1 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Complete Delivery
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DropoffOTPModal
+        isOpen={selectedDeliveryForDropoff !== null}
+        onClose={() => setSelectedDeliveryForDropoff(null)}
+        onConfirm={handleConfirmDelivery}
+        deliveryId={selectedDeliveryForDropoff}
+      />
     </div>
   );
 };

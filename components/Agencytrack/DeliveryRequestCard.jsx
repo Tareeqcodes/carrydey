@@ -3,13 +3,11 @@ import { useState } from 'react';
 import { MapPin, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
-const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
+const DeliveryRequestCard = ({ request, onAccept }) => {
   const [isAccepting, setIsAccepting] = useState(false);
-  const [showCodesModal, setShowCodesModal] = useState(false);
-  const [deliveryData, setDeliveryData] = useState(null);
 
   const formattedPayout = formatNairaSimple(
-    request.payout || request.offeredFare || request.suggestedFare
+     request.suggestedFare
   );
 
   const handleAccept = async () => {
@@ -18,15 +16,8 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
       const result = await onAccept(request.id || request.$id);
 
       if (result?.success) {
-        // Store delivery data with codes
-        setDeliveryData({
-          ...result.data,
-          pickupCode: result.pickupCode,
-          dropoffOTP: result.dropoffOTP,
-        });
-        setShowCodesModal(true);
+        console.log('Delivery accepted successfully');
       } else {
-        // Show error if acceptance failed
         console.error('Failed to accept delivery:', result?.error);
         alert(result?.error || 'Failed to accept delivery. Please try again.');
       }
@@ -37,16 +28,6 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
       );
     } finally {
       setIsAccepting(false);
-    }
-  };
-
-  const handleCloseCodesModal = () => {
-    setShowCodesModal(false);
-
-    // Notify parent component that codes modal is closed
-    // This triggers the assignment modal to open
-    if (onCodesModalClosed && deliveryData) {
-      onCodesModalClosed(deliveryData.$id);
     }
   };
 
@@ -101,14 +82,12 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
               <p className="text-sm text-gray-900">
                 {request.dropoff || request.dropoffAddress}
               </p>
-              
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-         
           <div className="bg-gray-50 p-3 rounded-xl text-center">
             <p className="text-xs text-gray-500 mb-1">Package</p>
             <p className="font-semibold">{request.packageSize || 'Standard'}</p>
@@ -166,18 +145,6 @@ const DeliveryRequestCard = ({ request, onAccept, onCodesModalClosed }) => {
           </div>
         </div>
       </div>
-
-      {/* Codes Modal */}
-      {/* {showCodesModal && deliveryData && (
-        <DeliveryCodesModal
-          isOpen={showCodesModal}
-          onClose={handleCloseCodesModal}
-          delivery={deliveryData}
-          pickupCode={deliveryData.pickupCode}
-          dropoffOTP={deliveryData.dropoffOTP}
-          driverPhone={deliveryData.driverPhone}
-        />
-      )} */}
     </>
   );
 };

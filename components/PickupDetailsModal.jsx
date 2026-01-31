@@ -13,13 +13,8 @@ export default function PickupDetailsModal({
   const [formData, setFormData] = useState({
     pickupContactName:
       initialData?.pickupContactName ||
-      userData?.userName ||
-      userData?.name ||
-      '',
+      userData?.userName || '',
     pickupPhone: initialData?.pickupPhone || userData?.phone || '',
-    pickupStoreName: initialData?.pickupStoreName || '',
-    pickupUnitFloor: initialData?.pickupUnitFloor || '',
-    pickupOption: initialData?.pickupOption || 'curb',
     pickupInstructions: initialData?.pickupInstructions || '',
   });
 
@@ -31,12 +26,6 @@ export default function PickupDetailsModal({
     }));
   };
 
-  const handleOptionChange = (option) => {
-    setFormData((prev) => ({
-      ...prev,
-      pickupOption: option,
-    }));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -69,10 +58,7 @@ export default function PickupDetailsModal({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            
             <div>
-             
-
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -87,10 +73,7 @@ export default function PickupDetailsModal({
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Pre-filled from your profile:{' '}
-                    {userData?.userName || userData?.name || 'Not set'}
-                  </p>
+                  
                 </div>
 
                 <div>
@@ -128,78 +111,28 @@ export default function PickupDetailsModal({
                   </div>
                 </div>
               </div>
-
-              <div className="mt-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Store or building name (optional)
-                  </label>
-                  <input
-                    type="text"
-                    name="pickupStoreName"
-                    value={formData.pickupStoreName}
-                    onChange={handleInputChange}
-                    placeholder="E.g. Mall, Office Complex"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Unit/Floor (optional)
-                  </label>
-                  <input
-                    type="text"
-                    name="pickupUnitFloor"
-                    value={formData.pickupUnitFloor}
-                    onChange={handleInputChange}
-                    placeholder="E.g. Unit 5, Floor 3"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
-                  />
-                </div>
-              </div>
             </div>
 
-            {/* PICKUP OPTIONS */}
-            <div>
-              <h3 className="font-semibold text-sm text-gray-700 mb-4">
-                Pickup options
-              </h3>
-              <div className="space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.pickupOption === 'curb'}
-                    onChange={() => handleOptionChange('curb')}
-                    className="h-5 w-5 text-[#3A0A21]"
-                  />
-                  <span>Meet at curb</span>
-                </label>
-                <label className="flex text-sm items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.pickupOption === 'door'}
-                    onChange={() => handleOptionChange('door')}
-                    className="h-5 w-5 text-[#3A0A21]"
-                  />
-                  <span>Meet at door</span>
-                </label>
-              </div>
-            </div>
-
-            {/* INSTRUCTIONS */}
-            <div>
-              <h3 className="font-semibold text-sm text-gray-700 mb-4">
-                Instructions for courier (optional)
-              </h3>
-              <textarea
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Helps the courier locate you faster (recommended)
+              </label>
+              <input
+                type="text"
                 name="pickupInstructions"
                 value={formData.pickupInstructions}
                 onChange={handleInputChange}
-                placeholder="E.g.: Look for the blue gate, call when arrived..."
-                rows="3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21] resize-none"
+                placeholder="E.g. Behind Shoprite, Plaza, Floor 2 Room 12"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Add nearby landmarks, building names, or specific location
+                details
+                
+              </p>
             </div>
+
+            
 
             {/* SUBMIT BUTTON */}
             <div className="pt-4">

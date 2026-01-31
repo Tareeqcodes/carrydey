@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 
 export const useAgencyDeliveries = (userId) => {
@@ -7,7 +7,8 @@ export const useAgencyDeliveries = (userId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [agencyId, setAgencyId] = useState(null);
-
+  const agencyIdRef = useRef(null); // ✅ Use ref to track latest agencyId
+ 
   const fetchUserAgency = async () => {
     if (!userId) {
       console.warn('No userId provided to useAgencyDeliveries');
@@ -42,7 +43,7 @@ export const useAgencyDeliveries = (userId) => {
       const queries = [
         Query.equal('assignedAgencyId', fetchedAgencyId),
         Query.orderDesc('$createdAt'),
-        Query.limit(100),
+        Query.limit(50),
       ];
 
       console.log('Fetching deliveries for agency:', fetchedAgencyId);
@@ -53,15 +54,11 @@ export const useAgencyDeliveries = (userId) => {
         queries: queries,
       });
 
-      // console.log('Appwrite response:', response);
-
       if (!response || !response.rows || response.rows.length === 0) {
         console.log('No deliveries found');
         setRequests([]);
         return;
       }
-
-      // console.log('Found deliveries:', response.rows);
 
       const transformedRequests = response.rows.map((doc) => ({
         id: doc.$id,
@@ -106,6 +103,12 @@ export const useAgencyDeliveries = (userId) => {
     }
   };
 
+  // ✅ Update ref whenever agencyId changes
+  useEffect(() => {
+    agencyIdRef.current = agencyId;
+  }, [agencyId]);
+
+  // ✅ Initial load
   useEffect(() => {
     const loadData = async () => {
       if (!userId) {
@@ -116,12 +119,10 @@ export const useAgencyDeliveries = (userId) => {
       try {
         setLoading(true);
         setError(null);
-
-        // First get the agency
         const fetchedAgencyId = await fetchUserAgency();
         setAgencyId(fetchedAgencyId);
+        agencyIdRef.current = fetchedAgencyId; // ✅ Update ref immediately
 
-        // Then get deliveries for that agency
         await fetchDeliveryRequests(fetchedAgencyId);
       } catch (err) {
         console.error('Error loading agency deliveries:', err);
@@ -132,24 +133,32 @@ export const useAgencyDeliveries = (userId) => {
     };
 
     loadData();
+  }, [userId]);
 
-    // Set up polling to check for new requests every 10 seconds
+  // ✅ Separate polling effect
+  useEffect(() => {
+    if (!userId) return;
+
     const interval = setInterval(() => {
-      if (agencyId) {
-        fetchDeliveryRequests(agencyId);
+      const currentAgencyId = agencyIdRef.current; // ✅ Use ref value
+      if (currentAgencyId) {
+        console.log('Polling deliveries for agency:', currentAgencyId);
+        fetchDeliveryRequests(currentAgencyId);
       }
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [userId]); // ✅ Keep userId dependency
 
   const refreshRequests = async () => {
     if (!userId) return;
     
     try {
       setLoading(true);
-      const fetchedAgencyId = agencyId || await fetchUserAgency();
-      await fetchDeliveryRequests(fetchedAgencyId);
+      const fetchedAgencyId = agencyIdRef.current || await fetchUserAgency(); // ✅ Use ref first
+      if (fetchedAgencyId) {
+        await fetchDeliveryRequests(fetchedAgencyId);
+      }
     } catch (err) {
       console.error('Error refreshing requests:', err);
       setError(err.message);

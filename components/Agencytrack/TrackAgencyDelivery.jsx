@@ -43,7 +43,6 @@ const TrackAgencyDelivery = () => {
     deliveryRequests,
     activeDeliveries,
     acceptRequest,
-    declineRequest,
     assignDelivery,
     updateDeliveryStatus,
   } = useDeliveryManagement(agencyId);
@@ -87,26 +86,12 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  // This is called from DeliveryRequestCard after the user closes the codes modal
-  const handleCodesModalClosed = (deliveryId) => {
-    // Now open the assignment modal
-    if (pendingAssignment && pendingAssignment.deliveryId === deliveryId) {
-      setAssignmentModal({
-        isOpen: true,
-        deliveryId: pendingAssignment.deliveryId,
-        selectedDriver: null,
-        deliveryDetails: pendingAssignment.deliveryDetails,
-      });
-      setPendingAssignment(null);
-    }
-  };
-
-  // Handle decline delivery request
-  const handleDeclineRequest = (requestId) => {
-    if (confirm('Are you sure you want to decline this delivery request?')) {
-      declineRequest(requestId);
-    }
-  };
+  
+  // const handleDeclineRequest = (requestId) => {
+  //   if (confirm('Are you sure you want to decline this delivery request?')) {
+  //     declineRequest(requestId);
+  //   }
+  // };
 
   // Complete driver assignment
   const handleCompleteAssignment = () => {
@@ -198,8 +183,8 @@ const TrackAgencyDelivery = () => {
             agencyId={agencyId} 
             onRefresh={refreshRequests}
             onAccept={handleAcceptRequest}
-            onDecline={handleDeclineRequest}
-            onCodesModalClosed={handleCodesModalClosed}
+            // onDecline={handleDeclineRequest}
+            
           />
         );
 

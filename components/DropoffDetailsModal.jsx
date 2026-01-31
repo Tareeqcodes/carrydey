@@ -12,9 +12,6 @@ export default function DropoffDetailsModal({
   const [formData, setFormData] = useState({
     dropoffContactName: initialData?.dropoffContactName || '',
     dropoffPhone: initialData?.dropoffPhone || '',
-    dropoffStoreName: initialData?.dropoffStoreName || '',
-    dropoffUnitFloor: initialData?.dropoffUnitFloor || '',
-    dropoffOption: initialData?.dropoffOption || 'door',
     dropoffInstructions: initialData?.dropoffInstructions || '',
     recipientPermission: initialData?.recipientPermission || false,
   });
@@ -24,9 +21,7 @@ export default function DropoffDetailsModal({
       setFormData({
         dropoffContactName: initialData?.dropoffContactName || '',
         dropoffPhone: initialData?.dropoffPhone || '',
-        dropoffStoreName: initialData?.dropoffStoreName || '',
-        dropoffUnitFloor: initialData?.dropoffUnitFloor || '',
-        dropoffOption: initialData?.dropoffOption || 'door',
+
         dropoffInstructions: initialData?.dropoffInstructions || '',
         recipientPermission: initialData?.recipientPermission || false,
       });
@@ -38,13 +33,6 @@ export default function DropoffDetailsModal({
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? e.target.checked : value,
-    }));
-  };
-
-  const handleOptionChange = (option) => {
-    setFormData((prev) => ({
-      ...prev,
-      dropoffOption: option,
     }));
   };
 
@@ -70,7 +58,7 @@ export default function DropoffDetailsModal({
     }
 
     onSave(formData);
-    onClose(); // Close modal after saving
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -99,7 +87,7 @@ export default function DropoffDetailsModal({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Recipient Information */}
+            {/* RECIPIENT INFORMATION */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">
                 Who's receiving the package?
@@ -126,6 +114,7 @@ export default function DropoffDetailsModal({
               </div>
             </div>
 
+            {/* DELIVERY LOCATION */}
             <div>
               <h3 className="font-semibold text-sm text-gray-900 mb-4">
                 Delivery Location
@@ -144,76 +133,28 @@ export default function DropoffDetailsModal({
                 </div>
               </div>
 
-              <div className="mt-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Store or building name (optional)
-                  </label>
-                  <input
-                    type="text"
-                    name="dropoffStoreName"
-                    value={formData.dropoffStoreName}
-                    onChange={handleInputChange}
-                    placeholder="E.g. Mosque, School, Hospital"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Unit/Floor (optional)
-                  </label>
-                  <input
-                    type="text"
-                    name="dropoffUnitFloor"
-                    value={formData.dropoffUnitFloor}
-                    onChange={handleInputChange}
-                    placeholder="E.g. Room 12, Floor 2"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
-                  />
-                </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional dropoff instructions (optional)
+                </label>
+                <input
+                  type="text"
+                  name="dropoffInstructions"
+                  value={formData.dropoffInstructions}
+                  onChange={handleInputChange}
+                  placeholder="Near Central Mosque, call recipient before arrival"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Add nearby landmarks, building names, or specific location
+                  details
+                </p>
               </div>
             </div>
 
-            <div>
-              <h3 className="font-semibold text-sm text-gray-900 mb-4">
-                Dropoff options
-              </h3>
-              <div className="space-y-3">
-                <label className="flex items-center text-sm space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.dropoffOption === 'curb'}
-                    onChange={() => handleOptionChange('curb')}
-                    className="h-5 w-5 text-[#3A0A21]"
-                  />
-                  <span>Meet at curb</span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={formData.dropoffOption === 'door'}
-                    onChange={() => handleOptionChange('door')}
-                    className="h-5 w-5 text-[#3A0A21]"
-                  />
-                  <span>Meet at door</span>
-                </label>
-              </div>
-            </div>
+            
 
-            <div>
-              <h3 className="font-semibold text-sm text-gray-900 mb-4">
-                Instructions for driver
-              </h3>
-              <textarea
-                name="dropoffInstructions"
-                value={formData.dropoffInstructions}
-                onChange={handleInputChange}
-                placeholder="E.g.: Call recipient before arrival, leave at security..."
-                rows="3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21] resize-none"
-              />
-            </div>
-
+            {/* PERMISSION CHECKBOX */}
             <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
               <input
                 type="checkbox"
@@ -229,6 +170,7 @@ export default function DropoffDetailsModal({
               </p>
             </div>
 
+            {/* SUBMIT BUTTON */}
             <div className="pt-4">
               <button
                 type="submit"

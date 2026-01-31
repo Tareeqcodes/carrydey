@@ -222,7 +222,7 @@ export const useDeliveryManagement = (agencyId) => {
         rowId: deliveryId,
         data: {
           status: newStatus,
-          [`${newStatus}At`]: new Date().toISOString(),
+          
         }
       });
 

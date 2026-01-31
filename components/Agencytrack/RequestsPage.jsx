@@ -10,7 +10,6 @@ const RequestsPage = ({
   onRefresh,
   onAccept,
   onDecline,
-  onCodesModalClosed, // New prop to handle after codes modal closes
 }) => {
   return (
     <div className="space-y-6 pb-16">
@@ -59,7 +58,6 @@ const RequestsPage = ({
               request={request}
               onAccept={onAccept}
               onDecline={onDecline}
-              onCodesModalClosed={onCodesModalClosed}
             />
           ))}
         </div>
