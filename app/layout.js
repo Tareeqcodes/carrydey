@@ -1,5 +1,6 @@
 import '../assets/globals.css';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/hooks/Authcontext';
 import Navbar from '@/components/Navbar';
 
@@ -199,6 +200,7 @@ export default function RootLayout({ children }) {
           <main className="min-h-screen">
             <Navbar />
             {children}
+             <Analytics />
           </main>
         </AuthProvider>
       </body>
