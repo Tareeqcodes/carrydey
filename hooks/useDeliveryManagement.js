@@ -6,6 +6,7 @@ import { generateOTP, generatePickupCode } from '@/hooks/otpGenerator';
 export const useDeliveryManagement = (agencyId) => {
   const [deliveryRequests, setDeliveryRequests] = useState([]);
   const [activeDeliveries, setActiveDeliveries] = useState([]);
+  const [completedDeliveries, setCompletedDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -38,17 +39,24 @@ export const useDeliveryManagement = (agencyId) => {
         queries: [
           Query.equal('assignedAgencyId', agencyId),
           Query.orderDesc('$createdAt'),
+          Query.limit(100), // Fetch more to include history
         ],
       });
 
       console.log('Deliveries fetched:', response.rows?.length || 0);
 
-      // Separate pending requests from active deliveries
+      // Separate deliveries by status
       const pending = response.rows.filter(r => r.status === 'pending');
-      const active = response.rows.filter(r => r.status !== 'pending' && r.status !== 'delivered' && r.status !== 'cancelled');
+      const active = response.rows.filter(r => 
+        ['accepted', 'pending_assignment', 'assigned', 'picked_up', 'in_transit'].includes(r.status)
+      );
+      const completed = response.rows.filter(r => 
+        ['delivered', 'cancelled'].includes(r.status)
+      );
       
       setDeliveryRequests(pending);
       setActiveDeliveries(active);
+      setCompletedDeliveries(completed);
       setError(null);
     } catch (err) {
       console.error('Error fetching deliveries:', err);
@@ -59,7 +67,6 @@ export const useDeliveryManagement = (agencyId) => {
   };
 
   // Accept a delivery request and generate OTP codes
-  
   const acceptRequest = async (requestId) => {
     try {
       const request = deliveryRequests.find((r) => r.$id === requestId);
@@ -97,9 +104,7 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
- 
-  //  Assign delivery to a driver
-  
+  // Assign delivery to a driver
   const assignDelivery = async (deliveryId, driverId, driverName, driverPhone) => {
     try {
       const response = await tablesDB.updateRow({
@@ -130,8 +135,7 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
-  //  Confirm pickup with code
-  
+  // Confirm pickup with code
   const confirmPickup = async (deliveryId, enteredCode) => {
     try {
       const delivery = activeDeliveries.find(d => d.$id === deliveryId);
@@ -149,7 +153,6 @@ export const useDeliveryManagement = (agencyId) => {
         rowId: deliveryId,
         data: {
           status: 'picked_up',
-        
         }
       });
 
@@ -169,7 +172,6 @@ export const useDeliveryManagement = (agencyId) => {
   };
 
   // Confirm delivery with OTP
-  
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
       const delivery = activeDeliveries.find(d => d.$id === deliveryId);
@@ -203,7 +205,9 @@ export const useDeliveryManagement = (agencyId) => {
         });
       }
 
+      // Move from active to completed
       setActiveDeliveries(prev => prev.filter(d => d.$id !== deliveryId));
+      setCompletedDeliveries(prev => [response, ...prev]);
 
       return { success: true, data: response };
     } catch (err) {
@@ -211,7 +215,6 @@ export const useDeliveryManagement = (agencyId) => {
       return { success: false, error: err.message };
     }
   };
-
 
   // Update delivery status (for driver updates)
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
@@ -222,17 +225,22 @@ export const useDeliveryManagement = (agencyId) => {
         rowId: deliveryId,
         data: {
           status: newStatus,
-          
         }
       });
 
-      setActiveDeliveries(prev =>
-        prev.map(delivery =>
-          delivery.$id === deliveryId
-            ? { ...delivery, ...response }
-            : delivery
-        )
-      );
+      // If status is delivered or cancelled, move to completed
+      if (newStatus === 'delivered' || newStatus === 'cancelled') {
+        setActiveDeliveries(prev => prev.filter(d => d.$id !== deliveryId));
+        setCompletedDeliveries(prev => [response, ...prev]);
+      } else {
+        setActiveDeliveries(prev =>
+          prev.map(delivery =>
+            delivery.$id === deliveryId
+              ? { ...delivery, ...response }
+              : delivery
+          )
+        );
+      }
 
       return { success: true, data: response };
     } catch (err) {
@@ -244,6 +252,7 @@ export const useDeliveryManagement = (agencyId) => {
   return {
     deliveryRequests,
     activeDeliveries,
+    completedDeliveries,
     loading,
     error,
     acceptRequest,

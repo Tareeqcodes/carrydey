@@ -48,6 +48,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithFacebook = async () => {
+    try {
+      account.createOAuth2Session({
+        provider: OAuthProvider.Facebook,
+        success: 'http://localhost:3000/OAuthCallback',
+        failure: 'http://localhost:3000/login',
+      });
+    } catch (error) {
+      alert('Failed to login with Facebook: ' + error.message);
+    }
+  };
+
   // const listSessions = async () => {
   //   try {
   //     return await account.listSessions();
@@ -95,6 +107,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         loginWithGoogle,
+        loginWithFacebook,
         logout,
         checkSession,
         // listSessions,

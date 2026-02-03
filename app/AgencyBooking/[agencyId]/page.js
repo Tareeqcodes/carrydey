@@ -13,6 +13,7 @@ export default function AgencyBookingPage() {
 
   const [currentScreen, setCurrentScreen] = useState('location');
   const [agency, setAgency] = useState(null);
+
   const [loadingAgency, setLoadingAgency] = useState(true);
   const [deliveryData, setDeliveryData] = useState({
     pickup: null,
@@ -73,7 +74,6 @@ export default function AgencyBookingPage() {
       packageDetails,
       fareDetails,
     }));
-    // Show guest info form before saving
     setShowGuestForm(true);
   };
 
@@ -99,6 +99,7 @@ export default function AgencyBookingPage() {
     setLoading(true);
     try {
       const deliveryId = ID.unique();
+      const trackingToken = ID.unique();
 
       const deliveryDataToSave = {
         pickupAddress: pickup.place_name?.substring(0, 500) || 'Pickup location',
@@ -113,52 +114,44 @@ export default function AgencyBookingPage() {
 
         pickupContactName: packageDetails?.pickupContact?.pickupContactName,
         pickupPhone: packageDetails?.pickupContact?.pickupPhone,
-        pickupStoreName: packageDetails?.pickupContact?.pickupStoreName,
-        pickupUnitFloor: packageDetails?.pickupContact?.pickupUnitFloor,
-        pickupOption: packageDetails?.pickupContact?.pickupOption,
+       
         pickupInstructions: packageDetails?.pickupContact?.pickupInstructions,
-
         dropoffContactName: packageDetails?.dropoffContact?.dropoffContactName,
         dropoffPhone: packageDetails?.dropoffContact?.dropoffPhone,
-        dropoffStoreName: packageDetails?.dropoffContact?.dropoffStoreName,
-        dropoffUnitFloor: packageDetails?.dropoffContact?.dropoffUnitFloor,
-        dropoffOption: packageDetails?.dropoffContact?.dropoffOption,
         dropoffInstructions: packageDetails?.dropoffContact?.dropoffInstructions,
         recipientPermission: packageDetails?.dropoffContact?.recipientPermission,
-
         suggestedFare: parseInt(fareDetails.suggestedFare || routeData.estimatedFare),
         offeredFare: parseInt(fareDetails.offeredFare || routeData.estimatedFare),
         packageSize: packageDetails?.size,
         packageDescription: packageDetails?.description,
         isFragile: packageDetails?.isFragile || false,
         pickupTime: packageDetails?.pickupTime || 'courier',
-
-        // Guest booking fields
         guestName: guestInfo.name,
         guestEmail: guestInfo.email || null,
         isGuestBooking: true,
         guestPhone: guestInfo.phone,
-        
-        // Pre-assign to this agency
         assignedAgencyId: agencyId,
-        userId: null, // No user for guest bookings
+        userId: null, 
+         trackingToken: trackingToken,
       };
 
-      const result = await tablesDB.createRow({
+       await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
         data: deliveryDataToSave,
       });
 
-      console.log('Delivery created successfully:', result);
+      // console.log('Delivery created successfully:', result);
       
       // Show success message
       setShowGuestForm(false);
       alert(`Booking confirmed! ${agency?.name || 'The agency'} will contact you at ${guestInfo.phone}`);
       
       // Redirect to a success page or home
-      router.push(`/bookconfirm/${deliveryId}`);
+
+    router.push(`/bookconfirm/${deliveryId}?token=${trackingToken}`);
+    
     } catch (error) {
       console.error('Error saving delivery:', error);
       alert(`Error creating delivery: ${error.message}`);

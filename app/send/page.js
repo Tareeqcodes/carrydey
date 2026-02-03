@@ -9,6 +9,7 @@ import NotUser from '@/hooks/NotUser';
 
 export default function CreateDelivery() {
   const router = useRouter();
+  
   const [currentScreen, setCurrentScreen] = useState('location');
   const [deliveryData, setDeliveryData] = useState({
     pickup: null,
@@ -98,16 +99,12 @@ export default function CreateDelivery() {
 
         pickupContactName: packageDetails?.pickupContact?.pickupContactName,
         pickupPhone: packageDetails?.pickupContact?.pickupPhone,
-        pickupStoreName: packageDetails?.pickupContact?.pickupStoreName,
-        pickupUnitFloor: packageDetails?.pickupContact?.pickupUnitFloor,
-        pickupOption: packageDetails?.pickupContact?.pickupOption,
+
         pickupInstructions: packageDetails?.pickupContact?.pickupInstructions,
 
         dropoffContactName: packageDetails?.dropoffContact?.dropoffContactName,
         dropoffPhone: packageDetails?.dropoffContact?.dropoffPhone,
-        dropoffStoreName: packageDetails?.dropoffContact?.dropoffStoreName,
-        dropoffUnitFloor: packageDetails?.dropoffContact?.dropoffUnitFloor,
-        dropoffOption: packageDetails?.dropoffContact?.dropoffOption,
+
         dropoffInstructions:
           packageDetails?.dropoffContact?.dropoffInstructions,
         recipientPermission:
@@ -124,6 +121,7 @@ export default function CreateDelivery() {
         pickupTime: packageDetails?.pickupTime || 'courier',
         userId: user.$id,
         assignedAgencyId: null,
+        // trackingToken: trackingToken,
       };
 
       const result = await tablesDB.createRow({
@@ -133,7 +131,7 @@ export default function CreateDelivery() {
         data: deliveryDataToSave,
       });
 
-       console.log('Delivery created successfully:', result);
+      console.log('Delivery created successfully:', result);
       sessionStorage.setItem('latestDeliveryId', deliveryId);
       router.push('/check');
     } catch (error) {

@@ -7,7 +7,8 @@ import {
   Users, 
   MapPin,
   Settings,
-  X 
+  History,
+  X
 } from 'lucide-react';
 
 const Sidebar = ({ activePage, onPageChange, drivers, isOpen }) => {
@@ -17,6 +18,7 @@ const Sidebar = ({ activePage, onPageChange, drivers, isOpen }) => {
     { id: 'active', label: 'Active', icon: PackageCheck },
     { id: 'drivers', label: 'Drivers', icon: Users, badge: drivers.length },
     { id: 'tracking', label: 'Tracking', icon: MapPin },
+    { id: 'history', label: 'History', icon: History }, // 
     { id: 'settings', label: 'Settings', icon: Settings }, 
   ];
 

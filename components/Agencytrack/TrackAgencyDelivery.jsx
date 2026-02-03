@@ -11,27 +11,28 @@ import DashboardPage from './DashboardPage';
 import RequestsPage from './RequestsPage';
 import ActiveDeliveriesPage from './ActiveDeliveriesPage';
 import DriversPage from './DriversPage';
-import TrackingPage from './TrackingPage'; 
+import TrackingPage from './TrackingPage';
 import AddDriverModal from '../AddDriverModal';
 import AgencySettingsPage from '../AgencySettingsPage';
+import DeliveryHistory from './DeliveryHistory';
 
 const TrackAgencyDelivery = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [addDriverModalOpen, setAddDriverModalOpen] = useState(false); 
+  const [addDriverModalOpen, setAddDriverModalOpen] = useState(false);
   const { user } = useAuth();
 
   const {
     loading: requestsLoading,
     error: requestsError,
-    agencyId, 
+    agencyId,
     refreshRequests,
   } = useAgencyDeliveries(user?.$id);
 
   const {
     drivers,
-    loading: driversLoading, 
-    error: driversError, 
+    loading: driversLoading,
+    error: driversError,
     addDriver,
     fetchDrivers,
     toggleDriverStatus,
@@ -40,11 +41,15 @@ const TrackAgencyDelivery = () => {
   } = useDriverManagement(user?.$id);
 
   const {
+    completedDeliveries,
     deliveryRequests,
     activeDeliveries,
     acceptRequest,
     assignDelivery,
     updateDeliveryStatus,
+    confirmPickup,
+    confirmDelivery,
+    loading: deliveriesLoading,
   } = useDeliveryManagement(agencyId);
 
   // Assignment modal state
@@ -81,12 +86,11 @@ const TrackAgencyDelivery = () => {
         deliveryDetails: result.data,
       });
     }
-    
+
     // Return result so DeliveryRequestCard can show the codes modal
     return result;
   };
 
-  
   // const handleDeclineRequest = (requestId) => {
   //   if (confirm('Are you sure you want to decline this delivery request?')) {
   //     declineRequest(requestId);
@@ -157,7 +161,7 @@ const TrackAgencyDelivery = () => {
         : 'No vehicle',
       earningsToday: 0,
       deliveriesToday: 0,
-      lastUpdate: 'Just now', 
+      lastUpdate: 'Just now',
     }));
   };
 
@@ -180,11 +184,10 @@ const TrackAgencyDelivery = () => {
             deliveryRequests={deliveryRequests}
             loading={requestsLoading}
             error={requestsError}
-            agencyId={agencyId} 
+            agencyId={agencyId}
             onRefresh={refreshRequests}
             onAccept={handleAcceptRequest}
             // onDecline={handleDeclineRequest}
-            
           />
         );
 
@@ -195,6 +198,8 @@ const TrackAgencyDelivery = () => {
             onAssign={handleOpenAssignmentModal}
             onUpdateStatus={handleUpdateDeliveryStatus}
             onNavigateToTracking={() => setActivePage('tracking')}
+            onConfirmPickup={confirmPickup} 
+            onConfirmDelivery={confirmDelivery}
           />
         );
 
@@ -202,8 +207,8 @@ const TrackAgencyDelivery = () => {
         return (
           <DriversPage
             drivers={drivers}
-            loading={driversLoading} 
-            error={driversError} 
+            loading={driversLoading}
+            error={driversError}
             activeDeliveries={activeDeliveries}
             onAddDriver={handleAddDriverClick}
             onToggleStatus={toggleDriverStatus}
@@ -221,6 +226,14 @@ const TrackAgencyDelivery = () => {
 
       case 'settings':
         return <AgencySettingsPage />;
+
+         case 'history':
+        return (
+          <DeliveryHistory
+            completedDeliveries={completedDeliveries}
+            loading={deliveriesLoading}
+          />
+        );
 
       default:
         return (
