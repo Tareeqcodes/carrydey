@@ -60,8 +60,6 @@ const TrackAgencyDelivery = () => {
     deliveryDetails: null,
   });
 
-  // Track pending assignment (after codes are shown)
-  const [pendingAssignment, setPendingAssignment] = useState(null);
 
   useEffect(() => {
     if (activePage === 'drivers' && agencyId) {
@@ -73,21 +71,15 @@ const TrackAgencyDelivery = () => {
     setAddDriverModalOpen(true);
   };
 
-  // Handle accept delivery request
-  // This returns the result to DeliveryRequestCard which shows the codes modal
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);
 
     if (result?.success) {
-      // Store the delivery for later assignment
-      // Don't open assignment modal yet - let the codes modal show first
       setPendingAssignment({
         deliveryId: result.data.$id,
         deliveryDetails: result.data,
       });
     }
-
-    // Return result so DeliveryRequestCard can show the codes modal
     return result;
   };
 
@@ -129,7 +121,6 @@ const TrackAgencyDelivery = () => {
     });
   };
 
-  // Handle delivery status update
   const handleUpdateDeliveryStatus = (deliveryId, newStatus) => {
     const delivery = updateDeliveryStatus(deliveryId, newStatus);
 
@@ -282,10 +273,9 @@ const TrackAgencyDelivery = () => {
         />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{renderPage()}</main>
-      </div>
+        <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
+      </div> 
 
-      {/* Assignment Modal */}
       <AssignmentModal
         isOpen={assignmentModal.isOpen}
         deliveryDetails={assignmentModal.deliveryDetails}
@@ -305,8 +295,6 @@ const TrackAgencyDelivery = () => {
         }
         onAddDriver={() => setAddDriverModalOpen(true)}
       />
-
-      {/* Add Driver Modal */}
       <AddDriverModal
         isOpen={addDriverModalOpen}
         onClose={() => setAddDriverModalOpen(false)}
