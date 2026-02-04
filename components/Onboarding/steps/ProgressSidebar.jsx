@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Building2, Phone, MapPin, Users, FileText, Shield, CheckCircle 
+  Building2, Phone, MapPin, Users, Shield, CheckCircle 
 } from 'lucide-react';
 
 const ProgressSidebar = ({ currentStep }) => {
@@ -9,8 +9,7 @@ const ProgressSidebar = ({ currentStep }) => {
     { number: 2, title: 'Contact Details', icon: Phone },
     { number: 3, title: 'Address', icon: MapPin },
     { number: 4, title: 'Business Details', icon: Users },
-    { number: 5, title: 'Documents', icon: FileText },
-    { number: 6, title: 'Account Setup', icon: Shield }
+    { number: 5, title: 'Account Setup', icon: Shield }
   ];
 
   return (
@@ -35,7 +34,7 @@ const ProgressSidebar = ({ currentStep }) => {
                     : currentStep > step.number
                     ? 'bg-green-100 text-green-600'
                     : 'bg-gray-100 text-gray-400'
-                }`}>
+                }`}> 
                   {currentStep > step.number ? (
                     <CheckCircle className="w-4 h-4" />
                   ) : (

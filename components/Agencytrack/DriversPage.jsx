@@ -140,7 +140,7 @@ const DriversPage = ({
                   <button
                     onClick={() => {
                       const pendingDelivery = activeDeliveries.find(
-                        (d) => d.status === 'pending_assignment'
+                        (d) => d.status === 'accepted'
                       );
                       if (pendingDelivery) {
                         onAssignDelivery(pendingDelivery);

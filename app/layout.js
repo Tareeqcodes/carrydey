@@ -197,7 +197,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <main className="min-h-screen">
+          <main className="">
             <Navbar />
             {children}
              <Analytics />

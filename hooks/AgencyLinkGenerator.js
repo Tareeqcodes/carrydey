@@ -41,7 +41,7 @@ export default function AgencyLinkGenerator({ agencyId }) {
   return (
     <div className="relative">
       {/* Link Display Section */}
-      <di v className="relative group"> 
+      <div className="relative group"> 
         {/* Glow Effect on Hover */}
         <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 via-white/10 to-white/20 rounded-2xl opacity-0 group-hover:opacity-100 blur transition-opacity duration-500" />
         
@@ -70,7 +70,7 @@ export default function AgencyLinkGenerator({ agencyId }) {
             </p>
           </div>
         </div>
-      </di>
+      </div>
 
       {/* Action Buttons */}
       <div className="grid grid-cols-2 gap-3 mt-4">

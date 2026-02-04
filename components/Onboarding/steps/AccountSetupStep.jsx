@@ -1,50 +1,61 @@
-import { FileText, Shield, CheckCircle } from 'lucide-react';
+import { Shield, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const AccountSetupStep = ({ formData, errors, onInputChange }) => {
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-          <CheckCircle className="w-8 h-8 text-green-600" />
-        </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-          Review & Submit
-        </h2>
-        
-      </div>
-
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8"
+    >
       {/* Agreement Section */}
-      <div className="bg-gray-50 rounded-xl p-6 space-y-6">
-        <div className="flex items-center gap-2">
-          <Shield className="w-6 h-6 text-[#3A0A21]" />
-
-          <h3 className="text-lg font-semibold text-gray-900">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-3xl p-4 border border-gray-200/50 space-y-6"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3A0A21] to-[#5A1A41] flex items-center justify-center shadow-lg">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 tracking-tight">
             Agreements & Policies
           </h3>
         </div>
 
         <div className="space-y-4">
-          <div className="border border-gray-200 rounded-lg p-4">
-            <label className="flex items-start gap-3 cursor-pointer">
+          {/* Terms of Service */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className={`group border-2 rounded-2xl p-5 transition-all ${
+              errors.termsAccepted
+                ? 'border-red-300 bg-red-50/50'
+                : 'border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/30'
+            }`}
+          >
+            <label className="flex items-start gap-4 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.termsAccepted}
                 onChange={(e) =>
                   onInputChange('termsAccepted', e.target.checked)
                 }
-                className="mt-1 rounded border-gray-300 text-[#3A0A21] focus:ring-[#3A0A21]"
+                className="mt-1 w-5 h-5 rounded-lg border-2 border-gray-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all cursor-pointer"
               />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">
+                <p className="font-semibold text-gray-900 mb-1.5">
                   Terms of Service Agreement
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 leading-relaxed">
                   I have read and agree to the{' '}
                   <a
                     href="/terms"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#3A0A21] hover:underline font-medium"
+                    className="text-emerald-600 hover:text-emerald-700 hover:underline font-semibold transition-colors"
                   >
                     Terms of Service
                   </a>{' '}
@@ -52,33 +63,48 @@ const AccountSetupStep = ({ formData, errors, onInputChange }) => {
                   applicable policies and guidelines.
                 </p>
                 {errors.termsAccepted && (
-                  <p className="mt-2 text-sm text-red-600">
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 text-xs text-red-600 flex items-center gap-1.5 font-medium"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5" />
                     {errors.termsAccepted}
-                  </p>
+                  </motion.p>
                 )}
               </div>
             </label>
-          </div>
+          </motion.div>
 
-          <div className="border border-gray-200 rounded-lg p-4">
-            <label className="flex items-start gap-3 cursor-pointer">
+          {/* Privacy Policy */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.35 }}
+            className={`group border-2 rounded-2xl p-5 transition-all ${
+              errors.privacyPolicyAccepted
+                ? 'border-red-300 bg-red-50/50'
+                : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/30'
+            }`}
+          >
+            <label className="flex items-start gap-4 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.privacyPolicyAccepted}
                 onChange={(e) =>
                   onInputChange('privacyPolicyAccepted', e.target.checked)
                 }
-                className="mt-1 rounded border-gray-300 text-[#3A0A21] focus:ring-[#3A0A21]"
+                className="mt-1 w-5 h-5 rounded-lg border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all cursor-pointer"
               />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">Privacy Policy</p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="font-semibold text-gray-900 mb-1.5">Privacy Policy</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   I acknowledge that I have read and understood the{' '}
                   <a
                     href="/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#3A0A21] hover:underline font-medium"
+                    className="text-blue-600 hover:text-blue-700 hover:underline font-semibold transition-colors"
                   >
                     Privacy Policy
                   </a>{' '}
@@ -86,83 +112,65 @@ const AccountSetupStep = ({ formData, errors, onInputChange }) => {
                   personal information as described therein.
                 </p>
                 {errors.privacyPolicyAccepted && (
-                  <p className="mt-2 text-sm text-red-600">
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 text-xs text-red-600 flex items-center gap-1.5 font-medium"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5" />
                     {errors.privacyPolicyAccepted}
-                  </p>
+                  </motion.p>
                 )}
               </div>
             </label>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.dataProcessingAgreement}
-                onChange={(e) =>
-                  onInputChange('dataProcessingAgreement', e.target.checked)
-                }
-                className="mt-1 rounded border-gray-300 text-[#3A0A21] focus:ring-[#3A0A21]"
-              />
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">
-                  Data Processing Agreement
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  I agree to the Data Processing Agreement for the handling of
-                  business and operational data on this platform.
-                </p>
-              </div>
-            </label>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.marketingEmails}
-                onChange={(e) =>
-                  onInputChange('marketingEmails', e.target.checked)
-                }
-                className="mt-1 rounded border-gray-300 text-[#3A0A21] focus:ring-[#3A0A21]"
-              />
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">
-                  Marketing Communications (Optional)
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  I'd like to receive marketing emails about new features,
-                  updates, industry insights, and promotional offers.
-                </p>
-              </div>
-            </label>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Disclaimer */}
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-          <div className="flex items-start gap-3">
+        {/* Important Notice */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="relative overflow-hidden rounded-2xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-100 via-yellow-100 to-amber-100" />
+          <div className="relative p-5 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <AlertCircle className="w-5 h-5 text-white" />
+            </div>
             <div>
-              <p className="text-xs text-[#3A0A21]">
-                <span className="font-bold text-lg">Important:</span> By
-                submitting this application, you certify that all information
+              <p className="font-bold text-gray-900 mb-2 text-sm">
+                Important Notice
+              </p>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                By submitting this application, you certify that all information
                 provided is accurate and complete. Falsification of information
                 may result in termination of services. You will receive a
                 confirmation email once your application is processed.
               </p>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      {/* Estimated Processing Time */}
-      <div className="text-center">
-    
-        <p className="text-sm text-gray-400 mt-1">
-          Please review all the information You will be notified via email within 24-48 hours.
+      {/* Processing Time */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="text-center"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-full">
+          <Clock className="w-4 h-4 text-green-600" />
+          <p className="text-xs font-medium text-green-700">
+            Processing time: 24-48 hours
+          </p>
+        </div>
+        <p className="text-sm text-gray-500 mt-3">
+          You will be notified via email once your application is reviewed
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

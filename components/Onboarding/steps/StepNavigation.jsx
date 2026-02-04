@@ -21,7 +21,7 @@ const StepNavigation = ({
         </Button>
         
         <Button
-          onClick={currentStep === 6 ? onSubmit : onNext}
+          onClick={currentStep === 5 ? onSubmit : onNext}
           loading={isSubmitting}  
           disabled={isSubmitting} 
           className="flex items-center gap-2"

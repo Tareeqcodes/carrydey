@@ -75,8 +75,11 @@ const TrackAgencyDelivery = () => {
     const result = await acceptRequest(requestId);
 
     if (result?.success) {
-      setPendingAssignment({
+      // Open assignment modal immediately after accepting
+      setAssignmentModal({
+        isOpen: true,
         deliveryId: result.data.$id,
+        selectedDriver: null,
         deliveryDetails: result.data,
       });
     }
