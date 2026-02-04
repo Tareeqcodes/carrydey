@@ -211,10 +211,10 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 px-6 pb-16">
       {/* Header */}
       <div>
-        <p className="text-gray-500 text-sm font-bold mt-1">View all completed and cancelled deliveries</p>
+        <h2 className="text-base md:text-xl font-semibold text-gray-900 tracking- mt-5">View all completed and cancelled deliveries</h2>
       </div>
 
       {/* Statistics Cards */}

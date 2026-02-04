@@ -14,7 +14,7 @@ const DriversPage = ({
     <div className="space-y-6 p-6 mb-16">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-xl font-bold">Manage your delivery fleet</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 tracking-tight">Manage your delivery fleet</h2>
         </div>
         <button
           onClick={onAddDriver}
