@@ -52,8 +52,8 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: OAuthProvider.Facebook,
-        success: 'http://localhost:3000/OAuthCallback',
-        failure: 'http://localhost:3000/login',
+        success: 'https://www.carrydey.tech/OAuthCallback',
+        failure: 'https://www.carrydey.tech/login',
       });
     } catch (error) {
       alert('Failed to login with Facebook: ' + error.message);
