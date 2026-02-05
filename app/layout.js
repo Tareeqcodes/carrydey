@@ -64,7 +64,7 @@ const organizationStructuredData = {
   sameAs: [
     'https://twitter.com/Carrydey',
     'https://facebook.com/Carrydey',
-    'https://instagram.com/Carrydey',
+    'https://instagram.com/Carrydey.ng',
   ],
 };
 
