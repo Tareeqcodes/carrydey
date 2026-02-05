@@ -9,7 +9,7 @@ function LoginFormContent() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
-  const { login} = useAuth();
+  const { login, loginWithFacebook, loginWithGoogle} = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,12 +17,12 @@ function LoginFormContent() {
     setSent(true);
   };
 
-  // const handleGoogleLogin = async () => {
-  //   await loginWithGoogle();
-  // };
-  // const handleFacebookLogin = async () => {
-  //   await loginWithFacebook();
-  // }
+  const handleGoogleLogin = async () => {
+    await loginWithGoogle();
+  };
+  const handleFacebookLogin = async () => {
+    await loginWithFacebook();
+  }
 
   return (
     <div className="min-h-screen mt-20 flex items-center justify-center bg-gray-50 px-4">
@@ -66,7 +66,7 @@ function LoginFormContent() {
             </button>
           </form>
         )}
-{/* 
+
          <div className="relative text-center my-4">
           <div className="absolute inset-x-0 top-1/2 border-t border-gray-200"></div>
           <span className="relative bg-white px-3 text-xs text-gray-400">
@@ -91,7 +91,7 @@ function LoginFormContent() {
           <span className="text-sm font-medium text-gray-700">
             Continue with Facebook
           </span>
-        </button>  */}
+        </button> 
 
         <p className="text-center text-xs text-gray-400 pt-4">
           By continuing, you agree to Carrydey’s{' '}
