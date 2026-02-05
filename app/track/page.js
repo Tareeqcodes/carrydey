@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import TrackAgencyDelivery from '@/components/Agencytrack/TrackAgencyDelivery';
 import TrackCourierDelivery from '@/components/Tracking/TrackCourierDelivery';
-import TrackSenderDelivery from '@/components/Tracking/TrackSenderDelivery';
+import TrackSenderDelivery from '@/components/SenderTracking/TrackSenderDelivery';
 import TrackPageLoading from '@/components/Tracking/TrackPageLoading';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/Authcontext';

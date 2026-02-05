@@ -66,15 +66,15 @@ function LoginFormContent() {
             </button>
           </form>
         )}
-
-         {/* <div className="relative text-center my-4">
+{/* 
+         <div className="relative text-center my-4">
           <div className="absolute inset-x-0 top-1/2 border-t border-gray-200"></div>
           <span className="relative bg-white px-3 text-xs text-gray-400">
             Or continue with
           </span>
-        </div>  */}
+        </div>  
 
-          {/* <button
+         <button
           onClick={handleGoogleLogin}
           className="w-full border border-gray-300 rounded-xl py-3 flex items-center justify-center gap-2 hover:bg-gray-100 transition-all"
         >
@@ -91,7 +91,7 @@ function LoginFormContent() {
           <span className="text-sm font-medium text-gray-700">
             Continue with Facebook
           </span>
-        </button> */}
+        </button>  */}
 
         <p className="text-center text-xs text-gray-400 pt-4">
           By continuing, you agree to Carrydey’s{' '}
