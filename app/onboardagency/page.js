@@ -2,10 +2,8 @@
 import { useState } from 'react';
 import OnboardingLayout from '@/components/Onboarding/OnboardingLayout';
 import BasicInfoStep from '@/components/Onboarding/steps/BasicInfoStep';
-import ContactDetailsStep from '@/components/Onboarding/steps/ContactDetailsStep';
 import AddressStep from '@/components/Onboarding/steps/AddressStep';
 import BusinessDetailsStep from '@/components/Onboarding/steps/BusinessDetailsStep';
-// import DocumentsStep from '@/components/Onboarding/steps/DocumentsStep';
 import AccountSetupStep from '@/components/Onboarding/steps/AccountSetupStep';
 import SuccessStep from '@/components/Onboarding/steps/SuccessStep';
 import StepNavigation from '@/components/Onboarding/steps/StepNavigation';
@@ -14,7 +12,8 @@ import { useAuth } from '@/hooks/Authcontext';
 import NotUser from '@/hooks/NotUser';
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  // const { user } = useAuth();
+  const totalSteps = 5;
+  const { user } = useAuth();
 
   const {
     formData,
@@ -28,7 +27,7 @@ const OnboardingPage = () => {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 7));
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     }
   };
 
@@ -37,14 +36,14 @@ const OnboardingPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (validateStep(5)) {
+    if (validateStep(currentStep)) {
       console.log('Submitting form data:', formData);
 
       const result = await submitToAppwrite(); 
       if (result.success) {
         console.log('Submission successful:', result.data);
-        alert('Organization profile submitted successfully!');
-        setCurrentStep(6);
+       
+        setCurrentStep(5);
       } else {
         console.error('Submission failed:', result.error);
         alert(`Submission failed: ${result.error}`);
@@ -52,9 +51,9 @@ const OnboardingPage = () => {
     }
   };
 
-  //  if (!user) {
-  //   return <NotUser />;
-  // }
+   if (!user) {
+    return <NotUser />;
+  }
 
   const renderStep = () => {
     switch (currentStep) {
@@ -68,21 +67,13 @@ const OnboardingPage = () => {
         );
       case 2:
         return (
-          <ContactDetailsStep
-            formData={formData}
-            errors={errors}
-            onInputChange={handleInputChange}
-          />
-        );
-      case 3:
-        return (
           <AddressStep
             formData={formData}
             errors={errors}
             onInputChange={handleInputChange}
           />
         );
-      case 4:
+      case 3:
         return (
           <BusinessDetailsStep
             formData={formData}
@@ -91,15 +82,7 @@ const OnboardingPage = () => {
             onServiceToggle={handleServiceToggle}
           />
         );
-      // case 5:
-      //   return (
-      //     <DocumentsStep
-      //       formData={formData}
-      //       errors={errors}
-      //       onFileUpload={handleFileUpload}
-      //     />
-      //   );
-      case 5:
+      case 4:
         return (
           <AccountSetupStep
             formData={formData}
@@ -107,7 +90,7 @@ const OnboardingPage = () => {
             onInputChange={handleInputChange}
           />
         );
-      case 6:
+      case 5:
         return <SuccessStep />;
       default:
         return null;
@@ -118,9 +101,10 @@ const OnboardingPage = () => {
     <OnboardingLayout currentStep={currentStep}>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 md:p-8 mb-28">
         {renderStep()}
-        {currentStep < 7 && (
+        {currentStep < totalSteps && (
           <StepNavigation
             currentStep={currentStep}
+            totalSteps={totalSteps}
             onPrevious={handlePrevious}
             onNext={handleNext}
             onSubmit={handleSubmit}

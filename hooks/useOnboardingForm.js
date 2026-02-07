@@ -1,17 +1,12 @@
 'use client';
 import { useState } from 'react';
-import { tablesDB, ID, storage } from '@/lib/config/Appwriteconfig';
+import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from './Authcontext';
 
 const useOnboardingForm = () => {
   const [formData, setFormData] = useState({
     organizationName: '',
     organizationType: '',
-    registrationNumber: '',
-    yearEstablished: '',
-    website: '',
-    contactPerson: '',
-    email: '',
     street: '',
     vehicleTypes: [],
     services: [],
@@ -24,7 +19,6 @@ const useOnboardingForm = () => {
     isAvailable: true,
     termsAccepted: false,
     privacyPolicyAccepted: false,
-    dataProcessingAgreement: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -70,58 +64,52 @@ const useOnboardingForm = () => {
   //     }));
   //   }
   // };
+const validateStep = (step) => {
+  const newErrors = {};
+  const phoneRegex = /^[+]?[\d\s\-()]+$/;
 
-  const validateStep = (step) => {
-    const newErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[+]?[\d\s\-()]+$/;
-
-    switch (step) {
-      case 1:
-        if (!formData.organizationName.trim())
-          newErrors.organizationName = 'Organization name is required';
-
-        if (
-          !formData.yearEstablished ||
-          formData.yearEstablished < 1900 ||
-          formData.yearEstablished > new Date().getFullYear()
-        ) {
-          newErrors.yearEstablished = 'Please enter a valid year';
-        }
-        break;
-      case 2:
-        if (!formData.email.trim()) newErrors.email = 'Email is required';
-        else if (!emailRegex.test(formData.email))
-          newErrors.email = 'Please enter a valid email';
-        if (!formData.phone.trim())
-          newErrors.phone = 'Phone number is required';
-        else if (!phoneRegex.test(formData.phone.replace(/\s/g, '')))
-          newErrors.phone = 'Please enter a valid phone number';
-        break;
-      case 3:
-        if (!formData.serviceCities || formData.serviceCities.trim().length === 0)
-    newErrors.serviceCities = 'Please enter at least one service city';
-        break;
-      case 4:
-        if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
-          newErrors.vehicleTypes = 'Please select at least one vehicle type';
-        }
-        if (formData.services.length === 0)
-          newErrors.services = 'Please select at least one service';
-        break;
+  switch (step) { 
+    case 1: 
+      if (!formData.organizationName.trim())
+        newErrors.organizationName = 'Organization name is required';
+      if (!formData.organizationType.trim())
+        newErrors.organizationType = 'Organization type is required';
+      if (!formData.phone.trim())
+        newErrors.phone = 'Phone number is required';
+      else if (!phoneRegex.test(formData.phone.replace(/\s/g, '')))
+        newErrors.phone = 'Please enter a valid phone number';
+      break;
       
-      case 5:
-        if (!formData.termsAccepted)
-          newErrors.termsAccepted = 'You must accept the Terms of Service';
-        if (!formData.privacyPolicyAccepted)
-          newErrors.privacyPolicyAccepted =
-            'You must accept the Privacy Policy';
-        break;
-    }
+    case 2:
+      if (!formData.street.trim())
+        newErrors.street = 'Street address is required';
+      break;
+      
+    case 3:
+      if (!formData.serviceCities || formData.serviceCities.trim().length === 0)
+        newErrors.serviceCities = 'Please enter at least one service city';
+      break;
+      
+    case 4:
+      if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
+        newErrors.vehicleTypes = 'Please select at least one vehicle type';
+      }
+      if (formData.services.length === 0)
+        newErrors.services = 'Please select at least one service';
+      break;
+    
+    case 5:
+      if (!formData.termsAccepted)
+        newErrors.termsAccepted = 'You must accept the Terms of Service';
+      if (!formData.privacyPolicyAccepted)
+        newErrors.privacyPolicyAccepted = 'You must accept the Privacy Policy';
+      break;
+  }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
 
   // const uploadFile = async (file, bucketId) => {
   //   try {
@@ -162,12 +150,7 @@ const useOnboardingForm = () => {
       const organizationData = {
         name: formData.organizationName,
         type: formData.organizationType,
-        yearEstablished: parseInt(formData.yearEstablished),
-        website: formData.website || null,
-        contactPerson: formData.contactPerson,
-        email: formData.email,
         address: formData.street,
-        businessType: formData.businessType,
         vehicleTypes:
           formData.vehicleTypes.length > 0
             ? JSON.stringify(formData.vehicleTypes)

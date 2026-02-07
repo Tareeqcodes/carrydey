@@ -170,7 +170,7 @@ export default function Onboarding() {
 
         {/* Role Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-4">
+          <label className="block text-sm font-semibold text-gray-900 mb-4">
             What describes you best?
           </label>
           <div className="space-y-3">

@@ -1,6 +1,7 @@
 'use client';
-import { Building2, Globe, AlertCircle, Calendar, Briefcase } from 'lucide-react';
+import { Building2, AlertCircle, Phone, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Input from '../Shared/Input';
 
 const BasicInfoStep = ({ formData, errors, onInputChange }) => {
   const organizationTypes = [
@@ -122,70 +123,37 @@ const BasicInfoStep = ({ formData, errors, onInputChange }) => {
           )}
         </motion.div>
 
-        {/* Year & Website Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Year Established */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3">
-              Year Established
-            </label>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity" />
-              <div className="relative flex items-center">
-                <Calendar className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-emerald-600 transition-colors" />
-                <input
-                  type="number"
-                  min="1900"
-                  max={new Date().getFullYear()}
-                  value={formData.yearEstablished}
-                  onChange={(e) => onInputChange('yearEstablished', e.target.value)}
-                  className={`w-full pl-12 pr-4 py-4 bg-white border-2 rounded-2xl focus:outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400 ${
-                    errors.yearEstablished 
-                      ? 'border-red-300 bg-red-50/50 focus:border-red-400' 
-                      : 'border-gray-200 focus:border-emerald-500 focus:bg-emerald-50/30'
-                  }`}
-                  placeholder="YYYY"
-                />
-              </div>
-            </div>
-            {errors.yearEstablished && (
-              <motion.p
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-xs text-red-600 flex items-center gap-1.5 font-medium"
-              >
-                <AlertCircle className="w-3.5 h-3.5" />
-                {errors.yearEstablished}
-              </motion.p>
-            )}
+            <Input
+              label="Primary Phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => onInputChange('phone', e.target.value)}
+              placeholder="+234 912 449 8160"
+              icon={Phone}
+              error={errors.phone}
+              required
+            />
           </motion.div>
 
-          {/* Website */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.35 }}
           >
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3">
-              Website <span className="text-gray-400 normal-case">(Optional)</span>
-            </label>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity" />
-              <div className="relative flex items-center">
-                <Globe className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
-                <input
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => onInputChange('website', e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-blue-50/30 transition-all text-gray-900 font-medium placeholder:text-gray-400"
-                  placeholder="https://yourcompany.com"
-                />
-              </div>
-            </div>
+            <Input
+              label="Alternate Phone (Optional)"
+              type="tel"
+              value={formData.alternatePhone}
+              onChange={(e) => onInputChange('alternatePhone', e.target.value)}
+              placeholder="+234 912 449 8160"
+              icon={Phone}
+            />
           </motion.div>
         </div>
       </div>

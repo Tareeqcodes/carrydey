@@ -13,7 +13,7 @@ import ActiveDeliveriesPage from './ActiveDeliveriesPage';
 import DriversPage from './DriversPage';
 import TrackingPage from './TrackingPage';
 import AddDriverModal from '../AddDriverModal';
-import AgencySettingsPage from '../AgencySettingsPage';
+import AgencySettingsPage from './AgencySettingsPage';
 import DeliveryHistory from './DeliveryHistory';
 
 const TrackAgencyDelivery = () => {

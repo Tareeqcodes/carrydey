@@ -1,15 +1,12 @@
 import React from 'react';
-import { 
-  Building2, Phone, MapPin, Users, Shield, CheckCircle 
-} from 'lucide-react';
+import { Building2, MapPin, Users, Shield, CheckCircle } from 'lucide-react';
 
 const ProgressSidebar = ({ currentStep }) => {
   const steps = [
     { number: 1, title: 'Basic Information', icon: Building2 },
-    { number: 2, title: 'Contact Details', icon: Phone },
-    { number: 3, title: 'Address', icon: MapPin },
-    { number: 4, title: 'Business Details', icon: Users },
-    { number: 5, title: 'Account Setup', icon: Shield }
+    { number: 2, title: 'Address', icon: MapPin },
+    { number: 3, title: 'Business Details', icon: Users },
+    { number: 4, title: 'Account Setup', icon: Shield },
   ];
 
   return (
@@ -24,17 +21,19 @@ const ProgressSidebar = ({ currentStep }) => {
                   currentStep === step.number
                     ? 'bg-[#3A0A21] text-white'
                     : currentStep > step.number
-                    ? 'bg-green-50 text-green-700'
-                    : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-green-50 text-green-700'
+                      : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  currentStep === step.number
-                    ? 'bg-white text-[#3A0A21]'
-                    : currentStep > step.number
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-gray-100 text-gray-400'
-                }`}> 
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    currentStep === step.number
+                      ? 'bg-white text-[#3A0A21]'
+                      : currentStep > step.number
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-gray-100 text-gray-400'
+                  }`}
+                >
                   {currentStep > step.number ? (
                     <CheckCircle className="w-4 h-4" />
                   ) : (
@@ -55,7 +54,8 @@ const ProgressSidebar = ({ currentStep }) => {
         <div className="bg-white/90 border border-blue-200 rounded-2xl p-6">
           <h4 className="font-bold text-shadow-gray-500 mb-3">Need Help?</h4>
           <p className="text-xs font-semibold text-shadow-gray-500 mb-4">
-            Our support team is here to assist you with the registration process.
+            Our support team is here to assist you with the registration
+            process.
           </p>
           <button className="w-full py-2 border border-blue-300 text-blue-700 rounded-xl text-sm hover:bg-blue-100 transition-colors">
             Contact Support

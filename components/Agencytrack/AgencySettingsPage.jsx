@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Link2,
   Building2,
@@ -11,20 +11,15 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  Sparkles,
-  TrendingUp,
   Award,
   Shield,
-  ExternalLink,
-  Copy,
   Eye,
   EyeOff,
-  Zap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@headlessui/react';
 import AgencyLinkGenerator from '@/hooks/AgencyLinkGenerator';
-import AgencySettingLoading from './Agencytrack/AgencySettingLoading';
+import AgencySettingLoading from './AgencySettingLoading';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 
@@ -342,21 +337,7 @@ const AgencySettingsPage = () => {
                         </p>
                       )}
                     </div>
-
-                    {/* Contact Person */}
-                    <div className="space-y-2.5">
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Contact Person
-                      </label>
-                      <p className="text-base sm:text-lg font-semibold text-gray-900 py-3">
-                        {agencyData.contactPerson || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Phone & Email Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Phone */}
+                        {/* Phone */}
                     <div className="space-y-2.5">
                       <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         <Phone className="w-3.5 h-3.5" />
@@ -376,7 +357,10 @@ const AgencySettingsPage = () => {
                         </p>
                       )}
                     </div>
+                  </div>
 
+                  {/* Phone & Email Grid */}
+                  <div className="grid grid-cols-1 gap-4">
                     {/* Email */}
                     <div className="space-y-2.5">
                       <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -384,12 +368,10 @@ const AgencySettingsPage = () => {
                         Email Address
                       </label>
                       <p className="text-base sm:text-lg font-semibold text-gray-900 py-3 truncate">
-                        {agencyData.email || 'N/A'}
+                        {user.email || 'N/A'}
                       </p>
                     </div>
-                  </div>
-
-                  {/* Service Cities */}
+                      {/* Service Cities */}
                   <div className="space-y-2.5">
                     <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       <MapPin className="w-3.5 h-3.5" />
@@ -428,6 +410,9 @@ const AgencySettingsPage = () => {
                       </div>
                     )}
                   </div>
+                  </div>
+
+                 
                 </div>
 
                 {/* Edit Mode Actions */}
@@ -551,21 +536,7 @@ const AgencySettingsPage = () => {
                 </h3>
 
                 <div className="space-y-4">
-                  {/* <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-100/50"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <TrendingUp className="w-5 h-5 text-blue-600" />
-                      <span className="text-2xl font-bold text-blue-600">
-                        {agencyData.totalDeliveries || 0}
-                      </span>
-                    </div>
-                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                      Total Bookings
-                    </p>
-                  </motion.div> */}
-
+              
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className="p-4 bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl border border-green-100/50"

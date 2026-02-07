@@ -17,7 +17,7 @@ const structuredData = {
   applicationCategory: 'LogisticsApplication',
   operatingSystem: 'Any',
   description:
-    'Carrydey is a logistics marketplace that connects customers with verified delivery agencies and independent couriers. Book deliveries, track orders, manage payments, and scale logistics operations easily.',
+    'Carrydey is a logistics marketplace that connects Vendors with verified delivery agencies and independent couriers. Book deliveries, track orders, manage payments, and scale logistics operations easily.',
   url: 'https://carrydey.tech',
   provider: {
     '@type': 'Organization',
@@ -93,6 +93,11 @@ export const metadata = {
     'track delivery nigeria',
     'same day delivery nigeria',
     'on-demand delivery',
+    'delivery management software',
+    'logistics saas africa',
+    'courier jobs nigeria',
+    'dispatch rider platform',
+    'delivery agency software',
     
     // Brand keywords
     'carrydey',
