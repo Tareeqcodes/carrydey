@@ -3,12 +3,11 @@ import { useState, useEffect } from 'react';
 import { Navigation } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import InputLocation from '@/components/InputLocation';
-import { formatNairaSimple } from '@/hooks/currency';
 
 const RouteMapPreview = dynamic(() => import('../hooks/RouteMapPreview'), {
   ssr: false,
   loading: () => (
-    <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center animate-pulse">
+    <div className="h-[500px] bg-gray-100 rounded-xl flex items-center justify-center animate-pulse">
       <div className="text-center">
         <div className="w-12 h-12 bg-gray-300 rounded-full mx-auto mb-4"></div>
         <div className="h-4 bg-gray-300 rounded w-32 mx-auto mb-2"></div>
@@ -154,7 +153,7 @@ export default function LocationAndPreviewScreen({
 
         <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm">
           {/* Map Section */}
-          <div className="h-64">
+          <div className="h-[500px]">
             {localPickup && localDropoff ? (
               <RouteMapPreview pickup={localPickup} dropoff={localDropoff} />
             ) : (
@@ -171,38 +170,7 @@ export default function LocationAndPreviewScreen({
             )}
           </div>
 
-          {/* Route Summary Info */}
-          <div className="p-4 border-t mt-48 border-gray-200">
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-start md:text-center">
-                <div>
-                  <div className="flex items-center justify-center gap-1 text-gray-600 mb-1"></div>
-                  <p className="text-lg font-bold text-gray-900">
-                    {localRouteData.distance} km
-                  </p>
-                  <p className="text-xs text-gray-500">Distance</p>
-                </div>
-                <div>
-                  <div className="flex items-center justify-center gap-1 text-gray-600 mb-1"></div>
-                  <p className="text-lg font-bold text-gray-900">
-                    {formatDuration(localRouteData.duration)}
-                  </p>
-                  <p className="text-xs text-gray-500">Duration</p>
-                </div>
-                <div>
-                  <div className="flex items-center justify-center gap-1 text-gray-600 mb-1"></div>
-                  <p className="text-lg font-bold text-gray-900">
-                    {formatNairaSimple(localRouteData.estimatedFare)}
-                  </p>
-                  <p className="text-xs text-gray-500">Est. fare</p>
-                </div>
-              </div>
-        
-              <p className="text-xs font-semibold text-center text-gray-600 mt-3">
-                You'll set your final fare after adding package details
-              </p>
-            </div>
-          </div>
+         
         </div>
       </div>
     );

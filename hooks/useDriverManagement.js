@@ -6,7 +6,6 @@ export const useDriverManagement = (agencyId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch drivers from Appwrite
   const fetchDrivers = async () => {
     try {
       setLoading(true);
@@ -44,7 +43,6 @@ export const useDriverManagement = (agencyId) => {
         phone: driverData.phone,
         vehicleType: driverData.vehicleType || null,
         status: driverData.status || 'available',
-        
         assignedDelivery: driverData.assignedDelivery || null,
       };
 
@@ -63,8 +61,15 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
+  // Toggle driver status (disabled when on delivery)
   const toggleDriverStatus = async (driverId, currentStatus) => {
     try {
+      // Prevent toggling if driver is on delivery
+      if (currentStatus === 'on_delivery') {
+        console.log('Cannot toggle status while driver is on delivery');
+        return;
+      }
+
       const newStatus = currentStatus === 'available' ? 'offline' : 'available';
       
       await tablesDB.updateRow({
@@ -73,7 +78,7 @@ export const useDriverManagement = (agencyId) => {
         rowId: driverId,
         data: { status: newStatus }
       });
-     
+      
       setDrivers(prev =>
         prev.map(driver =>
           driver.$id === driverId
@@ -86,6 +91,7 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
+  // Assign driver to delivery
   const assignDriverToDelivery = async (driverId, deliveryId) => {
     try {
       await tablesDB.updateRow({
@@ -113,9 +119,7 @@ export const useDriverManagement = (agencyId) => {
       console.error('Error assigning driver:', err);
     }
   };
-
   
-
   return {
     drivers,
     loading,

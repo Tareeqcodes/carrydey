@@ -35,9 +35,7 @@ export default function PickupOptions({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-gray-900">ASAP Delivery</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Match with available travelers now
-                  </p>
+                 
                 </div>
                 <div className="bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
                   Recommended

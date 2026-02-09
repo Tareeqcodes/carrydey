@@ -49,7 +49,7 @@ const DriversPage = ({
             onClick={onAddDriver}
             className="px-4 py-2 bg-[#3A0A21] text-white rounded-xl hover:bg-[#4A0A31] transition-colors inline-flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4" /> 
             Add First Driver
           </button>
         </div>
@@ -128,13 +128,20 @@ const DriversPage = ({
               <div className="flex gap-2">
                 <button
                   onClick={() => onToggleStatus(driver.$id, driver.status)}
+                  disabled={driver.status === 'on_delivery'}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
-                    driver.status === 'available'
+                    driver.status === 'on_delivery'
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : driver.status === 'available'
                       ? 'bg-red-50 text-red-600 hover:bg-red-100'
                       : 'bg-green-50 text-green-600 hover:bg-green-100'
                   }`}
                 >
-                  {driver.status === 'available' ? 'Set Offline' : 'Set Available'}
+                  {driver.status === 'available' 
+                    ? 'Set Offline' 
+                    : driver.status === 'on_delivery'
+                    ? 'On Delivery'
+                    : 'Set Available'}
                 </button>
                 {driver.status === 'available' && (
                   <button

@@ -171,7 +171,7 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
-  // Confirm delivery with OTP
+  // Confirm delivery with OTP - UPDATED to automatically set driver to available
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
       const delivery = activeDeliveries.find(d => d.$id === deliveryId);
@@ -182,7 +182,7 @@ export const useDeliveryManagement = (agencyId) => {
         return { success: false, error: 'Invalid OTP code' };
       }
 
-      // Update delivery status
+      // Update delivery status to delivered
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
@@ -192,7 +192,7 @@ export const useDeliveryManagement = (agencyId) => {
         }
       });
 
-      // Update driver status back to available
+      // Automatically update driver status back to available
       if (delivery.driverId) {
         await tablesDB.updateRow({
           databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
@@ -216,9 +216,11 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
-  // Update delivery status (for driver updates)
+  // Update delivery status (for driver updates) - UPDATED to handle driver availability
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
     try {
+      const delivery = activeDeliveries.find(d => d.$id === deliveryId);
+      
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
@@ -228,16 +230,29 @@ export const useDeliveryManagement = (agencyId) => {
         }
       });
 
-      // If status is delivered or cancelled, move to completed
+      // If status is delivered or cancelled, update driver and move to completed
       if (newStatus === 'delivered' || newStatus === 'cancelled') {
+        // Update driver status back to available
+        if (delivery?.driverId) {
+          await tablesDB.updateRow({
+            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+            tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+            rowId: delivery.driverId,
+            data: {
+              status: 'available',
+              assignedDelivery: null,
+            }
+          });
+        }
+
         setActiveDeliveries(prev => prev.filter(d => d.$id !== deliveryId));
         setCompletedDeliveries(prev => [response, ...prev]);
       } else {
         setActiveDeliveries(prev =>
-          prev.map(delivery =>
-            delivery.$id === deliveryId
-              ? { ...delivery, ...response }
-              : delivery
+          prev.map(d =>
+            d.$id === deliveryId
+              ? { ...d, ...response }
+              : d
           )
         );
       }

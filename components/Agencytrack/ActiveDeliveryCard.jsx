@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Package, User, Phone, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Phone, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
 const ActiveDeliveryCard = ({ 

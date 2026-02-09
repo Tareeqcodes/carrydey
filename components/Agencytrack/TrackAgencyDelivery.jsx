@@ -37,8 +37,7 @@ const TrackAgencyDelivery = () => {
     fetchDrivers,
     toggleDriverStatus,
     assignDriverToDelivery,
-    updateDriverEarnings,
-  } = useDriverManagement(user?.$id);
+  } = useDriverManagement(agencyId);
 
   const {
     completedDeliveries,
@@ -50,6 +49,7 @@ const TrackAgencyDelivery = () => {
     confirmPickup,
     confirmDelivery,
     loading: deliveriesLoading,
+    refreshDeliveries,
   } = useDeliveryManagement(agencyId);
 
   // Assignment modal state
@@ -60,12 +60,18 @@ const TrackAgencyDelivery = () => {
     deliveryDetails: null,
   });
 
-
   useEffect(() => {
     if (activePage === 'drivers' && agencyId) {
       fetchDrivers();
     }
   }, [activePage, agencyId]);
+
+  // Refresh drivers when deliveries change to sync status
+  useEffect(() => {
+    if (agencyId) {
+      fetchDrivers();
+    }
+  }, [activeDeliveries.length, completedDeliveries.length]);
 
   const handleAddDriverClick = () => {
     setAddDriverModalOpen(true);
@@ -85,12 +91,6 @@ const TrackAgencyDelivery = () => {
     }
     return result;
   };
-
-  // const handleDeclineRequest = (requestId) => {
-  //   if (confirm('Are you sure you want to decline this delivery request?')) {
-  //     declineRequest(requestId);
-  //   }
-  // };
 
   // Complete driver assignment
   const handleCompleteAssignment = () => {
@@ -124,13 +124,29 @@ const TrackAgencyDelivery = () => {
     });
   };
 
-  const handleUpdateDeliveryStatus = (deliveryId, newStatus) => {
-    const delivery = updateDeliveryStatus(deliveryId, newStatus);
+  // Updated to refresh drivers after delivery status changes
+  const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
+    const result = await updateDeliveryStatus(deliveryId, newStatus);
 
-    if (newStatus === 'delivered' && delivery?.driverId) {
-      const payout = parseFloat(delivery.payout?.replace(/[₦$,]/g, '') || 0);
-      updateDriverEarnings(delivery.driverId, payout);
+    // Refresh drivers list to sync status changes
+    if (result?.success && (newStatus === 'delivered' || newStatus === 'cancelled')) {
+      await fetchDrivers();
+      await refreshDeliveries();
     }
+    
+    return result;
+  };
+
+  // Updated confirm delivery to refresh drivers
+  const handleConfirmDelivery = async (deliveryId, otp) => {
+    const result = await confirmDelivery(deliveryId, otp);
+    
+    if (result?.success) {
+      // Refresh drivers to show updated status
+      await fetchDrivers();
+    }
+    
+    return result;
   };
 
   // Open assignment modal for a specific delivery
@@ -181,7 +197,6 @@ const TrackAgencyDelivery = () => {
             agencyId={agencyId}
             onRefresh={refreshRequests}
             onAccept={handleAcceptRequest}
-            // onDecline={handleDeclineRequest}
           />
         );
 
@@ -193,14 +208,14 @@ const TrackAgencyDelivery = () => {
             onUpdateStatus={handleUpdateDeliveryStatus}
             onNavigateToTracking={() => setActivePage('tracking')}
             onConfirmPickup={confirmPickup} 
-            onConfirmDelivery={confirmDelivery}
+            onConfirmDelivery={handleConfirmDelivery}
           />
         );
 
       case 'drivers':
         return (
           <DriversPage
-            drivers={drivers}
+            drivers={drivers} 
             loading={driversLoading}
             error={driversError}
             activeDeliveries={activeDeliveries}
@@ -221,7 +236,7 @@ const TrackAgencyDelivery = () => {
       case 'settings':
         return <AgencySettingsPage />;
 
-         case 'history':
+      case 'history':
         return (
           <DeliveryHistory
             completedDeliveries={completedDeliveries}

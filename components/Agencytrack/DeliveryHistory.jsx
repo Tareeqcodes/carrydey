@@ -1,15 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import { 
-  Package, 
   MapPin, 
   CheckCircle,
   XCircle,
   Clock,
-  Calendar,
-  DollarSign,
   Search,
-  Filter,
   TrendingUp,
   History as HistoryIcon
 } from 'lucide-react';

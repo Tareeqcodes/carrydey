@@ -91,7 +91,7 @@ export default function PackageSection({
             <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
             <div>
               <p className="font-semibold text-gray-900">
-                Fragile / Handle with care
+                Fragile
               </p>
               <p className="text-sm text-gray-500">
                 Item requires extra careful handling
