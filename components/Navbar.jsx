@@ -35,7 +35,6 @@ const getNavLinks = (user, role) => {
   } else if (role === 'agency') {
     return [
       { href: '/track', label: 'Track', icon: PackageSearch },
-      // { href: '/agency/couriers', label: 'Couriers', icon: Users },
       { href: '/hub', label: 'Hub', icon: LayoutDashboard }
     ];
   } else {
@@ -91,8 +90,24 @@ const Navbar = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('/');
   const { role, loading } = useUserRole();
-
   const [scrolled, setScrolled] = useState(false);
+
+  const hiddenNavbarRoutes = [
+    '/AgencyBooking/',           // Agency booking pages
+    '/bookconfirm/',    // Booking confirmation pages (optional - remove if you want navbar here)
+  ];
+
+  // Check if current pathname matches any hidden route
+  const shouldHideNavbar = hiddenNavbarRoutes.some(route => 
+    pathname?.startsWith(route)
+  );
+
+  // ============================================
+  // EARLY RETURN - HIDE NAVBAR ON SPECIFIC ROUTES
+  // ============================================
+  if (shouldHideNavbar) {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {

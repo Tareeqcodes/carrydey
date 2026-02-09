@@ -142,8 +142,8 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         <div className="bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-3xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-white/70 text-sm font-medium mb-1">Current Status</p>
-              <p className="text-2xl font-bold capitalize">
+              <p className="text-white/70 text-xs font-medium mb-1">Current Status</p>
+              <p className="text-xl font-bold capitalize">
                 {delivery?.status?.replace('_', ' ')}
               </p>
             </div>
@@ -192,7 +192,7 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
 
                   {/* Icon */}
                   <div
-                    className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-2xl border-2 transition-all ${
+                    className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-xl border-2 transition-all ${
                       isActive
                         ? 'bg-[#3A0A21] border-[#3A0A21] text-white shadow-lg shadow-[#3A0A21]/30'
                         : 'bg-gray-50 border-gray-200 text-gray-400'
@@ -225,8 +225,8 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
           <h3 className="text-lg font-bold text-gray-900 mb-4">Route Details</h3>
           <div className="space-y-4">
             <div className="flex gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-200">
-              <div className="p-2 bg-blue-100 rounded-xl">
-                <Package className="w-5 h-5 text-blue-600" />
+              <div>
+                <MapPin className=" w-5 h-5 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-blue-900 mb-1">Pickup Location</p>
@@ -235,7 +235,7 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
             </div>
 
             <div className="flex gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
-              <div className="p-2 bg-emerald-100 rounded-xl">
+              <div >
                 <MapPin className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex-1 min-w-0">
@@ -249,9 +249,9 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         {/* Courier Info */}
         {delivery?.driverName && (
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border border-gray-200 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Your Courier</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Assigned Courier</h3>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                 {delivery.driverName.charAt(0)}
               </div>
               <div className="flex-1">
@@ -314,12 +314,12 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         {/* Instructions */}
         <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-3xl border border-blue-200 p-6">
           <div className="flex gap-4">
-            <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <div >
               <Package className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-bold text-blue-900 mb-2">Pickup Confirmation</h3>
-              <p className="text-sm text-blue-700 leading-relaxed">
+              <h3 className="font-bold text-sm text-blue-900 mb-2">Pickup Confirmation</h3>
+              <p className="text-xs text-blue-700 leading-relaxed">
                 Share this code with your courier at the pickup location to confirm they have
                 received your package securely.
               </p>
@@ -332,8 +332,8 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
           <div className="absolute inset-0 bg-grid-white/5" />
           <div className="relative z-10">
             <p className="text-white/70 text-sm font-medium mb-3">Your Pickup Code</p>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-4">
-              <p className="text-6xl font-bold text-white tracking-wider font-mono">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 mb-4">
+              <p className="text-3xl font-bold text-white tracking-wider font-mono">
                 {delivery?.pickupCode || 'N/A'}
               </p>
             </div>
@@ -422,12 +422,12 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         {/* Instructions */}
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-3xl border border-emerald-200 p-6">
           <div className="flex gap-4">
-            <div className="p-3 bg-white rounded-2xl shadow-sm">
+            <div >
               <MapPin className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
               <h3 className="font-bold text-emerald-900 mb-2">Delivery Confirmation</h3>
-              <p className="text-sm text-emerald-700 leading-relaxed">
+              <p className="text-xs text-emerald-700 leading-relaxed">
                 Share this OTP with the recipient to confirm safe delivery of your package.
               </p>
             </div>
@@ -439,8 +439,8 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
           <div className="absolute inset-0 bg-grid-white/5" />
           <div className="relative z-10">
             <p className="text-white/70 text-sm font-medium mb-3">Delivery OTP</p>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-4">
-              <p className="text-6xl font-bold text-white tracking-wider font-mono">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 mb-4">
+              <p className="text-3xl font-bold text-white tracking-wider font-mono">
                 {delivery?.dropoffOTP || 'N/A'}
               </p>
             </div>
@@ -571,8 +571,8 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-5 flex items-center justify-between sticky top-0 z-10">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Delivery Tracking</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Monitor your shipment</p>
+            <h2 className="text-xl font-bold text-gray-900">Delivery Tracking</h2>
+           
           </div>
           <button
             onClick={onClose}

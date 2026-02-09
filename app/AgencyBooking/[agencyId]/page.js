@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import LocationAndPreviewScreen from '@/components/LocationAndPreviewScreen';
 import PackageAndFareScreen from '@/components/PackageAndFareScreen';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
-import { Building2, Loader2, AlertCircle, User, Phone, Mail, Check } from 'lucide-react';
+import { Building2, Loader2, AlertCircle, User, Phone, Mail, Check, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AgencyBookingPage() {
@@ -14,6 +14,11 @@ export default function AgencyBookingPage() {
 
   const [currentScreen, setCurrentScreen] = useState('location');
   const [agency, setAgency] = useState(null);
+  const [brandColors, setBrandColors] = useState({
+    primary: '#3A0A21',
+    secondary: '#5A1A41',
+    accent: '#8B2E5A',
+  });
 
   const [loadingAgency, setLoadingAgency] = useState(true);
   const [deliveryData, setDeliveryData] = useState({
@@ -46,7 +51,18 @@ export default function AgencyBookingPage() {
       });
 
       if (response.rows.length > 0) {
-        setAgency(response.rows[0]);
+        const agencyData = response.rows[0];
+        setAgency(agencyData);
+        
+        // Parse and set brand colors
+        if (agencyData.brandColors) {
+          try {
+            const colors = JSON.parse(agencyData.brandColors);
+            setBrandColors(colors);
+          } catch (e) {
+            console.error('Error parsing brand colors:', e);
+          }
+        }
       } else {
         alert('Agency not found');
         router.push('/');
@@ -130,7 +146,7 @@ export default function AgencyBookingPage() {
         isGuestBooking: true,
         guestPhone: guestInfo.phone,
         assignedAgencyId: agencyId,
-        userId: null, 
+        userId: null,
         trackingToken: trackingToken,
       };
 
@@ -204,25 +220,82 @@ export default function AgencyBookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Modern Agency Header */}
+      {/* Branded Agency Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/80 backdrop-blur-xl md:mx-32 border-b border-gray-200/50 sticky top-0 z-40 shadow-sm"
+        style={{
+          borderBottom: `2px solid ${brandColors.primary}15`,
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#3A0A21] to-[#5A1A41] flex items-center justify-center shadow-lg shadow-[#3A0A21]/20">
-              <Building2 className="w-7 h-7 text-white" />
-            </div>
+            {/* Agency Logo or Icon */}
+            {agency.logoUrl ? (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="w-14 h-14 rounded-2xl bg-white border-2 flex items-center justify-center shadow-lg overflow-hidden"
+                style={{ borderColor: brandColors.primary }}
+              >
+                <img
+                  src={agency.logoUrl}
+                  alt={agency.name}
+                  className="w-full h-full object-contain p-1.5"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
+                style={{
+                  background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                }}
+              >
+                <Building2 className="w-7 h-7 text-white" />
+              </motion.div>
+            )}
+
             <div className="flex-1">
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
-                {agency.name || agency.contactPerson}
+                {agency.name}
               </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Book your delivery</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-xs sm:text-sm text-gray-500">
+                  {agency.tagline || 'Book your delivery'}
+                </p>
+                {agency.verified && (
+                  <div
+                    className="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1"
+                    style={{
+                      backgroundColor: `${brandColors.accent}20`,
+                      color: brandColors.accent,
+                    }}
+                  >
+                    <Check className="w-3 h-3" />
+                    Verified
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Agency Rating */}
+            {agency.rating && (
+              <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-amber-50 rounded-xl border border-amber-200">
+                <span className="text-lg">⭐</span>
+                <span className="text-sm font-bold text-amber-900">{agency.rating}</span>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Decorative gradient line */}
+        <div
+          className="h-1 w-full"
+          style={{
+            background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.accent} 50%, ${brandColors.secondary} 100%)`,
+          }}
+        />
       </motion.div>
 
       {/* Main Content with Smooth Transitions */}
@@ -260,7 +333,7 @@ export default function AgencyBookingPage() {
         )}
       </AnimatePresence>
 
-      {/* Modern Guest Info Modal */}
+      {/* Branded Guest Info Modal */}
       <AnimatePresence>
         {showGuestForm && (
           <motion.div
@@ -278,12 +351,31 @@ export default function AgencyBookingPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
             >
-              {/* Modal Header */}
-              <div className="bg-gradient-to-r from-[#3A0A21] to-[#5A1A41] p-6 sm:p-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                    <User className="w-6 h-6 text-white" />
-                  </div>
+              {/* Branded Modal Header */}
+              <div
+                className="p-6 sm:p-8 relative overflow-hidden"
+                style={{
+                  background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                }}
+              >
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
+                
+                <div className="relative flex items-start gap-4">
+                  {agency.logoUrl ? (
+                    <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 p-2">
+                      <img
+                        src={agency.logoUrl}
+                        alt={agency.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                      <User className="w-6 h-6 text-white" />
+                    </div>
+                  )}
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
                       Your Contact Info
@@ -303,14 +395,32 @@ export default function AgencyBookingPage() {
                     Full Name
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity" />
+                    <div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity"
+                      style={{ background: `${brandColors.primary}10` }}
+                    />
                     <div className="relative flex items-center">
-                      <User className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                      <User
+                        className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:transition-colors"
+                        style={{ color: `${brandColors.primary}` }}
+                      />
                       <input
                         type="text"
                         value={guestInfo.name}
                         onChange={(e) => setGuestInfo({ ...guestInfo, name: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-blue-50/30 transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                        style={{
+                          borderColor: `${brandColors.primary}`,
+                          backgroundColor: `${brandColors.primary}05`,
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = brandColors.primary;
+                          e.target.style.backgroundColor = `${brandColors.primary}10`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb';
+                          e.target.style.backgroundColor = 'white';
+                        }}
                         placeholder="John Doe"
                         required
                       />
@@ -324,14 +434,25 @@ export default function AgencyBookingPage() {
                     Phone Number
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity" />
+                    <div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity"
+                      style={{ background: `${brandColors.secondary}10` }}
+                    />
                     <div className="relative flex items-center">
-                      <Phone className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-green-600 transition-colors" />
+                      <Phone className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:transition-colors" />
                       <input
                         type="tel"
                         value={guestInfo.phone}
                         onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-green-500 focus:bg-green-50/30 transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = brandColors.secondary;
+                          e.target.style.backgroundColor = `${brandColors.secondary}10`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb';
+                          e.target.style.backgroundColor = 'white';
+                        }}
                         placeholder="+234 123 456 7890"
                         required
                       />
@@ -345,14 +466,25 @@ export default function AgencyBookingPage() {
                     Email <span className="text-gray-400 normal-case">(Optional)</span>
                   </label>
                   <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity" />
+                    <div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition-opacity"
+                      style={{ background: `${brandColors.accent}10` }}
+                    />
                     <div className="relative flex items-center">
-                      <Mail className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                      <Mail className="absolute left-4 w-5 h-5 text-gray-400 group-focus-within:transition-colors" />
                       <input
                         type="email"
                         value={guestInfo.email}
                         onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-purple-500 focus:bg-purple-50/30 transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                        className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = brandColors.accent;
+                          e.target.style.backgroundColor = `${brandColors.accent}10`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb';
+                          e.target.style.backgroundColor = 'white';
+                        }}
                         placeholder="john@example.com"
                       />
                     </div>
@@ -366,7 +498,7 @@ export default function AgencyBookingPage() {
                     whileTap={{ scale: 0.99 }}
                     type="button"
                     onClick={() => setShowGuestForm(false)}
-                    className="flex-1 px-6 py-3.5 bg-gray-100 text-gray-700 rounded-2xl font-semibold hover:bg-gray-200 transition-all"
+                    className="flex-1 px-6 py-2 bg-gray-100 text-gray-700 rounded-2xl font-semibold hover:bg-gray-200 transition-all"
                     disabled={loading}
                   >
                     Back
@@ -375,23 +507,34 @@ export default function AgencyBookingPage() {
                     whileHover={{ scale: loading ? 1 : 1.01 }}
                     whileTap={{ scale: loading ? 1 : 0.99 }}
                     type="submit"
-                    className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#3A0A21] to-[#5A1A41] text-white rounded-2xl font-semibold hover:shadow-xl hover:shadow-[#3A0A21]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 px-3 py-2 text-white rounded-2xl font-semibold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{
+                      background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                      boxShadow: `0 10px 25px -5px ${brandColors.primary}30`,
+                    }}
                     disabled={loading}
                   >
                     {loading ? (
-                      <>
+                      <div className="flex items-center gap-1">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span>Booking...</span>
-                      </>
+                      </div>
                     ) : (
-                      <div className="flex items-center gap-1">
-                        <Check className="w-5 h-5" />
-                        <span className="text-sm">Confirm Booking</span>
+                      <div>
+                        <span>Confirm Booking</span>
                       </div>
                     )}
                   </motion.button>
                 </div>
               </form>
+
+              {/* Branding Footer */}
+              <div
+                className="px-6 pb-6 flex items-center justify-center gap-2 text-xs text-gray-500"
+              >
+                <Sparkles className="w-3 h-3" style={{ color: brandColors.accent }} />
+                <span>Powered by {agency.name}</span>
+              </div>
             </motion.div>
           </motion.div>
         )}
