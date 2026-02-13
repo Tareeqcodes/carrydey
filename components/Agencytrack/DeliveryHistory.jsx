@@ -1,14 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import { 
-  MapPin, 
   CheckCircle,
   XCircle,
-  Clock,
   Search,
   TrendingUp,
   History as HistoryIcon,
-  ArrowRight
 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
