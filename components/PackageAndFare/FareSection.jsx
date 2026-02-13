@@ -1,6 +1,7 @@
 'use client';
 import { AlertCircle } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 export default function FareSection({
   fareDetails,
@@ -8,9 +9,16 @@ export default function FareSection({
   suggestedFare,
   errors,
 }) {
+  const { brandColors } = useBrandColors();
+
   return (
     <section className="space-y-4">
-      <div className="rounded-2xl bg-gradient-to-br from-[#3A0A21] to-[#4A0A31] p-6 text-white shadow-xl">
+      <div 
+        className="rounded-2xl p-6 text-white shadow-xl"
+        style={{
+          background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+        }}
+      >
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm py-3 text-white/80">Suggested Fare</span>
@@ -32,7 +40,6 @@ export default function FareSection({
               (Minimum: {formatNairaSimple(suggestedFare)})
             </span>
           </label>
-
           <div className="relative mb-4">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold">
               ₦
@@ -44,7 +51,6 @@ export default function FareSection({
               min={suggestedFare}
               className="w-full pl-12 pr-4 py-4 text-3xl font-bold bg-white/10 border-2 border-white/30 rounded-xl outline-none text-white placeholder-white/70 focus:border-white/50 focus:bg-white/15 transition-all"
               placeholder={`Enter fare (min ₦${formatNairaSimple(suggestedFare)})`}
-              
             />
           </div>
 

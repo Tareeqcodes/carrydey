@@ -1,27 +1,49 @@
 'use client';
-import { Clock, Shield } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 export default function PickupOptions({
   packageDetails,
   onPackageDetailChange,
 }) {
+  const { brandColors } = useBrandColors();
+
   return (
     <section className="space-y-4 bg-white p-4">
       {/* Pickup Time */}
       <div className="">
         <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-[#3A0A21]" />
+          <Clock 
+            className="w-5 h-5" 
+            style={{ color: brandColors.primary }}
+          />
           <h3 className="font-semibold text-gray-900">Pickup Time</h3>
         </div>
 
         <div className="space-y-3">
           {/* ASAP Option */}
           <label
-            className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${
+            className="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+            style={
               packageDetails.pickupTime === 'courier'
-                ? 'border-[#3A0A21] bg-[#3A0A21]/5'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
+                ? {
+                    borderColor: brandColors.primary,
+                    backgroundColor: `${brandColors.primary}0D`,
+                  }
+                : {
+                    borderColor: '#e5e7eb',
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (packageDetails.pickupTime !== 'courier') {
+                e.currentTarget.style.borderColor = '#d1d5db';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (packageDetails.pickupTime !== 'courier') {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+              }
+            }}
           >
             <input
               type="radio"
@@ -29,13 +51,15 @@ export default function PickupOptions({
               value="courier"
               checked={packageDetails.pickupTime === 'courier'}
               onChange={() => onPackageDetailChange('pickupTime', 'courier')}
-              className="mt-0.5 mr-3 text-[#3A0A21] focus:ring-[#3A0A21]"
+              className="mt-0.5 mr-3"
+              style={{
+                accentColor: brandColors.primary,
+              }}
             />
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-gray-900">ASAP Delivery</p>
-                 
                 </div>
                 <div className="bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
                   Recommended
@@ -52,11 +76,27 @@ export default function PickupOptions({
 
           {/* Schedule Option */}
           <label
-            className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${
+            className="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+            style={
               packageDetails.pickupTime === 'schedule'
-                ? 'border-[#3A0A21] bg-[#3A0A21]/5'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
+                ? {
+                    borderColor: brandColors.primary,
+                    backgroundColor: `${brandColors.primary}0D`,
+                  }
+                : {
+                    borderColor: '#e5e7eb',
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (packageDetails.pickupTime !== 'schedule') {
+                e.currentTarget.style.borderColor = '#d1d5db';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (packageDetails.pickupTime !== 'schedule') {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+              }
+            }}
           >
             <input
               type="radio"
@@ -64,7 +104,10 @@ export default function PickupOptions({
               value="schedule"
               checked={packageDetails.pickupTime === 'schedule'}
               onChange={() => onPackageDetailChange('pickupTime', 'schedule')}
-              className="mt-0.5 mr-3 text-[#3A0A21] focus:ring-[#3A0A21]"
+              className="mt-0.5 mr-3"
+              style={{
+                accentColor: brandColors.primary,
+              }}
             />
             <div>
               <p className="font-semibold text-gray-900">Schedule for Later</p>
@@ -85,14 +128,32 @@ export default function PickupOptions({
                   <input
                     type="date"
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = brandColors.primary;
+                      e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Time
                   </label>
-                  <select className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent">
+                  <select 
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = brandColors.primary;
+                      e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
                     <option>9:00 AM</option>
                     <option>10:00 AM</option>
                     <option>11:00 AM</option>
@@ -109,77 +170,6 @@ export default function PickupOptions({
           )}
         </div>
       </div>
-
-      {/* PIN Confirmation */}
-      {/* <div className="">
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-3">
-            <Shield className="w-5 h-5 text-[#3A0A21] mt-0.5" />
-            <div>
-              <p className="font-semibold text-gray-900">PIN Confirmation</p>
-              <p className="text-sm text-gray-500 max-w-md">
-                Recipient must enter a 4-digit PIN to confirm delivery
-              </p>
-              <div className="mt-2 text-xs text-gray-600 space-y-1">
-                <p className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                  Ensures delivery to the right person
-                </p>
-                <p className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                  Required for high-value items (₦10,000+)
-                </p>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() =>
-              onPackageDetailChange(
-                'pinConfirmation',
-                !packageDetails.pinConfirmation
-              )
-            }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              packageDetails.pinConfirmation ? 'bg-[#3A0A21]' : 'bg-gray-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                packageDetails.pinConfirmation
-                  ? 'translate-x-6'
-                  : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-
-        
-        {packageDetails.pinConfirmation && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm font-medium text-blue-900 mb-2">
-              Your 4-digit PIN will be generated after confirmation
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((digit) => (
-                  <div
-                    key={digit}
-                    className="h-12 bg-white border-2 border-blue-300 rounded-lg flex items-center justify-center"
-                  >
-                    <span className="text-xl font-bold text-blue-900">•</span>
-                  </div>
-                ))}
-              </div>
-              <button className="text-sm text-blue-700 font-semibold hover:underline">
-                Regenerate
-              </button>
-            </div>
-            <p className="text-xs text-blue-700 mt-2">
-              Share this PIN with your recipient only after traveler is matched
-            </p>
-          </div>
-        )}
-      </div> */}
     </section>
   );
 }

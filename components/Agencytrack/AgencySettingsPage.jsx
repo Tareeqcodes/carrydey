@@ -6,6 +6,7 @@ import {
   Phone,
   Mail,
   MapPin,
+  Clock,
   Edit3,
   Save,
   CheckCircle,
@@ -18,16 +19,9 @@ import {
   Upload,
   Image as ImageIcon,
   Palette,
-  Sparkles,
   Settings,
-  Zap,
-  BarChart3,
-  Users,
   Package,
-  TrendingUp,
   Briefcase,
-  Globe,
-  Clock,
   DollarSign,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,10 +32,24 @@ import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query, storage, ID } from '@/lib/config/Appwriteconfig';
 
 const COLOR_PRESETS = [
-  { name: 'Ocean Blue', primary: '#0A2A3A', secondary: '#1A4A6A', accent: '#2E6B8B' },
-  { name: 'Forest Green', primary: '#0A3A1A', secondary: '#1A5A2A', accent: '#2E8B4A' },
-  { name: 'Midnight Navy', primary: '#0A0A3A', secondary: '#1A1A5A', accent: '#2E2E8B' },
-  
+  {
+    name: 'Ocean Blue',
+    primary: '#0A2A3A',
+    secondary: '#1A4A6A',
+    accent: '#2E6B8B',
+  },
+  {
+    name: 'Forest Green',
+    primary: '#0A3A1A',
+    secondary: '#1A5A2A',
+    accent: '#2E8B4A',
+  },
+  {
+    name: 'Bright Yellow',
+    primary: '#3A3A00',
+    secondary: '#5A5A00',
+    accent: '#FFFF00',
+  },
 ];
 
 const AgencySettingsPage = () => {
@@ -54,7 +62,7 @@ const AgencySettingsPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [activeTab, setActiveTab] = useState('general'); // general, branding, operational
+  const [activeTab, setActiveTab] = useState('general');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -91,14 +99,14 @@ const AgencySettingsPage = () => {
       if (response.rows.length > 0) {
         const agency = response.rows[0];
         setAgencyData(agency);
-        
+
         // Parse brand colors if they exist
         let brandColors = {
           primary: '#3A0A21',
           secondary: '#5A1A41',
           accent: '#8B2E5A',
         };
-        
+
         if (agency.brandColors) {
           try {
             brandColors = JSON.parse(agency.brandColors);
@@ -180,8 +188,7 @@ const AgencySettingsPage = () => {
           await storage.deleteFile({
             bucketId: process.env.NEXT_PUBLIC_APPWRITE_LOGO_BUCKET_ID,
             fileId: agencyData.logoFileId,
-          }
-          );
+          });
         } catch (err) {
           console.log('Old logo deletion failed:', err);
         }
@@ -213,7 +220,11 @@ const AgencySettingsPage = () => {
       });
 
       setFormData((prev) => ({ ...prev, logoUrl: fileUrl.href }));
-      setAgencyData((prev) => ({ ...prev, logoUrl: fileUrl.href, logoFileId: uploadedFile.$id }));
+      setAgencyData((prev) => ({
+        ...prev,
+        logoUrl: fileUrl.href,
+        logoFileId: uploadedFile.$id,
+      }));
       setSuccessMessage('Logo uploaded successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
@@ -267,7 +278,9 @@ const AgencySettingsPage = () => {
         brandColors: JSON.stringify(formData.brandColors),
         tagline: formData.tagline.trim(),
         operationalHours: formData.operationalHours.trim(),
-        baseDeliveryFee: formData.baseDeliveryFee ? parseInt(formData.baseDeliveryFee) : null,
+        baseDeliveryFee: formData.baseDeliveryFee
+          ? parseInt(formData.baseDeliveryFee)
+          : null,
         pricePerKm: formData.pricePerKm ? parseInt(formData.pricePerKm) : null,
       };
 
@@ -388,7 +401,9 @@ const AgencySettingsPage = () => {
         >
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-lg md:text-xl font-semibold text-gray-900 tracking-tight">Manage your logistics operations center</h1>
+              <h1 className="text-lg md:text-xl font-semibold text-gray-900 tracking-tight">
+                Manage your logistics operations center
+              </h1>
             </div>
             {/* <div className="flex items-center gap-2">
               <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
@@ -465,7 +480,7 @@ const AgencySettingsPage = () => {
                   className="group relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-[#3A0A21] via-[#4A1A31] to-[#2A0A21] rounded-3xl" />
-                  
+
                   <div className="relative z-10 p-6">
                     <div className="flex items-start gap-4 mb-6">
                       <motion.div
@@ -511,7 +526,7 @@ const AgencySettingsPage = () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       {!editMode && (
                         <motion.button
                           whileHover={{ scale: 1.02 }}
@@ -535,7 +550,9 @@ const AgencySettingsPage = () => {
                             <input
                               type="text"
                               value={formData.name}
-                              onChange={(e) => handleInputChange('name', e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange('name', e.target.value)
+                              }
                               className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3A0A21] focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                               placeholder="Enter agency name"
                             />
@@ -555,7 +572,9 @@ const AgencySettingsPage = () => {
                             <input
                               type="tel"
                               value={formData.phone}
-                              onChange={(e) => handleInputChange('phone', e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange('phone', e.target.value)
+                              }
                               className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3A0A21] focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                               placeholder="+234 800 000 0000"
                             />
@@ -588,7 +607,10 @@ const AgencySettingsPage = () => {
                               type="text"
                               value={formData.serviceCities}
                               onChange={(e) =>
-                                handleInputChange('serviceCities', e.target.value)
+                                handleInputChange(
+                                  'serviceCities',
+                                  e.target.value
+                                )
                               }
                               className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3A0A21] focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                               placeholder="e.g., Lagos, Abuja, Kano"
@@ -677,7 +699,7 @@ const AgencySettingsPage = () => {
                 >
                   <div className="p-8">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                      <div className="w-10 h-10 rounded-xl bg-[#3A0A21] flex items-center justify-center shadow-lg shadow-purple-500/20">
                         <ImageIcon className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -722,7 +744,7 @@ const AgencySettingsPage = () => {
                             whileTap={{ scale: 0.98 }}
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploadingLogo}
-                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all disabled:opacity-50"
+                            className="flex items-center gap-2 px-6 py-3 bg-[#3A0A21] text-white rounded-xl font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all disabled:opacity-50"
                           >
                             {uploadingLogo ? (
                               <>
@@ -732,7 +754,11 @@ const AgencySettingsPage = () => {
                             ) : (
                               <>
                                 <Upload className="w-5 h-5" />
-                                <span>{formData.logoUrl ? 'Change Logo' : 'Upload Logo'}</span>
+                                <span>
+                                  {formData.logoUrl
+                                    ? 'Change Logo'
+                                    : 'Upload Logo'}
+                                </span>
                               </>
                             )}
                           </motion.button>
@@ -814,13 +840,17 @@ const AgencySettingsPage = () => {
                             <input
                               type="color"
                               value={formData.brandColors.primary}
-                              onChange={(e) => handleColorChange('primary', e.target.value)}
+                              onChange={(e) =>
+                                handleColorChange('primary', e.target.value)
+                              }
                               className="w-16 h-16 rounded-xl border-2 border-gray-200 cursor-pointer"
                             />
                             <input
                               type="text"
                               value={formData.brandColors.primary}
-                              onChange={(e) => handleColorChange('primary', e.target.value)}
+                              onChange={(e) =>
+                                handleColorChange('primary', e.target.value)
+                              }
                               className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono"
                             />
                           </div>
@@ -834,13 +864,17 @@ const AgencySettingsPage = () => {
                             <input
                               type="color"
                               value={formData.brandColors.secondary}
-                              onChange={(e) => handleColorChange('secondary', e.target.value)}
+                              onChange={(e) =>
+                                handleColorChange('secondary', e.target.value)
+                              }
                               className="w-16 h-16 rounded-xl border-2 border-gray-200 cursor-pointer"
                             />
                             <input
                               type="text"
                               value={formData.brandColors.secondary}
-                              onChange={(e) => handleColorChange('secondary', e.target.value)}
+                              onChange={(e) =>
+                                handleColorChange('secondary', e.target.value)
+                              }
                               className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono"
                             />
                           </div>
@@ -854,13 +888,17 @@ const AgencySettingsPage = () => {
                             <input
                               type="color"
                               value={formData.brandColors.accent}
-                              onChange={(e) => handleColorChange('accent', e.target.value)}
+                              onChange={(e) =>
+                                handleColorChange('accent', e.target.value)
+                              }
                               className="w-16 h-16 rounded-xl border-2 border-gray-200 cursor-pointer"
                             />
                             <input
                               type="text"
                               value={formData.brandColors.accent}
-                              onChange={(e) => handleColorChange('accent', e.target.value)}
+                              onChange={(e) =>
+                                handleColorChange('accent', e.target.value)
+                              }
                               className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono"
                             />
                           </div>
@@ -869,7 +907,9 @@ const AgencySettingsPage = () => {
 
                       {/* Preview */}
                       <div className="p-6 rounded-2xl border-2 border-gray-200 bg-gray-50">
-                        <p className="text-sm font-semibold text-gray-700 mb-4">Preview</p>
+                        <p className="text-sm font-semibold text-gray-700 mb-4">
+                          Preview
+                        </p>
                         <div
                           className="p-6 rounded-xl shadow-lg"
                           style={{
@@ -901,7 +941,9 @@ const AgencySettingsPage = () => {
                           </div>
                           <div
                             className="px-4 py-2 rounded-lg inline-block shadow-lg"
-                            style={{ backgroundColor: formData.brandColors.accent }}
+                            style={{
+                              backgroundColor: formData.brandColors.accent,
+                            }}
                           >
                             <span className="text-white font-semibold text-sm">
                               Book Delivery
@@ -918,7 +960,9 @@ const AgencySettingsPage = () => {
                         <input
                           type="text"
                           value={formData.tagline}
-                          onChange={(e) => handleInputChange('tagline', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange('tagline', e.target.value)
+                          }
                           className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                           placeholder="e.g., Fast & Reliable Deliveries"
                         />
@@ -981,15 +1025,16 @@ const AgencySettingsPage = () => {
                         <input
                           type="text"
                           value={formData.operationalHours}
-                          onChange={(e) => handleInputChange('operationalHours', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'operationalHours',
+                              e.target.value
+                            )
+                          }
                           className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                           placeholder="e.g., Mon-Fri: 8AM-6PM, Sat: 9AM-2PM"
                         />
                       </div>
-
-                   
-
-                     
                     </div>
                   </div>
                 </motion.div>
@@ -1025,7 +1070,12 @@ const AgencySettingsPage = () => {
                           <input
                             type="number"
                             value={formData.baseDeliveryFee}
-                            onChange={(e) => handleInputChange('baseDeliveryFee', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                'baseDeliveryFee',
+                                e.target.value
+                              )
+                            }
                             className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                             placeholder="1000"
                           />
@@ -1041,7 +1091,9 @@ const AgencySettingsPage = () => {
                           <input
                             type="number"
                             value={formData.pricePerKm}
-                            onChange={(e) => handleInputChange('pricePerKm', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange('pricePerKm', e.target.value)
+                            }
                             className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                             placeholder="100"
                           />
@@ -1058,13 +1110,19 @@ const AgencySettingsPage = () => {
                           </p>
                           <div className="space-y-1 text-sm text-gray-700">
                             <p>
-                              5km delivery: ₦{parseInt(formData.baseDeliveryFee) + (5 * parseInt(formData.pricePerKm))}
+                              5km delivery: ₦
+                              {parseInt(formData.baseDeliveryFee) +
+                                5 * parseInt(formData.pricePerKm)}
                             </p>
                             <p>
-                              10km delivery: ₦{parseInt(formData.baseDeliveryFee) + (10 * parseInt(formData.pricePerKm))}
+                              10km delivery: ₦
+                              {parseInt(formData.baseDeliveryFee) +
+                                10 * parseInt(formData.pricePerKm)}
                             </p>
                             <p>
-                              20km delivery: ₦{parseInt(formData.baseDeliveryFee) + (20 * parseInt(formData.pricePerKm))}
+                              20km delivery: ₦
+                              {parseInt(formData.baseDeliveryFee) +
+                                20 * parseInt(formData.pricePerKm)}
                             </p>
                           </div>
                         </div>
@@ -1122,7 +1180,9 @@ const AgencySettingsPage = () => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-base font-bold text-gray-900 mb-1">Visibility</h3>
+                    <h3 className="text-base font-bold text-gray-900 mb-1">
+                      Visibility
+                    </h3>
                     <p className="text-xs text-gray-500 leading-relaxed">
                       {formData.isAvailable
                         ? 'Accepting new bookings'
@@ -1161,7 +1221,9 @@ const AgencySettingsPage = () => {
               className="bg-white rounded-3xl border border-gray-200/50 shadow-sm overflow-hidden"
             >
               <div className="p-6">
-                <h3 className="text-base font-bold text-gray-900 mb-6">Quick Stats</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-6">
+                  Quick Stats
+                </h3>
 
                 <div className="space-y-4">
                   <motion.div
@@ -1211,8 +1273,6 @@ const AgencySettingsPage = () => {
                 </div>
               </div>
             </motion.div>
-
-            
           </div>
         </div>
       </div>

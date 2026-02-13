@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Navigation } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import InputLocation from '@/components/InputLocation';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 const RouteMapPreview = dynamic(() => import('../hooks/RouteMapPreview'), {
   ssr: false,
@@ -38,6 +39,7 @@ export default function LocationAndPreviewScreen({
   routeData,
   onLocationsConfirmed,
 }) {
+  const { brandColors } = useBrandColors();
   const [localPickup, setLocalPickup] = useState(null);
   const [localDropoff, setLocalDropoff] = useState(null);
   const [localRouteData, setLocalRouteData] = useState(null);
@@ -126,7 +128,10 @@ export default function LocationAndPreviewScreen({
     if (isLoading) {
       return (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#3A0A21] border-t-transparent"></div>
+          <div 
+            className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-t-transparent"
+            style={{ borderColor: `${brandColors.primary}40`, borderTopColor: 'transparent' }}
+          ></div>
           <p className="mt-4 text-gray-600">Loading your delivery details...</p>
         </div>
       );
@@ -148,7 +153,12 @@ export default function LocationAndPreviewScreen({
     return (
       <div className="mb-8">
         <div className="items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-[#3A0A21]">Route Preview</h2>
+          <h2 
+            className="text-xl font-bold"
+            style={{ color: brandColors.primary }}
+          >
+            Route Preview
+          </h2>
         </div>
 
         <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm">
@@ -161,7 +171,8 @@ export default function LocationAndPreviewScreen({
                 <div className="text-center text-gray-500">
                   <Navigation
                     size={48}
-                    className="mx-auto mb-2 text-[#3A0A21]"
+                    className="mx-auto mb-2"
+                    style={{ color: brandColors.primary }}
                   />
                   <p className="font-medium">Map Loading</p>
                   <p className="text-sm mt-1">Loading route preview...</p>
@@ -202,7 +213,10 @@ export default function LocationAndPreviewScreen({
               <button
                 onClick={handleConfirmLocations}
                 disabled={!localPickup || !localDropoff || !localRouteData}
-                className="px-6 py-3 bg-[#3A0A21] hover:bg-[#4A0A31] text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+                className="px-6 py-3 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+                style={{
+                  background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                }}
               >
                 Continue to Package Details
               </button>

@@ -1,5 +1,6 @@
 'use client';
 import { AlertCircle } from 'lucide-react';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 const packageSizes = [
   {
@@ -25,12 +26,12 @@ const packageSizes = [
   },
 ];
 
-
 export default function PackageSection({
   packageDetails,
   onPackageDetailChange,
-
 }) {
+  const { brandColors } = useBrandColors();
+
   return (
     <section className="space-y-4 bg-white p-4">
       <div className="flex items-center gap-2 mb-4">
@@ -41,11 +42,27 @@ export default function PackageSection({
         {packageSizes.map((size) => (
           <label
             key={size.id}
-            className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${
+            className="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+            style={
               packageDetails.size === size.id
-                ? 'border-[#3A0A21] bg-[#3A0A21]/5'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
+                ? {
+                    borderColor: brandColors.primary,
+                    backgroundColor: `${brandColors.primary}0D`,
+                  }
+                : {
+                    borderColor: '#e5e7eb',
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (packageDetails.size !== size.id) {
+                e.currentTarget.style.borderColor = '#d1d5db';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (packageDetails.size !== size.id) {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+              }
+            }}
           >
             <input
               type="radio"
@@ -53,7 +70,10 @@ export default function PackageSection({
               value={size.id}
               checked={packageDetails.size === size.id}
               onChange={() => onPackageDetailChange('size', size.id)}
-              className="mt-1 mr-3 text-[#3A0A21] focus:ring-[#3A0A21]"
+              className="mt-1 mr-3"
+              style={{
+                accentColor: brandColors.primary,
+              }}
             />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -76,8 +96,16 @@ export default function PackageSection({
           value={packageDetails.description}
           onChange={(e) => onPackageDetailChange('description', e.target.value)}
           placeholder="e.g., Birthday gift, documents, laptop..."
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent outline-none resize-none"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none resize-none transition-all"
           rows="3"
+          onFocus={(e) => {
+            e.target.style.borderColor = brandColors.primary;
+            e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = '#d1d5db';
+            e.target.style.boxShadow = 'none';
+          }}
         />
         <p className="text-xs text-gray-500 mt-2">
           This helps couriers understand what they're carrying
@@ -90,9 +118,7 @@ export default function PackageSection({
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
             <div>
-              <p className="font-semibold text-gray-900">
-                Fragile
-              </p>
+              <p className="font-semibold text-gray-900">Fragile</p>
               <p className="text-sm text-gray-500">
                 Item requires extra careful handling
               </p>
@@ -102,9 +128,12 @@ export default function PackageSection({
             onClick={() =>
               onPackageDetailChange('isFragile', !packageDetails.isFragile)
             }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              packageDetails.isFragile ? 'bg-[#3A0A21]' : 'bg-gray-300'
-            }`}
+            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            style={{
+              backgroundColor: packageDetails.isFragile
+                ? brandColors.primary
+                : '#d1d5db',
+            }}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import PickupDetailsModal from '@/components/PickupDetailsModal';
 import DropoffDetailsModal from '@/components/DropoffDetailsModal';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 export default function DeliverySummaryCard({ 
   delivery, 
@@ -11,6 +12,7 @@ export default function DeliverySummaryCard({
   onPickupContactChange,
   onDropoffContactChange
 }) {
+  const { brandColors } = useBrandColors();
   const [showPickupModal, setShowPickupModal] = useState(false);
   const [showDropoffModal, setShowDropoffModal] = useState(false);
   const { userData } = useUserRole();
@@ -42,7 +44,8 @@ export default function DeliverySummaryCard({
                     <p className="text-green-600 font-medium">✓ Contact details added</p>
                     <button
                       onClick={() => setShowPickupModal(true)}
-                      className="text-[#3A0A21] font-semibold mt-1"
+                      className="font-semibold mt-1"
+                      style={{ color: brandColors.primary }}
                     >
                       Edit details
                     </button>
@@ -50,7 +53,8 @@ export default function DeliverySummaryCard({
                 ) : (
                   <button
                     onClick={() => setShowPickupModal(true)}
-                    className="text-[#3A0A21] text-sm font-semibold mt-1"
+                    className="text-sm font-semibold mt-1"
+                    style={{ color: brandColors.primary }}
                   >
                     Add pickup details
                   </button>
@@ -70,7 +74,8 @@ export default function DeliverySummaryCard({
                     <p className="text-green-600 font-medium">✓ Recipient details added</p>
                     <button
                       onClick={() => setShowDropoffModal(true)}
-                      className="text-[#3A0A21] font-semibold mt-1"
+                      className="font-semibold mt-1"
+                      style={{ color: brandColors.primary }}
                     >
                       Edit details
                     </button>
@@ -78,7 +83,8 @@ export default function DeliverySummaryCard({
                 ) : (
                   <button
                     onClick={() => setShowDropoffModal(true)}
-                    className="text-[#3A0A21] text-sm font-semibold mt-1"
+                    className="text-sm font-semibold mt-1"
+                    style={{ color: brandColors.primary }}
                   >
                     Add recipient details
                   </button>

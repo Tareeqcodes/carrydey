@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 export default function PickupDetailsModal({
   isOpen,
@@ -10,10 +11,11 @@ export default function PickupDetailsModal({
   initialData,
   onSave,
 }) {
+  const { brandColors } = useBrandColors();
+  
   const [formData, setFormData] = useState({
     pickupContactName:
-      initialData?.pickupContactName ||
-      userData?.userName || '',
+      initialData?.pickupContactName || userData?.userName || '',
     pickupPhone: initialData?.pickupPhone || userData?.phone || '',
     pickupInstructions: initialData?.pickupInstructions || '',
   });
@@ -25,7 +27,6 @@ export default function PickupDetailsModal({
       [name]: value,
     }));
   };
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -45,7 +46,10 @@ export default function PickupDetailsModal({
         <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#3A0A21]">
+              <h2 
+                className="text-xl font-bold"
+                style={{ color: brandColors.primary }}
+              >
                 Pickup details
               </h2>
               <button
@@ -71,9 +75,16 @@ export default function PickupDetailsModal({
                     onChange={handleInputChange}
                     placeholder="Enter contact name"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = brandColors.primary;
+                      e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
-                  
                 </div>
 
                 <div>
@@ -87,7 +98,15 @@ export default function PickupDetailsModal({
                     onChange={handleInputChange}
                     placeholder="Enter phone number"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                    onFocus={(e) => {
+                      e.target.style.borderColor = brandColors.primary;
+                      e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -123,22 +142,35 @@ export default function PickupDetailsModal({
                 value={formData.pickupInstructions}
                 onChange={handleInputChange}
                 placeholder="E.g. Behind Shoprite, Plaza, Floor 2 Room 12"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3A0A21]"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                onFocus={(e) => {
+                  e.target.style.borderColor = brandColors.primary;
+                  e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Add nearby landmarks, building names, or specific location
-                details
-                
+                Add nearby landmarks, building names, or specific location details
               </p>
             </div>
-
-            
 
             {/* SUBMIT BUTTON */}
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full text-sm bg-[#3A0A21] text-white font-semibold py-4 rounded-lg hover:bg-[#2d0719] transition"
+                className="w-full text-sm text-white font-semibold py-4 rounded-lg transition"
+                style={{
+                  background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.01)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
                 Save pickup details
               </button>

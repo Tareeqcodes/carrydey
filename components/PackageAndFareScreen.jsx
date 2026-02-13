@@ -90,7 +90,7 @@ export default function PackageAndFareScreen({
           <h2 className="font-bold text-lg pl-6 md:pl-0 text-gray-900">Delivery Route</h2>
 
           <DeliverySummaryCard
-            delivery={delivery}
+            delivery={delivery} 
             pickupContact={packageDetails.pickupContact}
             dropoffContact={packageDetails.dropoffContact}
             onPickupContactChange={handlePickupContactChange}

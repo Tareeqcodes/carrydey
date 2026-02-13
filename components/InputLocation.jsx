@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Loader2, Navigation } from 'lucide-react';
+import { useBrandColors } from '@/hooks/BrandColors';
 
 export default function InputLocation({
   onLocationSelect,
@@ -10,6 +11,8 @@ export default function InputLocation({
   onCalculate,
   showNextButton = false,
 }) {
+  const { brandColors } = useBrandColors();
+  
   // Initialize all state with defined values (empty strings, not undefined)
   const [pickupAddress, setPickupAddress] = useState('');
   const [dropoffAddress, setDropoffAddress] = useState('');
@@ -306,13 +309,20 @@ export default function InputLocation({
           <label className="block text-sm font-medium text-white mb-2">
             Pickup Location
           </label>
-          <div className="flex items-center bg-white rounded-lg p-4 border-2 border-[#3A0A21]">
-            <div className="w-3 h-3 rounded-full bg-[#3A0A21] mr-3"></div>
+          <div 
+            className="flex items-center bg-white rounded-lg p-4 border-2"
+            style={{ borderColor: brandColors.primary }}
+          >
+            <div 
+              className="w-3 h-3 rounded-full mr-3"
+              style={{ backgroundColor: brandColors.primary }}
+            ></div>
             <input
               type="text"
               placeholder="Enter pickup location"
               value=""
-              className="flex-1 bg-transparent outline-none text-[#3A0A21] placeholder-gray-500 w-full"
+              className="flex-1 bg-transparent outline-none placeholder-gray-500 w-full"
+              style={{ color: brandColors.primary }}
               disabled
               readOnly
             />
@@ -332,20 +342,33 @@ export default function InputLocation({
       </label>
       <div className="relative">
         <MapPin 
-          className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${iconColor}`} 
+          className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5`}
+          style={{ color: iconColor }}
         />
         <input
           type="text"
           placeholder={placeholder}
           value={value || ''}
           onChange={(e) => handleInputChange(e.target.value, type)}
-          className="w-full pl-11 pr-24 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-400"
+          className="w-full pl-11 pr-24 py-3 border border-gray-300 rounded-lg outline-none transition-all text-gray-900 placeholder-gray-400"
+          style={{
+            focusBorderColor: brandColors.primary,
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = brandColors.primary;
+            e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = '#d1d5db';
+            e.target.style.boxShadow = 'none';
+          }}
         />
         <button
           type="button"
           onClick={() => useCurrentLocation(type)}
           disabled={gettingLocation}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#3A0A21] hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
+          style={{ color: brandColors.primary }}
           title="Use current location"
         >
           {gettingLocation ? (
@@ -421,7 +444,7 @@ export default function InputLocation({
         'pickup',
         pickupAddress,
         'Enter pickup location',
-        'text-[#3A0A21]'
+        brandColors.primary
       )}
 
       {/* Dropoff Input */}
@@ -429,13 +452,16 @@ export default function InputLocation({
         'dropoff',
         dropoffAddress,
         'Enter dropoff location',
-        'text-red-500'
+        brandColors.accent
       )}
 
       {/* Route Calculation Loading */}
       {calculatingRoute && (
         <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#3A0A21] border-t-transparent"></div>
+          <div 
+            className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-transparent"
+            style={{ borderColor: `${brandColors.primary}40`, borderTopColor: 'transparent' }}
+          ></div>
           <p className="mt-2 text-gray-600 text-sm">Calculating optimal route...</p>
         </div>
       )}
@@ -446,7 +472,10 @@ export default function InputLocation({
         <button
           onClick={onCalculate}
           disabled={!pickup || !dropoff || calculatingRoute}
-          className="w-full py-4 bg-[#3A0A21] text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-90 transition-all transform active:scale-[0.98]"
+          className="w-full py-4 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+          style={{
+            background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+          }}
         >
           {calculatingRoute ? (
             <span className="flex items-center justify-center gap-2">
