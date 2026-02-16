@@ -1,15 +1,15 @@
 'use client';
 import { useState } from 'react';
-import { Menu, History, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { Menu, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { formatNairaSimple } from '@/hooks/currency';
 import { useCourierDelivery } from '@/hooks/useCourierDelivery';
 import Profile from '../setting/Profile';
 import PickupCodeModal from '../Agencytrack/PickupCodeModal';
 import DropoffOTPModal from '../Agencytrack/DropoffOTPModal';
-import CourierSidebar from './CourierSidebar';
-import CourierPendingDelivery from './CourierPendingDelivery';
-import CourierActiveDelivery from './CourierActiveDelivery';
+import Couriersidebar from './Couriersidebar';
+import Courierpendingdelivery from './Courierpendingdelivery';
+import CourierActiveDelivery from './Courieractivedelivery';
 import CourierHistory from './CourierHistory';
 
 const TrackCourierDelivery = () => {
@@ -103,7 +103,7 @@ const TrackCourierDelivery = () => {
     switch (activePage) {
       case 'deliveries':
         return (
-          <CourierPendingDelivery
+          <Courierpendingdelivery
             deliveries={pendingDeliveries}
             allDeliveries={allDeliveries}
             loading={loading}
@@ -245,7 +245,7 @@ const TrackCourierDelivery = () => {
         )}
 
         {/* Sidebar */}
-        <CourierSidebar
+        <Couriersidebar
           activePage={activePage}
           setActivePage={setActivePage}
           sidebarOpen={sidebarOpen}

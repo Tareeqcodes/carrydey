@@ -2,7 +2,7 @@
 import { Package, MapPin, CheckCircle, DollarSign, Clock, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
-const CourierPendingDelivery = ({
+const Courierpendingdelivery = ({
   deliveries,
 //   allDeliveries,
   loading,
@@ -269,4 +269,4 @@ const CourierPendingDelivery = ({
   );
 };
 
-export default CourierPendingDelivery;
+export default Courierpendingdelivery;

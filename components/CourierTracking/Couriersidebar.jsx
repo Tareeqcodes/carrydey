@@ -1,7 +1,7 @@
 'use client';
 import { Package, Truck, History, DollarSign, User } from 'lucide-react';
 
-const CourierSidebar = ({
+const Couriersidebar = ({
   activePage,
   setActivePage,
   sidebarOpen,
@@ -106,4 +106,4 @@ const CourierSidebar = ({
   );
 };
 
-export default CourierSidebar;
+export default Couriersidebar;
