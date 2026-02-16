@@ -219,7 +219,7 @@ const TrackCourierDelivery = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Header */}
+     
       <header className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -236,15 +236,13 @@ const TrackCourierDelivery = () => {
       </header>
 
       <div className="flex max-w-7xl mx-auto">
-        {/* Sidebar Overlay */}
+       
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
-
-        {/* Sidebar */}
         <Couriersidebar
           activePage={activePage}
           setActivePage={setActivePage}
@@ -258,15 +256,12 @@ const TrackCourierDelivery = () => {
         </main>
       </div>
 
-      {/* Pickup Code Confirmation Modal */}
       <PickupCodeModal
         isOpen={selectedDeliveryForPickup !== null}
         onClose={() => setSelectedDeliveryForPickup(null)}
         onConfirm={handleConfirmPickup}
         deliveryId={selectedDeliveryForPickup}
       />
-
-      {/* Dropoff OTP Confirmation Modal */}
       <DropoffOTPModal
         isOpen={selectedDeliveryForDropoff !== null}
         onClose={() => setSelectedDeliveryForDropoff(null)}

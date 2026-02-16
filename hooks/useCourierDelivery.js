@@ -202,7 +202,7 @@ export const useCourierDelivery = (userId) => {
         rowId: deliveryId,
         data: {
           status: 'delivered',
-          deliveredAt: new Date().toISOString(),
+          $createdAt: new Date().toISOString(),
         }
       });
 

@@ -128,7 +128,6 @@ const TrackAgencyDelivery = () => {
   const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
     const result = await updateDeliveryStatus(deliveryId, newStatus);
 
-    // Refresh drivers list to sync status changes
     if (result?.success && (newStatus === 'delivered' || newStatus === 'cancelled')) {
       await fetchDrivers();
       await refreshDeliveries();
@@ -137,19 +136,16 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  // Updated confirm delivery to refresh drivers
   const handleConfirmDelivery = async (deliveryId, otp) => {
     const result = await confirmDelivery(deliveryId, otp);
     
     if (result?.success) {
-      // Refresh drivers to show updated status
       await fetchDrivers();
     }
     
     return result;
   };
 
-  // Open assignment modal for a specific delivery
   const handleOpenAssignmentModal = (delivery) => {
     setAssignmentModal({
       isOpen: true,
@@ -255,10 +251,10 @@ const TrackAgencyDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen pb-14 bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Top Navigation */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 sm:px-6 lg:px-8">
+      <header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -270,16 +266,14 @@ const TrackAgencyDelivery = () => {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar Overlay */}
+      <div className="flex max-w-7xl mx-auto">
+       
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
             sidebarOpen ? 'block' : 'hidden'
           }`}
           onClick={() => setSidebarOpen(false)}
         />
-
-        {/* Sidebar */}
         <Sidebar
           activePage={activePage}
           onPageChange={(page) => {
