@@ -43,7 +43,6 @@ const TrackPageLoading = () => {
             <div className="h-4 w-96 bg-gradient-to-r from-gray-200 to-gray-300 rounded animate-pulse"></div>
           </div>
 
-          {/* Summary Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {[
               { from: 'from-blue-100', to: 'to-blue-200' },

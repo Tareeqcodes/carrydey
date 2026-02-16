@@ -31,7 +31,6 @@ export const useCourierDelivery = (userId) => {
     }
 
     try {
-      // Fetch assigned deliveries (accepted, picked_up, in_transit, delivered, cancelled)
       const assignedRes = await tablesDB.listRows({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
