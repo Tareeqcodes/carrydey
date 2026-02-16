@@ -2,9 +2,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import TrackAgencyDelivery from '@/components/Agencytrack/TrackAgencyDelivery';
-import TrackCourierDelivery from '@/components/Tracking/TrackCourierDelivery';
+import TrackCourierDelivery from '@/components/CourierTracking/TrackCourierDelivery';
 import TrackSenderDelivery from '@/components/SenderTracking/TrackSenderDelivery';
-import TrackPageLoading from '@/components/Tracking/TrackPageLoading';
+import TrackPageLoading from '@/components/CourierTracking/TrackPageLoading';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/Authcontext';
 

@@ -30,17 +30,52 @@ export const useCourierDelivery = (userId) => {
       return;
     }
 
-    const res = await tablesDB.listRows({
-      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-      tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-      queries: [
-        Query.equal('assignedCourierId', courierId),
-        Query.orderDesc('$createdAt'),
-        Query.limit(100),
-      ],
-    });
+    try {
+      // Fetch assigned deliveries (accepted, picked_up, in_transit, delivered, cancelled)
+      const assignedRes = await tablesDB.listRows({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        queries: [
+          Query.equal('assignedCourierId', courierId),
+          Query.orderDesc('$createdAt'),
+          Query.limit(100),
+        ],
+      });
 
-    setDeliveries(res.rows || []);
+      // Fetch pending deliveries (available for all couriers)
+      const pendingRes = await tablesDB.listRows({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        queries: [
+          Query.equal('status', 'pending'),
+          Query.orderDesc('$createdAt'),
+          Query.limit(50),
+        ],
+      });
+
+      // Combine both results, removing duplicates
+      const assignedDeliveries = assignedRes.rows || [];
+      const pendingDeliveries = pendingRes.rows || [];
+      
+      const allDeliveries = [...assignedDeliveries];
+      
+      // Add pending deliveries that aren't already in the list
+      pendingDeliveries.forEach(pending => {
+        if (!allDeliveries.find(d => d.$id === pending.$id)) {
+          allDeliveries.push(pending);
+        }
+      });
+
+      // Sort by creation date
+      allDeliveries.sort((a, b) => 
+        new Date(b.$createdAt) - new Date(a.$createdAt)
+      );
+
+      setDeliveries(allDeliveries);
+    } catch (err) {
+      console.error('Error fetching deliveries:', err);
+      throw err;
+    }
   };
    
   useEffect(() => {
@@ -74,6 +109,8 @@ export const useCourierDelivery = (userId) => {
       const request = deliveries.find((r) => r.$id === requestId);
       if (!request) return { success: false, error: 'Request not found' };
 
+      if (!courier) return { success: false, error: 'Courier profile not found' };
+
       // Generate codes
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
@@ -85,6 +122,7 @@ export const useCourierDelivery = (userId) => {
         rowId: requestId,
         data: {
           status: 'accepted',
+          assignedCourierId: courier.$id,
           pickupCode: pickupCode,
           dropoffOTP: dropoffOTP,
         }
@@ -165,6 +203,7 @@ export const useCourierDelivery = (userId) => {
         rowId: deliveryId,
         data: {
           status: 'delivered',
+          deliveredAt: new Date().toISOString(),
         }
       });
 
