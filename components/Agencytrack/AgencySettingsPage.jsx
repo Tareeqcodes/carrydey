@@ -100,7 +100,6 @@ const AgencySettingsPage = () => {
         const agency = response.rows[0];
         setAgencyData(agency);
 
-        // Parse brand colors if they exist
         let brandColors = {
           primary: '#3A0A21',
           secondary: '#5A1A41',
@@ -165,14 +164,12 @@ const AgencySettingsPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please upload an image file');
       setTimeout(() => setError(null), 3000);
       return;
     }
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       setError('Image size should be less than 2MB');
       setTimeout(() => setError(null), 3000);
@@ -194,7 +191,6 @@ const AgencySettingsPage = () => {
         }
       }
 
-      // Upload new logo
       const fileId = ID.unique();
       const uploadedFile = await storage.createFile({
         bucketId: process.env.NEXT_PUBLIC_APPWRITE_LOGO_BUCKET_ID,
