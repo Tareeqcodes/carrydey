@@ -94,7 +94,9 @@ const Navbar = () => {
 
   const hiddenNavbarRoutes = [
     '/AgencyBooking/',           // Agency booking pages
-    '/bookconfirm/',    // Booking confirmation pages (optional - remove if you want navbar here)
+    '/bookconfirm/', 
+    
+       // Booking confirmation pages (optional - remove if you want navbar here)
   ];
 
   // Check if current pathname matches any hidden route

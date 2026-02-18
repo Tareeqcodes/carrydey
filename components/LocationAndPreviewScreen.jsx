@@ -18,20 +18,20 @@ const RouteMapPreview = dynamic(() => import('../hooks/RouteMapPreview'), {
   ),
 });
 
-const formatDuration = (minutes) => {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
+// const formatDuration = (minutes) => {
+//   if (minutes < 60) {
+//     return `${minutes} min`;
+//   }
   
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
+//   const hours = Math.floor(minutes / 60);
+//   const remainingMinutes = minutes % 60;
   
-  if (remainingMinutes === 0) {
-    return `${hours} hr${hours > 1 ? 's' : ''}`;
-  }
+//   if (remainingMinutes === 0) {
+//     return `${hours} hr${hours > 1 ? 's' : ''}`;
+//   }
   
-  return `${hours} hr${hours > 1 ? 's' : ''} ${remainingMinutes} min`;
-};
+//   return `${hours} hr${hours > 1 ? 's' : ''} ${remainingMinutes} min`;
+// };
 
 export default function LocationAndPreviewScreen({
   pickup,

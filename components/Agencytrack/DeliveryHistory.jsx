@@ -187,7 +187,7 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-10">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-xl font-bold text-gray-900 tracking-tight mb-1">Delivery History</h1>

@@ -1,33 +1,40 @@
 'use client';
+import { formatNairaSimple } from '@/hooks/currency';
 import { useBrandColors } from '@/hooks/BrandColors';
 
-export default function StickyConfirmBar({ isValid, loading, onConfirm }) {
+export default function StickyConfirmBar({ isValid, loading, onConfirm, fareDetails }) {
   const { brandColors } = useBrandColors();
 
+  const paymentLabel = {
+    cash_on_pickup: 'Cash on pickup',
+    pay_now: 'Card · Pay now',
+  }[fareDetails?.paymentMethod] || '';
+
   return (
-    <div className="pb-28 bg-white border-t border-gray-200 p-4 max-w-3xl mx-auto">
-      <div className="max-w-3xl mx-auto">
-        <button
-          onClick={onConfirm}
-          disabled={!isValid || loading}
-          className="group px-8 py-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg transition-all text-lg min-w-[200px]"
-          style={{
-            background: isValid && !loading
-              ? `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`
-              : undefined,
-          }}
-          onMouseEnter={(e) => {
-            if (isValid && !loading) {
-              e.currentTarget.style.transform = 'scale(1.02)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          {loading ? 'Creating Delivery...' : 'Confirm & Continue'}
-        </button>
-      </div>
+    <div
+      className="sticky bottom-0 left-0 right-0 px-5 pt-6  max-w-md mx-auto"
+      style={{ background: 'linear-gradient(to top, white 75%, transparent)' }}
+    >
+      {isValid && paymentLabel && (
+        <div className="flex justify-between items-center mb-3 px-1">
+          <p className="text-xs text-gray-400">{paymentLabel}</p>
+          <p className="text-sm font-bold text-gray-900">
+            {formatNairaSimple(fareDetails?.offeredFare)}
+          </p>
+        </div>
+      )}
+
+      <button
+        onClick={onConfirm}
+        disabled={!isValid || loading}
+        className="w-full py-4 rounded-2xl text-sm font-bold transition-all disabled:cursor-not-allowed"
+        style={{
+          background: isValid && !loading ? brandColors.primary : '#e5e7eb',
+          color: isValid && !loading ? 'white' : '#9ca3af',
+        }}
+      >
+        {loading ? 'Creating…' : 'Confirm & continue'}
+      </button>
     </div>
   );
 }

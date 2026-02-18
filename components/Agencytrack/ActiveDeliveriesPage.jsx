@@ -2,29 +2,76 @@
 import React, { useState } from 'react';
 import { Package, Search } from 'lucide-react';
 import ActiveDeliveryCard from './ActiveDeliveryCard';
-import PickupCodeModal from './PickupCodeModal'; 
+import PickupCodeModal from './PickupCodeModal';
 import DropoffOTPModal from './DropoffOTPModal';
 
-const ActiveDeliveriesPage = ({ 
-  activeDeliveries, 
+const SECTIONS = [
+  {
+    key: 'pending',
+    title: 'Awaiting Assignment',
+    statuses: ['pending_assignment', 'accepted'],
+    showAssignButton: true,
+    accent: '#F59E0B',
+    bg: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  {
+    key: 'assigned',
+    title: 'Assigned to Driver',
+    statuses: ['assigned'],
+    showAssignButton: false,
+    accent: '#2563EB',
+    bg: '#EFF6FF',
+    borderColor: '#BFDBFE',
+  },
+  {
+    key: 'picked_up',
+    title: 'Picked Up',
+    statuses: ['picked_up'],
+    showAssignButton: false,
+    accent: '#7C3AED',
+    bg: '#F5F3FF',
+    borderColor: '#DDD6FE',
+  },
+  {
+    key: 'in_transit',
+    title: 'In Transit',
+    statuses: ['in_transit'],
+    showAssignButton: false,
+    accent: '#4F46E5',
+    bg: '#EEF2FF',
+    borderColor: '#C7D2FE',
+  },
+];
+
+const ActiveDeliveriesPage = ({
+  activeDeliveries,
   onAssign,
   onConfirmPickup,
   onConfirmDelivery,
   onUpdateStatus,
 }) => {
-  const [selectedDeliveryForPickup, setSelectedDeliveryForPickup] = useState(null);
-  const [selectedDeliveryForDropoff, setSelectedDeliveryForDropoff] = useState(null);
+  const [selectedDeliveryForPickup, setSelectedDeliveryForPickup] =
+    useState(null);
+  const [selectedDeliveryForDropoff, setSelectedDeliveryForDropoff] =
+    useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const pendingDeliveries = activeDeliveries.filter((d) => d.status === 'pending_assignment' || d.status === 'accepted');
-  const assignedDeliveries = activeDeliveries.filter((d) => d.status === 'assigned');
-  const pickedUpDeliveries = activeDeliveries.filter((d) => d.status === 'picked_up');
-  const inTransitDeliveries = activeDeliveries.filter((d) => d.status === 'in_transit');
+
+  const filtered = searchQuery.trim()
+    ? activeDeliveries.filter((d) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          (d.driverName || '').toLowerCase().includes(q) ||
+          (d.pickup || '').toLowerCase().includes(q) ||
+          (d.dropoff || '').toLowerCase().includes(q) ||
+          (d.packageSize || '').toLowerCase().includes(q)
+        );
+      })
+    : activeDeliveries;
 
   const handleConfirmPickup = async (deliveryId, pickupCode) => {
     if (onConfirmPickup) {
       const result = await onConfirmPickup(deliveryId, pickupCode);
-      
       if (result?.success) {
         alert('Pickup confirmed successfully!');
       } else {
@@ -36,7 +83,6 @@ const ActiveDeliveriesPage = ({
   const handleConfirmDelivery = async (deliveryId, otp) => {
     if (onConfirmDelivery) {
       const result = await onConfirmDelivery(deliveryId, otp);
-      
       if (result?.success) {
         alert('Delivery completed successfully!');
       } else {
@@ -51,29 +97,43 @@ const ActiveDeliveriesPage = ({
     }
   };
 
-  const DeliverySection = ({ title, count, deliveries, showAssignButton = false, bgColor = 'bg-gray-50' }) => {
+  const DeliverySection = ({ section, deliveries }) => {
     if (deliveries.length === 0) return null;
 
     return (
-      <div className="mb-3">
-        {/* Section Header */}
-        <div className={`sticky top-[57px] ${bgColor} z-10 px-3 py-2 border-b border-gray-200`}>
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
-            <span className="text-xs font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">{count}</span>
+      <div className="mb-4 mx-auto ">
+        <div
+          className="sticky top-[57px] z-10 flex items-center justify-between px-4 py-2"
+          style={{
+            background: section.bg,
+            borderBottom: `2px solid ${section.accent}20`,
+            borderTop: `1px solid ${section.borderColor}`,
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <h3
+              className="text-[10px] font-black uppercase tracking-widest"
+              style={{ color: section.accent }}
+            >
+              {section.title}
+            </h3>
           </div>
         </div>
-        
-        {/* Deliveries List */}
-        <div className="space-y-1.5 p-2">
+
+        {/* Cards */}
+        <div className="space-y-2 px-4 pt-2">
           {deliveries.map((delivery) => (
-            <ActiveDeliveryCard 
-              key={delivery.id || delivery.$id} 
+            <ActiveDeliveryCard
+              key={delivery.id || delivery.$id}
               delivery={delivery}
-              showAssignButton={showAssignButton}
+              showAssignButton={section.showAssignButton}
               onAssign={onAssign}
-              onConfirmPickup={() => setSelectedDeliveryForPickup(delivery.id || delivery.$id)}
-              onConfirmDelivery={() => setSelectedDeliveryForDropoff(delivery.id || delivery.$id)}
+              onConfirmPickup={() =>
+                setSelectedDeliveryForPickup(delivery.id || delivery.$id)
+              }
+              onConfirmDelivery={() =>
+                setSelectedDeliveryForDropoff(delivery.id || delivery.$id)
+              }
               onStartDelivery={handleStartDelivery}
             />
           ))}
@@ -84,70 +144,74 @@ const ActiveDeliveriesPage = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-        <div className="px-3 py-3">
-          <h1 className="text-base font-bold text-gray-900">Active Deliveries</h1>
-          
+      {/* Sticky Page Header */}
+      <div className="sticky top-0 z-20">
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1
+                className="text-lg font-black text-gray-900"
+                style={{ letterSpacing: '-0.5px' }}
+              >
+                Active Deliveries
+              </h1>
+            </div>
+          </div>
         </div>
-        
-        {/* Search Bar */}
+
         {activeDeliveries.length > 5 && (
-          <div className="px-3 pb-3">
+          <div className="px-4 pb-3">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by driver, package..."
+                placeholder="Search driver, pickup, dropoff..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
         )}
       </div>
 
-      {/* Empty State */}
+      {/* Empty state */}
       {activeDeliveries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center px-4 py-16">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+        <div className="flex flex-col items-center justify-center px-4 py-20">
+          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-3">
             <Package className="w-6 h-6 text-gray-400" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">No Active Deliveries</h3>
-          <p className="text-xs text-gray-500">Accepted deliveries will appear here</p>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">
+            No Active Deliveries
+          </h3>
+          <p className="text-xs text-gray-500">
+            Accepted deliveries will appear here
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center px-4 py-20">
+          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <Search className="w-6 h-6 text-gray-400" />
+          </div>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">
+            No results found
+          </h3>
+          <p className="text-xs text-gray-500">Try a different search term</p>
         </div>
       ) : (
-        /* Delivery Sections */
-        <div className="pb-20">
-          <DeliverySection 
-            title="Awaiting Assignment" 
-            count={pendingDeliveries.length}
-            deliveries={pendingDeliveries}
-            showAssignButton={true}
-            bgColor="bg-amber-50"
-          />
-          
-          <DeliverySection 
-            title="Assigned to Driver" 
-            count={assignedDeliveries.length}
-            deliveries={assignedDeliveries}
-            bgColor="bg-blue-50"
-          />
-          
-          <DeliverySection 
-            title="Picked Up" 
-            count={pickedUpDeliveries.length}
-            deliveries={pickedUpDeliveries}
-            bgColor="bg-purple-50"
-          />
-          
-          <DeliverySection 
-            title="In Transit" 
-            count={inTransitDeliveries.length}
-            deliveries={inTransitDeliveries}
-            bgColor="bg-indigo-50"
-          />
+        <div className="pb-24 pt-3">
+          {SECTIONS.map((section) => {
+            const deliveries = filtered.filter((d) =>
+              section.statuses.includes(d.status)
+            );
+            return (
+              <DeliverySection
+                key={section.key}
+                section={section}
+                deliveries={deliveries}
+              />
+            );
+          })}
         </div>
       )}
 

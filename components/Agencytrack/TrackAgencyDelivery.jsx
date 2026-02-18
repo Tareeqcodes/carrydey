@@ -20,6 +20,7 @@ const TrackAgencyDelivery = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [addDriverModalOpen, setAddDriverModalOpen] = useState(false);
+  const [driverToEdit, setDriverToEdit] = useState(null);
   const { user } = useAuth();
 
   const {
@@ -34,6 +35,7 @@ const TrackAgencyDelivery = () => {
     loading: driversLoading,
     error: driversError,
     addDriver,
+    updateDriver,
     fetchDrivers,
     toggleDriverStatus,
     assignDriverToDelivery,
@@ -74,7 +76,25 @@ const TrackAgencyDelivery = () => {
   }, [activeDeliveries.length, completedDeliveries.length]);
 
   const handleAddDriverClick = () => {
+    setDriverToEdit(null);
     setAddDriverModalOpen(true);
+  };
+
+  const handleEditDriverClick = (driver) => {
+    setDriverToEdit(driver);
+    setAddDriverModalOpen(true);
+  };
+
+  const handleCloseDriverModal = () => {
+    setAddDriverModalOpen(false);
+    setDriverToEdit(null);
+  };
+
+  const handleDriverModalSubmit = async (driverData) => {
+    if (driverToEdit) {
+      return await updateDriver(driverToEdit.$id, driverData);
+    }
+    return await addDriver(driverData);
   };
 
   const handleAcceptRequest = async (requestId) => {
@@ -128,21 +148,24 @@ const TrackAgencyDelivery = () => {
   const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
     const result = await updateDeliveryStatus(deliveryId, newStatus);
 
-    if (result?.success && (newStatus === 'delivered' || newStatus === 'cancelled')) {
+    if (
+      result?.success &&
+      (newStatus === 'delivered' || newStatus === 'cancelled')
+    ) {
       await fetchDrivers();
       await refreshDeliveries();
     }
-    
+
     return result;
   };
 
   const handleConfirmDelivery = async (deliveryId, otp) => {
     const result = await confirmDelivery(deliveryId, otp);
-    
+
     if (result?.success) {
       await fetchDrivers();
     }
-    
+
     return result;
   };
 
@@ -203,7 +226,7 @@ const TrackAgencyDelivery = () => {
             onAssign={handleOpenAssignmentModal}
             onUpdateStatus={handleUpdateDeliveryStatus}
             onNavigateToTracking={() => setActivePage('tracking')}
-            onConfirmPickup={confirmPickup} 
+            onConfirmPickup={confirmPickup}
             onConfirmDelivery={handleConfirmDelivery}
           />
         );
@@ -211,12 +234,14 @@ const TrackAgencyDelivery = () => {
       case 'drivers':
         return (
           <DriversPage
-            drivers={drivers} 
+            drivers={drivers}
             loading={driversLoading}
             error={driversError}
             activeDeliveries={activeDeliveries}
             onAddDriver={handleAddDriverClick}
+            onClose={handleCloseDriverModal}
             onToggleStatus={toggleDriverStatus}
+            onEditDriver={handleEditDriverClick}
             onAssignDelivery={handleOpenAssignmentModal}
           />
         );
@@ -251,7 +276,7 @@ const TrackAgencyDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen pb-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Top Navigation */}
       <header>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -267,7 +292,6 @@ const TrackAgencyDelivery = () => {
       </header>
 
       <div className="flex max-w-7xl mx-auto">
-       
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
             sidebarOpen ? 'block' : 'hidden'
@@ -286,7 +310,7 @@ const TrackAgencyDelivery = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
-      </div> 
+      </div>
 
       <AssignmentModal
         isOpen={assignmentModal.isOpen}
@@ -305,14 +329,15 @@ const TrackAgencyDelivery = () => {
             deliveryDetails: null,
           })
         }
-        onAddDriver={() => setAddDriverModalOpen(true)}
+        onAddDriver={handleAddDriverClick}
       />
       <AddDriverModal
         isOpen={addDriverModalOpen}
         onClose={() => setAddDriverModalOpen(false)}
-        onAddDriver={addDriver}
+        onAddDriver={handleDriverModalSubmit}
         agencyId={agencyId}
         loading={driversLoading}
+        driverToEdit={driverToEdit}
       />
     </div>
   );

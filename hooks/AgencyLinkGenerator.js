@@ -42,8 +42,7 @@ export default function AgencyLinkGenerator({ agencyId }) {
     <div className="relative">
       {/* Link Display Section */}
       <div className="relative group"> 
-        {/* Glow Effect on Hover */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 via-white/10 to-white/20 rounded-2xl opacity-0 group-hover:opacity-100 blur transition-opacity duration-500" />
+       
         
         <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 shadow-2xl">
           <div className="flex items-center justify-between mb-3">
@@ -51,7 +50,7 @@ export default function AgencyLinkGenerator({ agencyId }) {
               <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
                 <ExternalLink className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xs font-bold text-white/80 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-white/80 uppercase tracking-wider">
                 Your Link
               </span>
             </div>
@@ -125,8 +124,6 @@ export default function AgencyLinkGenerator({ agencyId }) {
           onClick={handleShareLink}
           className="relative overflow-hidden group bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300"
         >
-          {/* Shimmer Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           
           <div className="relative flex items-center justify-center gap-2">
             <Share2 className="w-4 h-4 text-white" />
@@ -147,9 +144,7 @@ export default function AgencyLinkGenerator({ agencyId }) {
         <div className="absolute inset-[1px] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl" />
         
         <div className="relative p-4 flex items-start gap-3">
-          {/* <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div> */}
+         
           <div className="flex-1">
             <p className="text-xs font-semibold text-gray-900 mb-1">
               Quick Tip

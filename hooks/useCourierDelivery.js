@@ -41,7 +41,6 @@ export const useCourierDelivery = (userId) => {
         ],
       });
 
-      // Fetch pending deliveries (available for all couriers)
       const pendingRes = await tablesDB.listRows({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
@@ -52,22 +51,18 @@ export const useCourierDelivery = (userId) => {
         ],
       });
 
-      // Combine both results, removing duplicates
       const assignedDeliveries = assignedRes.rows || [];
-      const pendingDeliveries = pendingRes.rows || [];
-      
+      const pendingDeliveries  = pendingRes.rows  || [];
+
       const allDeliveries = [...assignedDeliveries];
-      
-      // Add pending deliveries that aren't already in the list
-      pendingDeliveries.forEach(pending => {
-        if (!allDeliveries.find(d => d.$id === pending.$id)) {
+      pendingDeliveries.forEach((pending) => {
+        if (!allDeliveries.find((d) => d.$id === pending.$id)) {
           allDeliveries.push(pending);
         }
       });
 
-      // Sort by creation date
-      allDeliveries.sort((a, b) => 
-        new Date(b.$createdAt) - new Date(a.$createdAt)
+      allDeliveries.sort(
+        (a, b) => new Date(b.$createdAt) - new Date(a.$createdAt)
       );
 
       setDeliveries(allDeliveries);
@@ -76,7 +71,7 @@ export const useCourierDelivery = (userId) => {
       throw err;
     }
   };
-   
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -100,79 +95,60 @@ export const useCourierDelivery = (userId) => {
     load();
   }, [userId]);
 
-  /**
-   * Accept a delivery request and generate OTP codes
-   */
   const acceptRequest = async (requestId) => {
     try {
       const request = deliveries.find((r) => r.$id === requestId);
-      if (!request) return { success: false, error: 'Request not found' };
+      if (!request)  return { success: false, error: 'Request not found' };
+      if (!courier)  return { success: false, error: 'Courier profile not found' };
 
-      if (!courier) return { success: false, error: 'Courier profile not found' };
-
-      // Generate codes
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
 
-      // Update the delivery in Appwrite
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: requestId,
+        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId:      requestId,
         data: {
-          status: 'accepted',
+          status:            'accepted',
           assignedCourierId: courier.$id,
-          pickupCode: pickupCode,
-          dropoffOTP: dropoffOTP,
-        }
+          pickupCode,
+          dropoffOTP,
+          driverName:  courier.userName,
+          driverPhone: courier.phone ?? null,
+        },
       });
 
-      // Update local state
-      setDeliveries(prev => 
-        prev.map(delivery => 
+      setDeliveries((prev) =>
+        prev.map((delivery) =>
           delivery.$id === requestId ? { ...delivery, ...response } : delivery
         )
       );
 
-      return { 
-        success: true, 
-        data: response,
-        pickupCode,
-        dropoffOTP
-      };
+      return { success: true, data: response, pickupCode, dropoffOTP };
     } catch (err) {
       console.error('Error accepting request:', err);
       return { success: false, error: err.message };
     }
   };
 
-  /**
-   * Confirm pickup with code
-   */
   const confirmPickup = async (deliveryId, enteredCode) => {
     try {
-      const delivery = deliveries.find(d => d.$id === deliveryId);
+      const delivery = deliveries.find((d) => d.$id === deliveryId);
       if (!delivery) return { success: false, error: 'Delivery not found' };
 
-      // Verify pickup code
       if (delivery.pickupCode !== enteredCode.toUpperCase()) {
         return { success: false, error: 'Invalid pickup code' };
       }
 
-      // Update delivery status
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: deliveryId,
-        data: {
-          status: 'picked_up',
-        }
+        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId:      deliveryId,
+        data: { status: 'picked_up' },
       });
 
-      setDeliveries(prev =>
-        prev.map(d =>
-          d.$id === deliveryId ? { ...d, ...response } : d
-        )
+      setDeliveries((prev) =>
+        prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
 
       return { success: true, data: response };
@@ -182,34 +158,28 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
-  /**
-   * Confirm delivery with OTP
-   */
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
-      const delivery = deliveries.find(d => d.$id === deliveryId);
+      const delivery = deliveries.find((d) => d.$id === deliveryId);
       if (!delivery) return { success: false, error: 'Delivery not found' };
 
-      // Verify OTP
       if (delivery.dropoffOTP !== enteredOTP) {
         return { success: false, error: 'Invalid OTP code' };
       }
 
-      // Update delivery status
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: deliveryId,
+        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId:      deliveryId,
         data: {
-          status: 'delivered',
-          $createdAt: new Date().toISOString(),
-        }
+          status:      'delivered',
+          driverName:  null,
+          driverPhone: null,
+        },
       });
 
-      setDeliveries(prev =>
-        prev.map(d =>
-          d.$id === deliveryId ? { ...d, ...response } : d
-        )
+      setDeliveries((prev) =>
+        prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
 
       return { success: true, data: response };
@@ -219,22 +189,17 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
-  /**
-   * Update delivery status
-   */
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
     try {
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: deliveryId,
-        data: {
-          status: newStatus,
-        }
+        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId:      deliveryId,
+        data: { status: newStatus },
       });
 
-      setDeliveries(prev =>
-        prev.map(delivery =>
+      setDeliveries((prev) =>
+        prev.map((delivery) =>
           delivery.$id === deliveryId
             ? { ...delivery, ...response }
             : delivery

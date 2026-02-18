@@ -96,15 +96,11 @@ export default function CreateDelivery() {
         distance: parseFloat(routeData.distance),
         duration: parseInt(routeData.duration),
         status: 'pending',
-
         pickupContactName: packageDetails?.pickupContact?.pickupContactName,
         pickupPhone: packageDetails?.pickupContact?.pickupPhone,
-
-        pickupInstructions: packageDetails?.pickupContact?.pickupInstructions,
-
+        // pickupInstructions: packageDetails?.pickupContact?.pickupInstructions,
         dropoffContactName: packageDetails?.dropoffContact?.dropoffContactName,
         dropoffPhone: packageDetails?.dropoffContact?.dropoffPhone,
-
         dropoffInstructions:
           packageDetails?.dropoffContact?.dropoffInstructions,
         recipientPermission:
@@ -121,7 +117,7 @@ export default function CreateDelivery() {
         pickupTime: packageDetails?.pickupTime || 'courier',
         userId: user.$id,
         assignedAgencyId: null,
-        // trackingToken: trackingToken,
+        paymentMethod: fareDetails.paymentMethod,
       };
 
       const result = await tablesDB.createRow({

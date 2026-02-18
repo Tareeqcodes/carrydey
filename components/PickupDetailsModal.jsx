@@ -17,7 +17,7 @@ export default function PickupDetailsModal({
     pickupContactName:
       initialData?.pickupContactName || userData?.userName || '',
     pickupPhone: initialData?.pickupPhone || userData?.phone || '',
-    pickupInstructions: initialData?.pickupInstructions || '',
+    // pickupInstructions: initialData?.pickupInstructions || '',
   });
 
   const handleInputChange = (e) => {
@@ -132,7 +132,7 @@ export default function PickupDetailsModal({
               </div>
             </div>
 
-            <div className="mt-4">
+            {/* <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Helps the courier locate you faster (recommended)
               </label>
@@ -155,7 +155,7 @@ export default function PickupDetailsModal({
               <p className="text-xs text-gray-500 mt-1">
                 Add nearby landmarks, building names, or specific location details
               </p>
-            </div>
+            </div> */}
 
             {/* SUBMIT BUTTON */}
             <div className="pt-4">

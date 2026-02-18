@@ -9,6 +9,12 @@ export function usePackageValidation(packageDetails, fareDetails) {
   if (fareDetails.offeredFare < fareDetails.suggestedFare) {
     errors.fare = `Minimum fare is ₦${fareDetails.suggestedFare.toLocaleString()}`;
   }
+
+  if (!fareDetails.paymentMethod) {
+  errors.paymentMethod = 'Please select a payment method';
+  // valid = false;
+}
+
   
   const isValid = 
     packageDetails.size && 

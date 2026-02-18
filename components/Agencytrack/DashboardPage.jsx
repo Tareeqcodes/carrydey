@@ -11,13 +11,13 @@ const DashboardPage = ({ activeDeliveries, drivers, onNavigateToTracking }) => {
   // ).length;
 
   return ( 
-    <div className="space-y-8 mb-32 px-3">
+    <div className="space-y-8 px-3 pb-16">
       {/* Page Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-xl pt-7 font-semibold text-gray-900 mb-2 tracking-tight">
+        <h1 className="text-xl pt-5 pl-4 font-semibold text-gray-900 mb-2 tracking-tight">
           Dashboard Overview
         </h1>
       </motion.div>

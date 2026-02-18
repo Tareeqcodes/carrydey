@@ -13,7 +13,7 @@ const RequestsPage = ({
   onDecline,
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <motion.div
@@ -25,7 +25,6 @@ const RequestsPage = ({
             <h1 className="text-lg md:text-xl font-semibold text-gray-900 tracking-tight">
               Manage incoming delivery requests
             </h1>
-            
           </div>
 
           <motion.button
@@ -36,7 +35,9 @@ const RequestsPage = ({
             className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50"
             title="Refresh requests"
           >
-            <RefreshCw className={`w-4 h-4 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 text-gray-600 ${loading ? 'animate-spin' : ''}`}
+            />
             <span className="text-sm font-medium text-gray-700">Refresh</span>
           </motion.button>
         </motion.div>
@@ -52,7 +53,9 @@ const RequestsPage = ({
               <div className="w-2 h-2 rounded-full bg-red-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-red-900">Error Loading Requests</p>
+              <p className="text-sm font-semibold text-red-900">
+                Error Loading Requests
+              </p>
               <p className="text-xs text-red-700 mt-0.5">{error}</p>
             </div>
           </motion.div>
@@ -66,7 +69,9 @@ const RequestsPage = ({
               <div className="w-16 h-16 rounded-full border-4 border-gray-100" />
               <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-t-gray-900 animate-spin" />
             </div>
-            <p className="text-sm text-gray-500 mt-4 font-medium">Loading requests...</p>
+            <p className="text-sm text-gray-500 mt-4 font-medium">
+              Loading requests...
+            </p>
           </div>
         ) : deliveryRequests.length === 0 ? (
           // Empty State
@@ -83,7 +88,8 @@ const RequestsPage = ({
                 No Pending Requests
               </h3>
               <p className="text-sm text-gray-500 leading-relaxed">
-                New delivery requests will appear here. Check back later or refresh to see updates.
+                New delivery requests will appear here. Check back later or
+                refresh to see updates.
               </p>
             </div>
           </motion.div>
@@ -111,8 +117,6 @@ const RequestsPage = ({
             ))}
           </motion.div>
         )}
-
-        
       </div>
     </div>
   );

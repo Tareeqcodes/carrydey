@@ -246,7 +246,6 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
           </div>
         </div>
 
-        {/* Courier Info */}
         {delivery?.driverName && (
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border border-gray-200 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Assigned Courier</h3>
@@ -356,7 +355,6 @@ const SenderTrackingView = ({ delivery, onClose, onUpdateDelivery }) => {
           </div>
         </div>
 
-        {/* Verification Input */}
         <div>
           <label className="block text-sm font-bold text-gray-900 mb-3">
             Verify Pickup Code

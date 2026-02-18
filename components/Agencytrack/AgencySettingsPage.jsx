@@ -401,14 +401,7 @@ const AgencySettingsPage = () => {
                 Manage your logistics operations center
               </h1>
             </div>
-            {/* <div className="flex items-center gap-2">
-              <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-semibold text-blue-900">Operational</span>
-                </div>
-              </div>
-            </div> */}
+            
           </div>
         </motion.div>
 
@@ -487,10 +480,10 @@ const AgencySettingsPage = () => {
                         <Link2 className="w-7 h-7 text-white" />
                       </motion.div>
                       <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-white mb-1.5 tracking-tight">
+                        <h2 className="text-sm font-semibold text-white mb-1.5 tracking-tight">
                           Your Booking Link
                         </h2>
-                        <p className="text-white/70 text-sm leading-relaxed">
+                        <p className="text-white/70 text-xs leading-relaxed">
                           Share this link with customers to receive bookings
                         </p>
                       </div>
@@ -514,12 +507,10 @@ const AgencySettingsPage = () => {
                           <Building2 className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                          <h3 className="text-sm font-semibold text-gray-900 tracking-tight">
                             Agency Information
                           </h3>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Keep your details up to date
-                          </p>
+                          
                         </div>
                       </div>
 
@@ -699,7 +690,7 @@ const AgencySettingsPage = () => {
                         <ImageIcon className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                        <h3 className="text-sm font-bold text-gray-900 tracking-tight">
                           Agency Logo
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -713,7 +704,7 @@ const AgencySettingsPage = () => {
                       <div className="flex items-center gap-6">
                         <div className="relative group">
                           {formData.logoUrl ? (
-                            <div className="w-32 h-32 rounded-2xl border-2 border-gray-200 overflow-hidden bg-white shadow-sm">
+                            <div className="w-20 h-20 rounded-2xl border-2 border-gray-200 overflow-hidden bg-white shadow-sm">
                               <img
                                 src={formData.logoUrl}
                                 alt="Agency Logo"
@@ -721,7 +712,7 @@ const AgencySettingsPage = () => {
                               />
                             </div>
                           ) : (
-                            <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                            <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
                               <ImageIcon className="w-12 h-12 text-gray-400" />
                             </div>
                           )}
@@ -750,7 +741,7 @@ const AgencySettingsPage = () => {
                             ) : (
                               <>
                                 <Upload className="w-5 h-5" />
-                                <span>
+                                <span className="text-sm">
                                   {formData.logoUrl
                                     ? 'Change Logo'
                                     : 'Upload Logo'}
@@ -780,11 +771,11 @@ const AgencySettingsPage = () => {
                         <Palette className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                        <h3 className="text-sm font-semibold text-gray-900 tracking-tight">
                           Brand Colors
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          Customize your brand palette
+                          Customize your brand colors to match your identity
                         </p>
                       </div>
                     </div>
@@ -927,10 +918,10 @@ const AgencySettingsPage = () => {
                               </div>
                             )}
                             <div>
-                              <p className="font-bold text-white text-lg">
+                              <p className="font-semibold text-white text-xs tracking-tight">
                                 {formData.name || 'Your Agency'}
                               </p>
-                              <p className="text-white/80 text-sm">
+                              <p className="text-white/80 text-xs">
                                 {formData.tagline || 'Professional Logistics'}
                               </p>
                             </div>
@@ -951,7 +942,7 @@ const AgencySettingsPage = () => {
                       {/* Tagline */}
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Agency Tagline
+                         Your Tagline
                         </label>
                         <input
                           type="text"
@@ -1004,11 +995,11 @@ const AgencySettingsPage = () => {
                         <Clock className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                        <h3 className="text-sm font-semibold text-gray-900 tracking-tight">
                           Operational Details
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          Set your business hours and emergency contacts
+                          Set your business hours and prices to let customers know
                         </p>
                       </div>
                     </div>
@@ -1048,12 +1039,10 @@ const AgencySettingsPage = () => {
                         <DollarSign className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                        <h3 className="text-sm font-semibold text-gray-900 tracking-tight">
                           Pricing Structure
                         </h3>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Configure your delivery fees
-                        </p>
+                       
                       </div>
                     </div>
 

@@ -21,7 +21,6 @@ export const useDeliveryManagement = (agencyId) => {
   }, [agencyId]);
 
   const fetchActiveDeliveries = async () => {
-    // Validate agencyId before making the query
     if (!agencyId || typeof agencyId !== 'string') {
       console.error('Invalid agencyId:', agencyId);
       setError('Invalid agency ID');
@@ -39,7 +38,7 @@ export const useDeliveryManagement = (agencyId) => {
         queries: [
           Query.equal('assignedAgencyId', agencyId),
           Query.orderDesc('$createdAt'),
-          Query.limit(100), // Fetch more to include history
+          Query.limit(100),
         ],
       });
 

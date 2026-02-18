@@ -1,147 +1,67 @@
 'use client';
-import { AlertCircle } from 'lucide-react';
 import { useBrandColors } from '@/hooks/BrandColors';
 
-const packageSizes = [
-  {
-    id: 'small',
-    label: 'Small',
-    description: 'Fits in a backpack',
-    icon: '📦',
-    examples: 'Documents, phone, keys',
-  },
-  {
-    id: 'medium',
-    label: 'Medium',
-    description: 'Fits in a large bag',
-    icon: '📫',
-    examples: 'Clothes, shoes, books',
-  },
-  {
-    id: 'large',
-    label: 'Large',
-    description: 'Requires car trunk',
-    icon: '📮',
-    examples: 'Electronics, multiple items',
-  },
+const SIZES = [
+  { id: 'small',  label: 'Small',  sub: 'Backpack' },
+  { id: 'medium', label: 'Medium', sub: 'Large bag' },
+  { id: 'large',  label: 'Large',  sub: 'Car trunk' },
 ];
 
-export default function PackageSection({
-  packageDetails,
-  onPackageDetailChange,
-}) {
+export default function PackageSection({ packageDetails, onPackageDetailChange }) {
   const { brandColors } = useBrandColors();
 
   return (
-    <section className="space-y-4 bg-white p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="font-semibold text-gray-900">Package Size</h3>
-      </div>
+    <section>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Package</p>
 
-      <div className="grid grid-cols-1 gap-3">
-        {packageSizes.map((size) => (
-          <label
-            key={size.id}
-            className="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
-            style={
-              packageDetails.size === size.id
-                ? {
-                    borderColor: brandColors.primary,
-                    backgroundColor: `${brandColors.primary}0D`,
-                  }
-                : {
-                    borderColor: '#e5e7eb',
-                  }
-            }
-            onMouseEnter={(e) => {
-              if (packageDetails.size !== size.id) {
-                e.currentTarget.style.borderColor = '#d1d5db';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (packageDetails.size !== size.id) {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-              }
-            }}
-          >
-            <input
-              type="radio"
-              name="packageSize"
-              value={size.id}
-              checked={packageDetails.size === size.id}
-              onChange={() => onPackageDetailChange('size', size.id)}
-              className="mt-1 mr-3"
-              style={{
-                accentColor: brandColors.primary,
-              }}
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">{size.icon}</span>
-                <p className="font-semibold text-gray-900">{size.label}</p>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">{size.description}</p>
-              <p className="text-xs text-gray-500">e.g., {size.examples}</p>
-            </div>
-          </label>
-        ))}
-      </div>
-
-      <div className="bg-white rounded-xl p-4 border border-gray-200">
-        <h3 className="font-semibold mb-3 text-gray-900">
-          What are you sending?{' '}
-          <span className="text-gray-500 font-normal">(Optional)</span>
-        </h3>
-        <textarea
-          value={packageDetails.description}
-          onChange={(e) => onPackageDetailChange('description', e.target.value)}
-          placeholder="e.g., Birthday gift, documents, laptop..."
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none resize-none transition-all"
-          rows="3"
-          onFocus={(e) => {
-            e.target.style.borderColor = brandColors.primary;
-            e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = '#d1d5db';
-            e.target.style.boxShadow = 'none';
-          }}
-        />
-        <p className="text-xs text-gray-500 mt-2">
-          This helps couriers understand what they're carrying
-        </p>
-      </div>
-
-      {/* Fragile Toggle */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
-            <div>
-              <p className="font-semibold text-gray-900">Fragile</p>
-              <p className="text-sm text-gray-500">
-                Item requires extra careful handling
+      {/* Size chips */}
+      <div className="flex gap-2 mb-4">
+        {SIZES.map((s) => {
+          const on = packageDetails.size === s.id;
+          return (
+            <button
+              key={s.id}
+              onClick={() => onPackageDetailChange('size', s.id)}
+              className="flex-1 py-3 rounded-xl text-center transition-all"
+              style={{ background: on ? brandColors.primary : '#f3f4f6' }}
+            >
+              <p className={`text-sm font-bold ${on ? 'text-white' : 'text-gray-700'}`}>
+                {s.label}
               </p>
-            </div>
-          </div>
-          <button
-            onClick={() =>
-              onPackageDetailChange('isFragile', !packageDetails.isFragile)
-            }
-            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-            style={{
-              backgroundColor: packageDetails.isFragile
-                ? brandColors.primary
-                : '#d1d5db',
-            }}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                packageDetails.isFragile ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
+              <p className={`text-[10px] mt-0.5 ${on ? 'text-white/70' : 'text-gray-400'}`}>
+                {s.sub}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Description */}
+      <input
+        type="text"
+        value={packageDetails.description}
+        onChange={(e) => onPackageDetailChange('description', e.target.value)}
+        placeholder="What are you sending? (optional)"
+        className="w-full text-sm text-gray-800 placeholder-gray-400 outline-none border-b border-gray-100 pb-3 bg-transparent"
+      />
+
+      {/* Fragile */}
+      <div className="flex items-center justify-between pt-3">
+        <p className="text-sm text-gray-700">Fragile item</p>
+        <button
+          onClick={() => onPackageDetailChange('isFragile', !packageDetails.isFragile)}
+          className="relative rounded-full transition-colors duration-200 flex-shrink-0"
+          style={{
+            width: 40,
+            height: 22,
+            background: packageDetails.isFragile ? brandColors.primary : '#e5e7eb',
+          }}
+        >
+          <span
+            className="absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-200"
+            style={{ left: packageDetails.isFragile ? 20 : 3 }}
+          />
+        </button>
       </div>
     </section>
   );
