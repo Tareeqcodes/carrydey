@@ -2,22 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Calendar, ArrowRight, X } from 'lucide-react';
 
-/**
- * ClosedAgencyModal
- *
- * Shows once when the page loads if the agency is currently closed.
- * Customer can dismiss it and continue booking — the booking will be
- * processed when the agency opens.
- *
- * Props:
- *  - isOpen:       bool   — whether to show the modal
- *  - onDismiss:    fn     — called when user clicks "Book Anyway" or X
- *  - agencyName:   string
- *  - message:      string — e.g. "Closed today (Tuesday). Opens Wednesday at 08:00"
- *  - brandColors:  { primary, secondary, accent }
- *  - logoUrl?:     string
- */
-export default function ClosedAgencyModal({
+export default function Closedagencymodal({
   isOpen,
   onDismiss,
   agencyName,
@@ -25,8 +10,6 @@ export default function ClosedAgencyModal({
   brandColors,
   logoUrl,
 }) {
-  // Parse the message into two parts if possible
-  // e.g. "Closed for today. Opens Wednesday at 08:00"
   const parts = message?.split('. Opens ');
   const closedText = parts?.[0] || message;
   const opensText  = parts?.[1] ? `Opens ${parts[1]}` : null;

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import LocationAndPreviewScreen from '@/components/LocationAndPreviewScreen';
 import PackageAndFareScreen from '@/components/PackageAndFareScreen';
-import ClosedAgencyModal from '@/components/Agencytrack/ClosedAgencyModal';
+import Closedagencymodal from '@/components/Agencytrack/Closedagencymodal';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import {
   Building2,
@@ -84,7 +84,7 @@ export default function AgencyBookingPage() {
     isOpen: true,
     message: '',
   });
-  const [showClosedModal, setShowClosedModal] = useState(false); // ← replaces inline banner
+  const [showClosedModal, setShowClosedModal] = useState(false);
   const [brandColors, setBrandColors] = useState({
     primary: '#3A0A21',
     secondary: '#5A1A41',
@@ -279,7 +279,7 @@ export default function AgencyBookingPage() {
       <AgencyPricingProvider pricing={agencyPricing}>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
           {/* One-time closed modal — dismissed = gone for the session */}
-          <ClosedAgencyModal
+          <Closedagencymodal
             isOpen={showClosedModal}
             onDismiss={() => setShowClosedModal(false)}
             agencyName={agency.name}
