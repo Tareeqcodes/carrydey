@@ -48,13 +48,11 @@ const TrackAgencyDelivery = () => {
     acceptRequest,
     assignDelivery,
     updateDeliveryStatus,
-    confirmPickup,
     confirmDelivery,
     loading: deliveriesLoading,
     refreshDeliveries,
   } = useDeliveryManagement(agencyId);
 
-  // Assignment modal state
   const [assignmentModal, setAssignmentModal] = useState({
     isOpen: false,
     deliveryId: null,
@@ -68,7 +66,6 @@ const TrackAgencyDelivery = () => {
     }
   }, [activePage, agencyId]);
 
-  // Refresh drivers when deliveries change to sync status
   useEffect(() => {
     if (agencyId) {
       fetchDrivers();
@@ -143,8 +140,6 @@ const TrackAgencyDelivery = () => {
       deliveryDetails: null,
     });
   };
-
-  // Updated to refresh drivers after delivery status changes
   const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
     const result = await updateDeliveryStatus(deliveryId, newStatus);
 
@@ -169,14 +164,14 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  const handleOpenAssignmentModal = (delivery) => {
-    setAssignmentModal({
-      isOpen: true,
-      deliveryId: delivery.id || delivery.$id,
-      selectedDriver: null,
-      deliveryDetails: delivery,
-    });
-  };
+  const handleOpenAssignmentModal = (delivery, preSelectedDriverId = null) => {
+  setAssignmentModal({
+    isOpen: true,
+    deliveryId: delivery.id || delivery.$id,
+    selectedDriver: preSelectedDriverId,
+    deliveryDetails: delivery,
+  });
+};
 
   const formatDriversForDisplay = () => {
     return drivers.map((driver) => ({
@@ -224,10 +219,8 @@ const TrackAgencyDelivery = () => {
           <ActiveDeliveriesPage
             activeDeliveries={activeDeliveries}
             onAssign={handleOpenAssignmentModal}
-            onUpdateStatus={handleUpdateDeliveryStatus}
-            onNavigateToTracking={() => setActivePage('tracking')}
-            onConfirmPickup={confirmPickup}
-            onConfirmDelivery={handleConfirmDelivery}
+            // onUpdateStatus={handleUpdateDeliveryStatus}
+            
           />
         );
 

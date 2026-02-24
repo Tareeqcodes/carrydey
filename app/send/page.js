@@ -5,11 +5,11 @@ import LocationAndPreviewScreen from '@/components/LocationAndPreviewScreen';
 import PackageAndFareScreen from '@/components/PackageAndFareScreen';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-import NotUser from '@/hooks/NotUser';
+// import NotUser from '@/hooks/NotUser';
 
 export default function CreateDelivery() {
   const router = useRouter();
-  
+
   const [currentScreen, setCurrentScreen] = useState('location');
   const [deliveryData, setDeliveryData] = useState({
     pickup: null,
@@ -49,9 +49,9 @@ export default function CreateDelivery() {
     }
   }, []);
 
-  if (!user) {
-    return <NotUser />;
-  }
+  // if (!user) {
+  //   return <NotUser />;
+  // }
 
   const handleLocationsConfirmed = (pickup, dropoff, routeData) => {
     setDeliveryData((prev) => ({
@@ -98,16 +98,12 @@ export default function CreateDelivery() {
         status: 'pending',
         pickupContactName: packageDetails?.pickupContact?.pickupContactName,
         pickupPhone: packageDetails?.pickupContact?.pickupPhone,
-        // pickupInstructions: packageDetails?.pickupContact?.pickupInstructions,
         dropoffContactName: packageDetails?.dropoffContact?.dropoffContactName,
         dropoffPhone: packageDetails?.dropoffContact?.dropoffPhone,
         dropoffInstructions:
           packageDetails?.dropoffContact?.dropoffInstructions,
         recipientPermission:
           packageDetails?.dropoffContact?.recipientPermission,
-        suggestedFare: parseInt(
-          fareDetails.suggestedFare || routeData.estimatedFare
-        ),
         offeredFare: parseInt(
           fareDetails.offeredFare || routeData.estimatedFare
         ),

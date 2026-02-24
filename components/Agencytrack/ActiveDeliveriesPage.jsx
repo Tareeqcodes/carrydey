@@ -2,8 +2,6 @@
 import React, { useState } from 'react';
 import { Package, Search } from 'lucide-react';
 import ActiveDeliveryCard from './ActiveDeliveryCard';
-import PickupCodeModal from './PickupCodeModal';
-import DropoffOTPModal from './DropoffOTPModal';
 
 const SECTIONS = [
   {
@@ -47,14 +45,7 @@ const SECTIONS = [
 const ActiveDeliveriesPage = ({
   activeDeliveries,
   onAssign,
-  onConfirmPickup,
-  onConfirmDelivery,
-  onUpdateStatus,
 }) => {
-  const [selectedDeliveryForPickup, setSelectedDeliveryForPickup] =
-    useState(null);
-  const [selectedDeliveryForDropoff, setSelectedDeliveryForDropoff] =
-    useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filtered = searchQuery.trim()
@@ -69,39 +60,11 @@ const ActiveDeliveriesPage = ({
       })
     : activeDeliveries;
 
-  const handleConfirmPickup = async (deliveryId, pickupCode) => {
-    if (onConfirmPickup) {
-      const result = await onConfirmPickup(deliveryId, pickupCode);
-      if (result?.success) {
-        alert('Pickup confirmed successfully!');
-      } else {
-        alert(result?.error || 'Invalid pickup code');
-      }
-    }
-  };
-
-  const handleConfirmDelivery = async (deliveryId, otp) => {
-    if (onConfirmDelivery) {
-      const result = await onConfirmDelivery(deliveryId, otp);
-      if (result?.success) {
-        alert('Delivery completed successfully!');
-      } else {
-        alert(result?.error || 'Invalid OTP code');
-      }
-    }
-  };
-
-  const handleStartDelivery = async (deliveryId) => {
-    if (onUpdateStatus) {
-      await onUpdateStatus(deliveryId, 'in_transit');
-    }
-  };
-
   const DeliverySection = ({ section, deliveries }) => {
     if (deliveries.length === 0) return null;
 
     return (
-      <div className="mb-4 mx-auto ">
+      <div className="mb-4 mx-auto">
         <div
           className="sticky top-[57px] z-10 flex items-center justify-between px-4 py-2"
           style={{
@@ -117,10 +80,15 @@ const ActiveDeliveriesPage = ({
             >
               {section.title}
             </h3>
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: section.accent + '20', color: section.accent }}
+            >
+              {deliveries.length}
+            </span>
           </div>
         </div>
 
-        {/* Cards */}
         <div className="space-y-2 px-4 pt-2">
           {deliveries.map((delivery) => (
             <ActiveDeliveryCard
@@ -128,13 +96,6 @@ const ActiveDeliveriesPage = ({
               delivery={delivery}
               showAssignButton={section.showAssignButton}
               onAssign={onAssign}
-              onConfirmPickup={() =>
-                setSelectedDeliveryForPickup(delivery.id || delivery.$id)
-              }
-              onConfirmDelivery={() =>
-                setSelectedDeliveryForDropoff(delivery.id || delivery.$id)
-              }
-              onStartDelivery={handleStartDelivery}
             />
           ))}
         </div>
@@ -145,7 +106,7 @@ const ActiveDeliveriesPage = ({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sticky Page Header */}
-      <div className="sticky top-0 z-20">
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center justify-between">
             <div>
@@ -155,7 +116,15 @@ const ActiveDeliveriesPage = ({
               >
                 Active Deliveries
               </h1>
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                Drivers confirm pickup &amp; delivery via their portal link
+              </p>
             </div>
+            {activeDeliveries.length > 0 && (
+              <span className="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                {activeDeliveries.length} active
+              </span>
+            )}
           </div>
         </div>
 
@@ -181,54 +150,27 @@ const ActiveDeliveriesPage = ({
           <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-3">
             <Package className="w-6 h-6 text-gray-400" />
           </div>
-          <h3 className="text-sm font-bold text-gray-900 mb-1">
-            No Active Deliveries
-          </h3>
-          <p className="text-xs text-gray-500">
-            Accepted deliveries will appear here
-          </p>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">No Active Deliveries</h3>
+          <p className="text-xs text-gray-500">Accepted deliveries will appear here</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-4 py-20">
           <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-3">
             <Search className="w-6 h-6 text-gray-400" />
           </div>
-          <h3 className="text-sm font-bold text-gray-900 mb-1">
-            No results found
-          </h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-1">No results found</h3>
           <p className="text-xs text-gray-500">Try a different search term</p>
         </div>
       ) : (
         <div className="pb-24 pt-3">
           {SECTIONS.map((section) => {
-            const deliveries = filtered.filter((d) =>
-              section.statuses.includes(d.status)
-            );
+            const deliveries = filtered.filter((d) => section.statuses.includes(d.status));
             return (
-              <DeliverySection
-                key={section.key}
-                section={section}
-                deliveries={deliveries}
-              />
+              <DeliverySection key={section.key} section={section} deliveries={deliveries} />
             );
           })}
         </div>
       )}
-
-      {/* Modals */}
-      <PickupCodeModal
-        isOpen={selectedDeliveryForPickup !== null}
-        onClose={() => setSelectedDeliveryForPickup(null)}
-        onConfirm={handleConfirmPickup}
-        deliveryId={selectedDeliveryForPickup}
-      />
-
-      <DropoffOTPModal
-        isOpen={selectedDeliveryForDropoff !== null}
-        onClose={() => setSelectedDeliveryForDropoff(null)}
-        onConfirm={handleConfirmDelivery}
-        deliveryId={selectedDeliveryForDropoff}
-      />
     </div>
   );
 };

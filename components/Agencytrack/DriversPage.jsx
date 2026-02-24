@@ -2,7 +2,6 @@
 import React from 'react';
 import { Plus, Phone, Wifi, Truck, WifiOff, MoreVertical } from 'lucide-react';
 
-// ─── Status Config ─────────────────────────────────────────────────────────
 const getStatusConfig = (status) => {
   const configs = {
     available: {
@@ -33,7 +32,6 @@ const getStatusConfig = (status) => {
   return configs[status] || configs.offline;
 };
 
-// ─── Skeleton Card ─────────────────────────────────────────────────────────
 const SkeletonCard = () => (
   <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm overflow-hidden">
     <style>{`
@@ -82,9 +80,9 @@ const DriverCard = ({
 
   const handleAssign = () => {
     const pendingDelivery = activeDeliveries?.find(
-      (d) => d.status === 'accepted' || d.status === 'pending_assignment'
+      (d) => d.status === 'accepted'
     );
-    if (pendingDelivery) onAssignDelivery(pendingDelivery);
+    if (pendingDelivery) onAssignDelivery(pendingDelivery, driver.$id);
   };
 
   return (
@@ -148,7 +146,7 @@ const DriverCard = ({
             </div>
           )}
 
-          {driver.assignedDelivery && (
+          {/* {driver.assignedDelivery && (
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 Delivery
@@ -160,13 +158,12 @@ const DriverCard = ({
                 {driver.assignedDelivery}
               </span>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Divider */}
         <div className="border-t border-dashed border-gray-200 mb-4" />
 
-        {/* Action buttons */}
         <div className="flex gap-2">
           <button
             onClick={() => onToggleStatus(driver.$id, driver.status)}
@@ -195,10 +192,11 @@ const DriverCard = ({
                 : 'Set Available'}
           </button>
 
-          {driver.status === 'available' && (
+          {driver.status !== 'offline' && (
             <button
               onClick={handleAssign}
-              className="flex-1 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
+              disabled={!activeDeliveries?.find((d) => d.status === 'accepted')}
+              className="flex-1 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: '#3A0A21',
                 boxShadow: '0 2px 8px rgba(58,10,33,0.25)',
@@ -219,7 +217,7 @@ const DriversPage = ({
   error,
   activeDeliveries,
   onAddDriver,
-  onToggleStatus,
+  onToggleStatus, 
   onAssignDelivery,
   onEditDriver,
 }) => {

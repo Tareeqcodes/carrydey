@@ -33,7 +33,6 @@ export const useDriverManagement = (agencyId) => {
     }
   }, [agencyId]);
 
-  // ── Add a new driver ────────────────────────────────────────────────────
   const addDriver = async (driverData) => {
     try {
       const newDriver = {
@@ -58,8 +57,7 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
-  // ── Update an existing driver ───────────────────────────────────────────
-  // Called when the user edits a driver via the MoreVertical → AddDriverModal flow.
+  // ── Update an existing driver 
   const updateDriver = async (driverId, driverData) => {
     try {
       const updatedFields = {
@@ -86,7 +84,6 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
-  // ── Toggle available ↔ offline ──────────────────────────────────────────
   const toggleDriverStatus = async (driverId, currentStatus) => {
     try {
       if (currentStatus === 'on_delivery') {
@@ -110,36 +107,48 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
-  // ── Assign driver to a delivery ─────────────────────────────────────────
+  // ── Assign driver to a delivery 
   const assignDriverToDelivery = async (driverId, deliveryId) => {
-    try {
-      await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
-        rowId: driverId,
-        data: {
-          status: 'on_delivery',
-          assignedDelivery: deliveryId,
-        },
-      });
-      setDrivers((prev) =>
-        prev.map((driver) =>
-          driver.$id === driverId
-            ? { ...driver, status: 'on_delivery', assignedDelivery: deliveryId }
-            : driver
-        )
-      );
-    } catch (err) {
-      console.error('Error assigning driver:', err);
+  try {
+    const driver = drivers.find(d => d.$id === driverId);
+    const existing = driver?.assignedDelivery 
+      ? driver.assignedDelivery.split(',').filter(Boolean) 
+      : [];
+    
+    if (!existing.includes(deliveryId)) {
+      existing.push(deliveryId);
     }
-  };
+
+    const updatedAssigned = existing.join(',');
+
+    await tablesDB.updateRow({
+      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+      rowId: driverId,
+      data: {
+        status: 'on_delivery',
+        assignedDelivery: updatedAssigned,
+      },
+    });
+
+    setDrivers(prev =>
+      prev.map(d =>
+        d.$id === driverId
+          ? { ...d, status: 'on_delivery', assignedDelivery: updatedAssigned }
+          : d
+      )
+    );
+  } catch (err) {
+    console.error('Error assigning driver:', err);
+  }
+};
 
   return {
     drivers,
     loading,
     error,
     addDriver,
-    updateDriver,           // ← exported
+    updateDriver,           
     toggleDriverStatus,
     assignDriverToDelivery,
     fetchDrivers,

@@ -93,20 +93,15 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const hiddenNavbarRoutes = [
-    '/AgencyBooking/',           // Agency booking pages
+    '/AgencyBooking/',          
     '/bookconfirm/', 
-    
-       // Booking confirmation pages (optional - remove if you want navbar here)
+    '/driver/',            
   ];
 
-  // Check if current pathname matches any hidden route
   const shouldHideNavbar = hiddenNavbarRoutes.some(route => 
     pathname?.startsWith(route)
   );
 
-  // ============================================
-  // EARLY RETURN - HIDE NAVBAR ON SPECIFIC ROUTES
-  // ============================================
   if (shouldHideNavbar) {
     return null;
   }
@@ -127,7 +122,6 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Desktop Navbar */}
       <nav
         className={`hidden w-full md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
@@ -141,7 +135,6 @@ const Navbar = () => {
               <span className="text-xl font-bold text-[#3A0A21]">Carrydey</span>
             </Link>
 
-            {/* Navigation Links */}
             <div className="flex items-center gap-1">
               {navLinks.map((link) => (
                 <DesktopNavLink
@@ -157,7 +150,6 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="text-lg font-bold text-[#3A0A21]">
@@ -166,7 +158,6 @@ const Navbar = () => {
         </div>
       </div>
  
-      {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div className="bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg">
           <div className="flex items-center justify-around px-2 pb-safe">
@@ -183,8 +174,6 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-
-      {/* Spacers */}
       <div className="md:hidden h-14" />
       <div className="hidden md:block h-16" />
     </>

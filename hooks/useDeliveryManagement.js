@@ -3,6 +3,11 @@ import { useState, useEffect } from 'react';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import { generateOTP, generatePickupCode } from '@/hooks/otpGenerator';
 
+const generateDriverToken = () => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
+
 export const useDeliveryManagement = (agencyId) => {
   const [deliveryRequests, setDeliveryRequests] = useState([]);
   const [activeDeliveries, setActiveDeliveries] = useState([]);
@@ -12,17 +17,14 @@ export const useDeliveryManagement = (agencyId) => {
 
   useEffect(() => {
     if (agencyId) {
-      console.log('Fetching deliveries for agencyId:', agencyId);
       fetchActiveDeliveries();
     } else {
-      console.log('No agencyId provided to useDeliveryManagement');
       setLoading(false);
     }
   }, [agencyId]);
 
   const fetchActiveDeliveries = async () => {
     if (!agencyId || typeof agencyId !== 'string') {
-      console.error('Invalid agencyId:', agencyId);
       setError('Invalid agency ID');
       setLoading(false);
       return;
@@ -30,8 +32,6 @@ export const useDeliveryManagement = (agencyId) => {
 
     try {
       setLoading(true);
-      console.log('Querying deliveries for agency:', agencyId);
-      
       const response = await tablesDB.listRows({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
@@ -42,17 +42,14 @@ export const useDeliveryManagement = (agencyId) => {
         ],
       });
 
-      console.log('Deliveries fetched:', response.rows?.length || 0);
-
-      // Separate deliveries by status
       const pending = response.rows.filter(r => r.status === 'pending');
-      const active = response.rows.filter(r => 
+      const active = response.rows.filter(r =>
         ['accepted', 'pending_assignment', 'assigned', 'picked_up', 'in_transit'].includes(r.status)
       );
-      const completed = response.rows.filter(r => 
+      const completed = response.rows.filter(r =>
         ['delivered', 'cancelled'].includes(r.status)
       );
-      
+
       setDeliveryRequests(pending);
       setActiveDeliveries(active);
       setCompletedDeliveries(completed);
@@ -65,65 +62,55 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
-  // Accept a delivery request and generate OTP codes
   const acceptRequest = async (requestId) => {
     try {
       const request = deliveryRequests.find((r) => r.$id === requestId);
       if (!request) return { success: false, error: 'Request not found' };
 
-      // Generate codes
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
 
-      // Update the delivery in Appwrite
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: requestId,
         data: {
           status: 'accepted',
-          pickupCode: pickupCode,
-          dropoffOTP: dropoffOTP,
-        }
+          pickupCode,
+          dropoffOTP,
+        },
       });
 
-      // Update local state
       setDeliveryRequests(prev => prev.filter(r => r.$id !== requestId));
       setActiveDeliveries(prev => [...prev, response]);
 
-      return { 
-        success: true, 
-        data: response,
-        pickupCode,
-        dropoffOTP
-      };
+      return { success: true, data: response, pickupCode, dropoffOTP };
     } catch (err) {
       console.error('Error accepting request:', err);
       return { success: false, error: err.message };
     }
   };
 
-  // Assign delivery to a driver
   const assignDelivery = async (deliveryId, driverId, driverName, driverPhone) => {
     try {
+      const driverToken = generateDriverToken();
+
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
         data: {
           status: 'assigned',
-          driverId: driverId,
-          driverName: driverName,
-          driverPhone: driverPhone,
-        }
+          driverId,
+          driverName,
+          driverPhone,
+          driverToken, 
+        },
       });
 
-      // Update local state
       setActiveDeliveries(prev =>
         prev.map(delivery =>
-          delivery.$id === deliveryId
-            ? { ...delivery, ...response }
-            : delivery
+          delivery.$id === deliveryId ? { ...delivery, ...response } : delivery
         )
       );
 
@@ -134,113 +121,114 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
-  // Confirm pickup with code
+  // ── Driver-side actions (called from /driver/[token] page via API route) ──
+  // These are also exported so the driver portal API route can use the same logic.
+
   const confirmPickup = async (deliveryId, enteredCode) => {
     try {
       const delivery = activeDeliveries.find(d => d.$id === deliveryId);
       if (!delivery) return { success: false, error: 'Delivery not found' };
 
-      // Verify pickup code
       if (delivery.pickupCode !== enteredCode.toUpperCase()) {
         return { success: false, error: 'Invalid pickup code' };
       }
 
-      // Update delivery status
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
-        data: {
-          status: 'picked_up',
-        }
+        data: { status: 'picked_up' },
       });
 
       setActiveDeliveries(prev =>
-        prev.map(d =>
-          d.$id === deliveryId
-            ? { ...d, ...response }
-            : d
-        )
+        prev.map(d => d.$id === deliveryId ? { ...d, ...response } : d)
       );
 
       return { success: true, data: response };
     } catch (err) {
-      console.error('Error confirming pickup:', err);
       return { success: false, error: err.message };
     }
   };
 
-  // Confirm delivery with OTP - UPDATED to automatically set driver to available
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
       const delivery = activeDeliveries.find(d => d.$id === deliveryId);
       if (!delivery) return { success: false, error: 'Delivery not found' };
 
-      // Verify OTP
       if (delivery.dropoffOTP !== enteredOTP) {
         return { success: false, error: 'Invalid OTP code' };
       }
 
-      // Update delivery status to delivered
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
-        data: {
-          status: 'delivered',
-        }
+        data: { status: 'delivered' },
       });
 
-      // Automatically update driver status back to available
-      if (delivery.driverId) {
+      // Free up driver
+      if (delivery?.driverId) {
+        const driverResponse = await tablesDB.getRow({
+          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+          tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+          rowId: delivery.driverId,
+        });
+
+        const remaining = (driverResponse?.assignedDelivery || '')
+          .split(',')
+          .filter(id => id && id !== deliveryId);
+
         await tablesDB.updateRow({
           databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
           tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
           rowId: delivery.driverId,
           data: {
-            status: 'available',
-            assignedDelivery: null,
-          }
+            status: remaining.length > 0 ? 'on_delivery' : 'available',
+            assignedDelivery: remaining.join(',') || null,
+          },
         });
       }
 
-      // Move from active to completed
       setActiveDeliveries(prev => prev.filter(d => d.$id !== deliveryId));
       setCompletedDeliveries(prev => [response, ...prev]);
 
       return { success: true, data: response };
     } catch (err) {
-      console.error('Error confirming delivery:', err);
       return { success: false, error: err.message };
     }
   };
 
-  // Update delivery status (for driver updates) - UPDATED to handle driver availability
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
     try {
       const delivery = activeDeliveries.find(d => d.$id === deliveryId);
-      
+
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
-        data: {
-          status: newStatus,
-        }
+        data: { status: newStatus },
       });
 
-      // If status is delivered or cancelled, update driver and move to completed
       if (newStatus === 'delivered' || newStatus === 'cancelled') {
-        // Update driver status back to available
         if (delivery?.driverId) {
+          const driverResponse = await tablesDB.getRow({
+            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+            tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+            rowId: delivery.driverId,
+          });
+
+          const remaining = (driverResponse?.assignedDelivery || '')
+            .split(',')
+            .filter(id => id && id !== deliveryId);
+
           await tablesDB.updateRow({
             databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
             tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
             rowId: delivery.driverId,
             data: {
-              status: 'available',
-              assignedDelivery: null,
-            }
+              status: remaining.length > 0 ? 'on_delivery' : 'available',
+              assignedDelivery: remaining.join(',') || null,
+            },
           });
         }
 
@@ -248,17 +236,12 @@ export const useDeliveryManagement = (agencyId) => {
         setCompletedDeliveries(prev => [response, ...prev]);
       } else {
         setActiveDeliveries(prev =>
-          prev.map(d =>
-            d.$id === deliveryId
-              ? { ...d, ...response }
-              : d
-          )
+          prev.map(d => d.$id === deliveryId ? { ...d, ...response } : d)
         );
       }
 
       return { success: true, data: response };
     } catch (err) {
-      console.error('Error updating delivery status:', err);
       return { success: false, error: err.message };
     }
   };

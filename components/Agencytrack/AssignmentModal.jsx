@@ -1,20 +1,27 @@
 'use client';
 import React from 'react';
-import { XCircle, MapPin, Package, User, CheckCircle, Users, Plus } from 'lucide-react';
+import {
+  XCircle,
+  MapPin,
+  Package,
+  User,
+  CheckCircle,
+  Users,
+  Plus,
+} from 'lucide-react';
 
-const AssignmentModal = ({ 
-  isOpen, 
-  deliveryDetails, 
-  drivers, 
+const AssignmentModal = ({
+  isOpen,
+  deliveryDetails,
+  drivers,
   selectedDriver,
   onSelectDriver,
-  onConfirm, 
+  onConfirm,
   onCancel,
-  onAddDriver 
+  onAddDriver,
 }) => {
   if (!isOpen) return null;
-
-  const availableDrivers = drivers.filter((d) => d.status === 'available');
+  const assignableDrivers = drivers.filter((d) => d.status !== 'offline');
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -22,7 +29,10 @@ const AssignmentModal = ({
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold">Select available courier</h3>
-            <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-lg">
+            <button
+              onClick={onCancel}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
               <XCircle className="w-5 h-5" />
             </button>
           </div>
@@ -55,22 +65,29 @@ const AssignmentModal = ({
             </div>
 
             <p className="font-medium mb-3">Assign courier:</p>
+
             <div className="space-y-3">
-              {availableDrivers.map((driver) => (
+              {assignableDrivers.map((driver) => (
                 <button
                   key={driver.id}
                   onClick={() => onSelectDriver(driver.id)}
-                  className={`w-full p-4 text-[#3A0A21] border rounded-xl text-left transition-colors ${
+                  className={`w-full p-4 border rounded-xl text-left transition-colors ${
                     selectedDriver === driver.id
-                      ? 'border-[#3A0A21] bg-[#3A0A21] text-white bg-opacity-5'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-[#3A0A21] bg-[#3A0A21] bg-opacity-5 text-[#3A0A21]'
+                      : 'border-gray-200 hover:border-gray-300 text-[#3A0A21]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{driver.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{driver.name}</p>
+                        {driver.status === 'on_delivery' && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">
+                            On Delivery
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-400">{driver.vehicle}</p>
-                      
                     </div>
                     {selectedDriver === driver.id && (
                       <CheckCircle className="w-5 h-5 text-[#3A0A21]" />
@@ -79,12 +96,12 @@ const AssignmentModal = ({
                 </button>
               ))}
 
-              {availableDrivers.length === 0 && (
+              {assignableDrivers.length === 0 && (
                 <div className="text-center py-6 border border-gray-200 rounded-xl">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                   <p className="text-gray-500">No available couriers</p>
                   <p className="text-sm text-gray-400 mt-1">
-                    All drivers are currently busy
+                    All drivers are offline
                   </p>
                   <button
                     onClick={onAddDriver}

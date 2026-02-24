@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { CheckCircle, Clock, Loader2, Package, Phone, AlertTriangle, Navigation } from 'lucide-react';
+import { CheckCircle, Clock, Loader2, Package, Phone, Navigation } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -45,19 +45,19 @@ const RouteVisual = ({ pickup, dropoff, dropoffInstructions, pickupContactName, 
 const DeliveryRequestCard = ({ request, onAccept }) => {
   const [isAccepting, setIsAccepting] = useState(false);
 
-  const formattedPayout = formatNairaSimple(request.suggestedFare);
+  const formattedPayout = formatNairaSimple(request.offeredFare);
 
   const timeAgo = formatDistanceToNow(
-    new Date(request.createdAt || request.$createdAt),
+    new Date(request.$createdAt),
     { addSuffix: true }
   );
 
   const handleAccept = async () => {
     setIsAccepting(true);
     try {
-      const result = await onAccept(request.id || request.$id);
+      const result = await onAccept(request.$id);
       if (result?.success) {
-        console.log('Delivery accepted successfully');
+        // console.log('Delivery accepted successfully');
       } else {
         console.error('Failed to accept delivery:', result?.error);
         alert(result?.error || 'Failed to accept delivery. Please try again.');
@@ -83,7 +83,7 @@ const DeliveryRequestCard = ({ request, onAccept }) => {
           <div className="flex items-center gap-1.5">
             {request.isFragile && (
               <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                <AlertTriangle className="w-2.5 h-2.5" />
+               
                 Fragile
               </span>
             )}
@@ -119,23 +119,22 @@ const DeliveryRequestCard = ({ request, onAccept }) => {
         </div>
 
         {/* Package Instructions */}
-        {(request.instructions || request.packageDescription) && (
+        {(request.packageDescription) && (
           <div className="mt-2.5 p-2.5 rounded-xl bg-blue-50 border border-blue-100">
             <p className="text-[9px] font-bold uppercase tracking-widest text-blue-400 mb-0.5">Instructions</p>
             <p className="text-xs text-blue-900 leading-snug">
-              {request.instructions || request.packageDescription}
+              {request.packageDescription}
             </p>
           </div>
         )}
 
-        {/* Footer */}
         <div
           className="flex items-center justify-between mt-3 pt-3"
           style={{ borderTop: '1px dashed #E5E7EB' }}
         >
           <div>
             <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest mb-0.5">
-              Estimated Payout
+             Payout
             </p>
             <p className="text-2xl font-black text-green-600" style={{ letterSpacing: '-0.5px' }}>
               {formattedPayout}
