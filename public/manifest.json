@@ -1,11 +1,11 @@
 {
-  "name": "Carrydey - Global Package Delivery",
+  "name": "Carrydey | Book & Manage Deliveries with Trusted Couriers in Nigeria",
   "short_name": "Carrydey",
-  "description": "Send packages worldwide with travelers or earn money delivering",
+  "description": "Carrydey connects customers with verified delivery agencies and independent couriers. Book deliveries, track orders in real time, manage payments, and scale logistics operations across Nigeria.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3A0A21",
+  "theme_color": "#3A0A21", 
   "orientation": "portrait-primary",
   "icons": [
     {

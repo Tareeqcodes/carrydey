@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { X, User, Phone, Truck, Loader2 } from 'lucide-react';
+import { X, User, Phone, Truck, Loader2, Smartphone, PhoneCall } from 'lucide-react';
 
 const EMPTY_FORM = {
   name: '',
   phone: '',
+  phoneType: 'android',
   vehicleType: '',
   status: 'available',
   assignedDelivery: false,
@@ -22,6 +23,21 @@ const statusOptions = [
   { value: 'on_delivery', label: 'On Delivery' },
 ];
 
+const phoneTypeOptions = [
+  {
+    value: 'android',
+    label: 'Android',
+    icon: Smartphone,
+    description: 'Smartphone',
+  },
+  {
+    value: 'keypad',
+    label: 'Keypad',
+    icon: PhoneCall,
+    description: 'Feature phone',
+  },
+];
+
 const AddDriverModal = ({
   isOpen,
   onClose,
@@ -35,20 +51,18 @@ const AddDriverModal = ({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ── Seed form whenever the modal opens or driverToEdit changes ────────────
   useEffect(() => {
     if (isOpen) {
       if (driverToEdit) {
-        // Edit mode — pre-fill with existing driver data
         setFormData({
           name: driverToEdit.name || '',
           phone: driverToEdit.phone || '',
+          phoneType: driverToEdit.phoneType || 'android',
           vehicleType: driverToEdit.vehicleType || '',
           status: driverToEdit.status || 'available',
           assignedDelivery: driverToEdit.assignedDelivery || false,
         });
       } else {
-        // Add mode — reset to blank
         setFormData(EMPTY_FORM);
       }
       setErrors({});
@@ -89,6 +103,7 @@ const AddDriverModal = ({
       const driverData = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
+        phoneType: formData.phoneType,
         vehicleType: formData.vehicleType || null,
         status: formData.status,
         assignedDelivery: formData.assignedDelivery,
@@ -130,7 +145,6 @@ const AddDriverModal = ({
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div>
-            
             <h2
               className="text-lg font-black text-gray-900"
               style={{ letterSpacing: '-0.3px' }}
@@ -148,7 +162,8 @@ const AddDriverModal = ({
         </div>
 
         <div className="p-6 space-y-5">
-          
+
+          {/* Driver Name */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
               Driver Name <span className="text-red-500">*</span>
@@ -174,6 +189,7 @@ const AddDriverModal = ({
             )}
           </div>
 
+          {/* Phone Number */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
               Phone Number <span className="text-red-500">*</span>
@@ -199,6 +215,52 @@ const AddDriverModal = ({
             )}
           </div>
 
+          {/* Phone Type */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+              Phone Type
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {phoneTypeOptions.map(({ value, label, icon: Icon, description }) => {
+                const isSelected = formData.phoneType === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleChange('phoneType', value)}
+                    disabled={isSubmitting}
+                    className={`flex items-center gap-3 p-3 border rounded-xl text-left transition-all disabled:opacity-50 ${
+                      isSelected
+                        ? 'border-[#3A0A21] bg-[#3A0A21] bg-opacity-5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? 'bg-[#3A0A21]' : 'bg-gray-100'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-gray-500'}`}
+                      />
+                    </div>
+                    <div>
+                      <p
+                        className={`text-sm font-bold ${
+                          isSelected ? 'text-[#3A0A21]' : 'text-gray-700'
+                        }`}
+                      >
+                        {label}
+                      </p>
+                      <p className="text-xs text-gray-400">{description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Vehicle Type */}
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
               Vehicle Type
@@ -220,6 +282,8 @@ const AddDriverModal = ({
               </select>
             </div>
           </div>
+
+          {/* Initial Status (add mode only) */}
           {!isEditMode && (
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">

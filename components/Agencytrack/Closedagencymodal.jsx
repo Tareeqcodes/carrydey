@@ -113,7 +113,7 @@ export default function Closedagencymodal({
 
               {/* Message */}
               <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                You can still place your booking now —{' '}
+                You can still place your booking now{' '}
                 <span className="font-semibold text-gray-700">{agencyName}</span>{' '}
                 will review and process it as soon as they open.
               </p>

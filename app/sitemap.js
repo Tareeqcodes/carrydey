@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'; // Ensures fresh data
+export const dynamic = 'force-dynamic'; 
 export default function sitemap() {
   const baseUrl = 'https://carrydey.tech';
 
