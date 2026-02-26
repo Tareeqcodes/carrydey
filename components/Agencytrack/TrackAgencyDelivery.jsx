@@ -36,6 +36,8 @@ const TrackAgencyDelivery = () => {
     error: driversError,
     addDriver,
     updateDriver,
+    deleteDriver,
+    freeDriverFromDelivery,
     fetchDrivers,
     toggleDriverStatus,
     assignDriverToDelivery,
@@ -47,11 +49,11 @@ const TrackAgencyDelivery = () => {
     activeDeliveries,
     acceptRequest,
     assignDelivery,
-    updateDeliveryStatus,
-    confirmDelivery,
     loading: deliveriesLoading,
-    refreshDeliveries,
-  } = useDeliveryManagement(agencyId);
+    // updateDeliveryStatus,
+    // confirmDelivery,
+    // refreshDeliveries,
+  } = useDeliveryManagement(agencyId, freeDriverFromDelivery);
 
   const [assignmentModal, setAssignmentModal] = useState({
     isOpen: false,
@@ -61,15 +63,11 @@ const TrackAgencyDelivery = () => {
   });
 
   useEffect(() => {
-    if (activePage === 'drivers' && agencyId) {
-      fetchDrivers();
-    }
+    if (activePage === 'drivers' && agencyId) fetchDrivers();
   }, [activePage, agencyId]);
 
   useEffect(() => {
-    if (agencyId) {
-      fetchDrivers();
-    }
+    if (agencyId) fetchDrivers();
   }, [activeDeliveries.length, completedDeliveries.length]);
 
   const handleAddDriverClick = () => {
@@ -94,11 +92,18 @@ const TrackAgencyDelivery = () => {
     return await addDriver(driverData);
   };
 
+  // ← Delete handler passed down to AddDriverModal and DriversPage
+  const handleDeleteDriver = async (driverId) => {
+    const result = await deleteDriver(driverId);
+    if (result.success) {
+      handleCloseDriverModal();
+    }
+    return result;
+  };
+
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);
-
     if (result?.success) {
-      // Open assignment modal immediately after accepting
       setAssignmentModal({
         isOpen: true,
         deliveryId: result.data.$id,
@@ -109,85 +114,61 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  // Complete driver assignment
-  const handleCompleteAssignment = () => {
-    if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
+  const handleCompleteAssignment = async () => {
+  if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
 
-    const selectedDriver = drivers.find(
-      (d) =>
-        d.$id === assignmentModal.selectedDriver ||
-        d.id === assignmentModal.selectedDriver
+  const selectedDriver = drivers.find(
+    (d) => d.$id === assignmentModal.selectedDriver || d.id === assignmentModal.selectedDriver
+  );
+
+  if (selectedDriver) {
+    await assignDelivery(
+      assignmentModal.deliveryId,
+      selectedDriver.$id,
+      selectedDriver.name,
+      selectedDriver.phone
     );
+    await assignDriverToDelivery(selectedDriver.$id, assignmentModal.deliveryId);
+  }
 
-    if (selectedDriver) {
-      assignDelivery(
-        assignmentModal.deliveryId,
-        selectedDriver.$id || selectedDriver.id,
-        selectedDriver.name,
-        selectedDriver.phone
-      );
-
-      assignDriverToDelivery(
-        selectedDriver.$id || selectedDriver.id,
-        assignmentModal.deliveryId
-      );
-    }
-
-    setAssignmentModal({
-      isOpen: false,
-      deliveryId: null,
-      selectedDriver: null,
-      deliveryDetails: null,
-    });
-  };
-  const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
-    const result = await updateDeliveryStatus(deliveryId, newStatus);
-
-    if (
-      result?.success &&
-      (newStatus === 'delivered' || newStatus === 'cancelled')
-    ) {
-      await fetchDrivers();
-      await refreshDeliveries();
-    }
-
-    return result;
-  };
-
-  const handleConfirmDelivery = async (deliveryId, otp) => {
-    const result = await confirmDelivery(deliveryId, otp);
-
-    if (result?.success) {
-      await fetchDrivers();
-    }
-
-    return result;
-  };
-
-  const handleOpenAssignmentModal = (delivery, preSelectedDriverId = null) => {
-  setAssignmentModal({
-    isOpen: true,
-    deliveryId: delivery.id || delivery.$id,
-    selectedDriver: preSelectedDriverId,
-    deliveryDetails: delivery,
-  });
+  setAssignmentModal({ isOpen: false, deliveryId: null, selectedDriver: null, deliveryDetails: null });
 };
 
-  const formatDriversForDisplay = () => {
-    return drivers.map((driver) => ({
+  // const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
+  //   const result = await updateDeliveryStatus(deliveryId, newStatus);
+  //   if (result?.success && (newStatus === 'delivered' || newStatus === 'cancelled')) {
+  //     await refreshDeliveries();
+  //   }
+  //   return result;
+  // };
+
+  // const handleConfirmDelivery = async (deliveryId, otp) => {
+  //    freeDriverFromDelivery is called inside useDeliveryManagement now
+  //   return await confirmDelivery(deliveryId, otp);
+  // };
+
+  const handleOpenAssignmentModal = (delivery, preSelectedDriverId = null) => {
+    setAssignmentModal({
+      isOpen: true,
+      deliveryId: delivery.$id,
+      selectedDriver: preSelectedDriverId,
+      deliveryDetails: delivery,
+    });
+  };
+
+  const formatDriversForDisplay = () =>
+    drivers.map((driver) => ({
       id: driver.$id,
       name: driver.name,
       phone: driver.phone,
+      phoneType: driver.phoneType || 'android',
       status: driver.status,
       assignedDelivery: driver.assignedDelivery || null,
       vehicle: driver.vehicleType
-        ? `Van #${driver.vehicleType.toUpperCase()}`
+        ? `${driver.vehicleType.charAt(0).toUpperCase() + driver.vehicleType.slice(1)}`
         : 'No vehicle',
-      earningsToday: 0,
-      deliveriesToday: 0,
-      lastUpdate: 'Just now',
+      
     }));
-  };
 
   const renderPage = () => {
     const formattedDrivers = formatDriversForDisplay();
@@ -201,7 +182,6 @@ const TrackAgencyDelivery = () => {
             onNavigateToTracking={() => setActivePage('tracking')}
           />
         );
-
       case 'requests':
         return (
           <RequestsPage
@@ -213,17 +193,13 @@ const TrackAgencyDelivery = () => {
             onAccept={handleAcceptRequest}
           />
         );
-
       case 'active':
         return (
           <ActiveDeliveriesPage
             activeDeliveries={activeDeliveries}
             onAssign={handleOpenAssignmentModal}
-            // onUpdateStatus={handleUpdateDeliveryStatus}
-            
           />
         );
-
       case 'drivers':
         return (
           <DriversPage
@@ -235,10 +211,10 @@ const TrackAgencyDelivery = () => {
             onClose={handleCloseDriverModal}
             onToggleStatus={toggleDriverStatus}
             onEditDriver={handleEditDriverClick}
+            onDeleteDriver={handleDeleteDriver} 
             onAssignDelivery={handleOpenAssignmentModal}
           />
         );
-
       case 'tracking':
         return (
           <TrackingPage
@@ -246,10 +222,8 @@ const TrackAgencyDelivery = () => {
             drivers={formattedDrivers}
           />
         );
-
       case 'settings':
         return <AgencySettingsPage />;
-
       case 'history':
         return (
           <DeliveryHistory
@@ -257,7 +231,6 @@ const TrackAgencyDelivery = () => {
             loading={deliveriesLoading}
           />
         );
-
       default:
         return (
           <div className="text-center py-12">
@@ -270,7 +243,6 @@ const TrackAgencyDelivery = () => {
 
   return (
     <div className="min-h-screen pb-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Top Navigation */}
       <header>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -286,9 +258,7 @@ const TrackAgencyDelivery = () => {
 
       <div className="flex max-w-7xl mx-auto">
         <div
-          className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${
-            sidebarOpen ? 'block' : 'hidden'
-          }`}
+          className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
           onClick={() => setSidebarOpen(false)}
         />
         <Sidebar
@@ -300,8 +270,6 @@ const TrackAgencyDelivery = () => {
           drivers={drivers}
           isOpen={sidebarOpen}
         />
-
-        {/* Main Content */}
         <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
       </div>
 
@@ -324,10 +292,12 @@ const TrackAgencyDelivery = () => {
         }
         onAddDriver={handleAddDriverClick}
       />
+
       <AddDriverModal
         isOpen={addDriverModalOpen}
-        onClose={() => setAddDriverModalOpen(false)}
+        onClose={handleCloseDriverModal}
         onAddDriver={handleDriverModalSubmit}
+        onDeleteDriver={handleDeleteDriver} 
         agencyId={agencyId}
         loading={driversLoading}
         driverToEdit={driverToEdit}

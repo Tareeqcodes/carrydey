@@ -36,7 +36,7 @@ export default function DeliverySummaryCard({
       >
         <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-900 truncate">
+          <p className="text-xs font-bold text-gray-900 truncate">
             {delivery.pickup?.place_name}
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -44,7 +44,7 @@ export default function DeliverySummaryCard({
             {pickupContact.pickupContactName ? (
               <span className="text-emerald-600 font-bold">✓ Contact Details</span>
             ) : (
-              <span style={{ color: brandColors.primary }}>Add Details</span>
+              <span className="font-semibold" style={{ color: brandColors.primary }}>Add Details</span>
             )}
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function DeliverySummaryCard({
       >
         <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-900 truncate">
+          <p className="text-xs font-bold text-gray-900 truncate">
             {delivery.dropoff?.place_name}
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -67,7 +67,7 @@ export default function DeliverySummaryCard({
             {dropoffContact.dropoffContactName ? (
               <span className="text-emerald-600 font-bold">✓ Details added</span>
             ) : (
-              <span style={{ color: brandColors.primary }}>Add Details</span>
+              <span className="font-semibold" style={{ color: brandColors.primary }}>Add Details</span>
             )}
           </p>
         </div>

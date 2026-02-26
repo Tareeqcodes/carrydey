@@ -49,7 +49,7 @@ export default function PackageGuidelines() {
             ))}
           </ul>
         </div>
-        {/* <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-5">
           <h3 className="font-semibold mb-4 text-green-900 flex items-center gap-2">
             <Package className="w-5 h-5" />
             Best Practices
@@ -68,7 +68,7 @@ export default function PackageGuidelines() {
               </li>
             ))}
           </ul>
-        </div> */}
+        </div>
 
         
       

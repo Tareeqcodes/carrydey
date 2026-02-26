@@ -120,11 +120,7 @@ const ActiveDeliveriesPage = ({
                 Drivers confirm pickup &amp; delivery via their portal link
               </p>
             </div>
-            {activeDeliveries.length > 0 && (
-              <span className="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                {activeDeliveries.length} active
-              </span>
-            )}
+            
           </div>
         </div>
 

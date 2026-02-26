@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
+import { freeDriverFromDelivery as freeDriverUtil } from '@/hooks/Driverutils';
 
 export const useDriverManagement = (agencyId) => {
   const [drivers, setDrivers] = useState([]);
@@ -28,9 +29,7 @@ export const useDriverManagement = (agencyId) => {
   };
 
   useEffect(() => {
-    if (agencyId) {
-      fetchDrivers();
-    }
+    if (agencyId) fetchDrivers();
   }, [agencyId]);
 
   const addDriver = async (driverData) => {
@@ -39,9 +38,10 @@ export const useDriverManagement = (agencyId) => {
         agencyId,
         name: driverData.name,
         phone: driverData.phone,
+        phoneType: driverData.phoneType || 'android',
         vehicleType: driverData.vehicleType || null,
         status: driverData.status || 'available',
-        assignedDelivery: driverData.assignedDelivery || null,
+        assignedDelivery: null,
       };
       const response = await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
@@ -57,16 +57,15 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
-  // ── Update an existing driver 
   const updateDriver = async (driverId, driverData) => {
     try {
       const updatedFields = {
         name: driverData.name,
         phone: driverData.phone,
+        phoneType: driverData.phoneType || 'android',
         vehicleType: driverData.vehicleType || null,
-        // Never overwrite status or assignedDelivery from the edit form
       };
-      const response = await tablesDB.updateRow({
+      await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
         rowId: driverId,
@@ -77,19 +76,38 @@ export const useDriverManagement = (agencyId) => {
           driver.$id === driverId ? { ...driver, ...updatedFields } : driver
         )
       );
-      return { success: true, data: response };
+      return { success: true };
     } catch (err) {
       console.error('Error updating driver:', err);
       return { success: false, error: err.message };
     }
   };
 
+  const deleteDriver = async (driverId) => {
+    try {
+      const driver = drivers.find((d) => d.$id === driverId);
+      if (driver?.status === 'on_delivery') {
+        return {
+          success: false,
+          error: 'Cannot delete a driver who has active deliveries. Complete or reassign their deliveries first.',
+        };
+      }
+      await tablesDB.deleteRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+        rowId: driverId,
+      });
+      setDrivers((prev) => prev.filter((d) => d.$id !== driverId));
+      return { success: true };
+    } catch (err) {
+      console.error('Error deleting driver:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   const toggleDriverStatus = async (driverId, currentStatus) => {
     try {
-      if (currentStatus === 'on_delivery') {
-        console.log('Cannot toggle status while driver is on delivery');
-        return;
-      }
+      if (currentStatus === 'on_delivery') return;
       const newStatus = currentStatus === 'available' ? 'offline' : 'available';
       await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
@@ -107,48 +125,69 @@ export const useDriverManagement = (agencyId) => {
     }
   };
 
-  // ── Assign driver to a delivery 
+  // Always fetch fresh to avoid stale comma-list
   const assignDriverToDelivery = async (driverId, deliveryId) => {
-  try {
-    const driver = drivers.find(d => d.$id === driverId);
-    const existing = driver?.assignedDelivery 
-      ? driver.assignedDelivery.split(',').filter(Boolean) 
-      : [];
-    
-    if (!existing.includes(deliveryId)) {
-      existing.push(deliveryId);
+    try {
+      const freshDriver = await tablesDB.getRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+        rowId: driverId,
+      });
+
+      const existing = (freshDriver?.assignedDelivery ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      if (!existing.includes(deliveryId)) existing.push(deliveryId);
+      const updatedAssigned = existing.join(',');
+
+      await tablesDB.updateRow({
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+        rowId: driverId,
+        data: { status: 'on_delivery', assignedDelivery: updatedAssigned },
+      });
+
+      setDrivers((prev) =>
+        prev.map((d) =>
+          d.$id === driverId
+            ? { ...d, status: 'on_delivery', assignedDelivery: updatedAssigned }
+            : d
+        )
+      );
+    } catch (err) {
+      console.error('Error assigning driver:', err);
     }
+  };
 
-    const updatedAssigned = existing.join(',');
-
-    await tablesDB.updateRow({
-      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-      tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
-      rowId: driverId,
-      data: {
-        status: 'on_delivery',
-        assignedDelivery: updatedAssigned,
-      },
-    });
-
-    setDrivers(prev =>
-      prev.map(d =>
-        d.$id === driverId
-          ? { ...d, status: 'on_delivery', assignedDelivery: updatedAssigned }
-          : d
-      )
-    );
-  } catch (err) {
-    console.error('Error assigning driver:', err);
-  }
-};
+  // Uses shared util — same logic as DriverPortalPage
+  const freeDriverFromDelivery = async (driverId, completedDeliveryId) => {
+    try {
+      const { newStatus, newAssigned } = await freeDriverUtil(driverId, completedDeliveryId);
+      // Sync React state to match what was written to Appwrite
+      setDrivers((prev) =>
+        prev.map((d) =>
+          d.$id === driverId
+            ? { ...d, status: newStatus, assignedDelivery: newAssigned }
+            : d
+        )
+      );
+      return { success: true };
+    } catch (err) {
+      console.error('Error freeing driver:', err);
+      return { success: false, error: err.message };
+    }
+  };
 
   return {
     drivers,
     loading,
     error,
     addDriver,
-    updateDriver,           
+    updateDriver,
+    deleteDriver,
+    freeDriverFromDelivery,
     toggleDriverStatus,
     assignDriverToDelivery,
     fetchDrivers,

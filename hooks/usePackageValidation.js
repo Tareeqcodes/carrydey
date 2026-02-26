@@ -1,4 +1,9 @@
-export function usePackageValidation(packageDetails, fareDetails, fareFloor) {
+export function usePackageValidation(
+  packageDetails,
+  fareDetails,
+  fareFloor,
+  showPricing = true  
+) {
   const errors = {};
 
   if (!packageDetails.size) {
@@ -9,15 +14,14 @@ export function usePackageValidation(packageDetails, fareDetails, fareFloor) {
     errors.paymentMethod = 'Please select a payment method';
   }
 
-
-  if (fareDetails.offeredFare < fareFloor) {
+  if (showPricing && fareDetails.offeredFare < fareFloor) {
     errors.fare = `Offer can't be less than ₦${fareFloor.toLocaleString()}`;
   }
 
   const isValid =
     !!packageDetails.size &&
     !!fareDetails.paymentMethod &&
-    fareDetails.offeredFare >= fareFloor &&
+    (!showPricing || fareDetails.offeredFare >= fareFloor) &&
     Object.keys(errors).length === 0;
 
   return { isValid, errors };

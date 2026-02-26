@@ -5,10 +5,12 @@ import { generateOTP, generatePickupCode } from '@/hooks/otpGenerator';
 
 const generateDriverToken = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return Array.from({ length: 32 }, () =>
+    chars[Math.floor(Math.random() * chars.length)]
+  ).join('');
 };
 
-export const useDeliveryManagement = (agencyId) => {
+export const useDeliveryManagement = (agencyId, freeDriverFromDelivery) => {
   const [deliveryRequests, setDeliveryRequests] = useState([]);
   const [activeDeliveries, setActiveDeliveries] = useState([]);
   const [completedDeliveries, setCompletedDeliveries] = useState([]);
@@ -42,11 +44,11 @@ export const useDeliveryManagement = (agencyId) => {
         ],
       });
 
-      const pending = response.rows.filter(r => r.status === 'pending');
-      const active = response.rows.filter(r =>
+      const pending = response.rows.filter((r) => r.status === 'pending');
+      const active = response.rows.filter((r) =>
         ['accepted', 'pending_assignment', 'assigned', 'picked_up', 'in_transit'].includes(r.status)
       );
-      const completed = response.rows.filter(r =>
+      const completed = response.rows.filter((r) =>
         ['delivered', 'cancelled'].includes(r.status)
       );
 
@@ -74,15 +76,11 @@ export const useDeliveryManagement = (agencyId) => {
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: requestId,
-        data: {
-          status: 'accepted',
-          pickupCode,
-          dropoffOTP,
-        },
+        data: { status: 'accepted', pickupCode, dropoffOTP },
       });
 
-      setDeliveryRequests(prev => prev.filter(r => r.$id !== requestId));
-      setActiveDeliveries(prev => [...prev, response]);
+      setDeliveryRequests((prev) => prev.filter((r) => r.$id !== requestId));
+      setActiveDeliveries((prev) => [...prev, response]);
 
       return { success: true, data: response, pickupCode, dropoffOTP };
     } catch (err) {
@@ -99,17 +97,11 @@ export const useDeliveryManagement = (agencyId) => {
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
-        data: {
-          status: 'assigned',
-          driverId,
-          driverName,
-          driverPhone,
-          driverToken, 
-        },
+        data: { status: 'assigned', driverId, driverName, driverPhone, driverToken },
       });
 
-      setActiveDeliveries(prev =>
-        prev.map(delivery =>
+      setActiveDeliveries((prev) =>
+        prev.map((delivery) =>
           delivery.$id === deliveryId ? { ...delivery, ...response } : delivery
         )
       );
@@ -121,12 +113,9 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
-  // ── Driver-side actions (called from /driver/[token] page via API route) ──
-  // These are also exported so the driver portal API route can use the same logic.
-
   const confirmPickup = async (deliveryId, enteredCode) => {
     try {
-      const delivery = activeDeliveries.find(d => d.$id === deliveryId);
+      const delivery = activeDeliveries.find((d) => d.$id === deliveryId);
       if (!delivery) return { success: false, error: 'Delivery not found' };
 
       if (delivery.pickupCode !== enteredCode.toUpperCase()) {
@@ -140,8 +129,8 @@ export const useDeliveryManagement = (agencyId) => {
         data: { status: 'picked_up' },
       });
 
-      setActiveDeliveries(prev =>
-        prev.map(d => d.$id === deliveryId ? { ...d, ...response } : d)
+      setActiveDeliveries((prev) =>
+        prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
 
       return { success: true, data: response };
@@ -150,9 +139,10 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
+  // ── confirmDelivery — fixed driver status reset ───────────────────────────
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
-      const delivery = activeDeliveries.find(d => d.$id === deliveryId);
+      const delivery = activeDeliveries.find((d) => d.$id === deliveryId);
       if (!delivery) return { success: false, error: 'Delivery not found' };
 
       if (delivery.dropoffOTP !== enteredOTP) {
@@ -166,31 +156,13 @@ export const useDeliveryManagement = (agencyId) => {
         data: { status: 'delivered' },
       });
 
-      // Free up driver
-      if (delivery?.driverId) {
-        const driverResponse = await tablesDB.getRow({
-          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-          tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
-          rowId: delivery.driverId,
-        });
-
-        const remaining = (driverResponse?.assignedDelivery || '')
-          .split(',')
-          .filter(id => id && id !== deliveryId);
-
-        await tablesDB.updateRow({
-          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-          tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
-          rowId: delivery.driverId,
-          data: {
-            status: remaining.length > 0 ? 'on_delivery' : 'available',
-            assignedDelivery: remaining.join(',') || null,
-          },
-        });
+      // ← Use the injected callback to update driver state immediately
+      if (delivery?.driverId && freeDriverFromDelivery) {
+        await freeDriverFromDelivery(delivery.driverId, deliveryId);
       }
 
-      setActiveDeliveries(prev => prev.filter(d => d.$id !== deliveryId));
-      setCompletedDeliveries(prev => [response, ...prev]);
+      setActiveDeliveries((prev) => prev.filter((d) => d.$id !== deliveryId));
+      setCompletedDeliveries((prev) => [response, ...prev]);
 
       return { success: true, data: response };
     } catch (err) {
@@ -198,9 +170,10 @@ export const useDeliveryManagement = (agencyId) => {
     }
   };
 
+  // ── updateDeliveryStatus — fixed driver status reset ─────────────────────
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
     try {
-      const delivery = activeDeliveries.find(d => d.$id === deliveryId);
+      const delivery = activeDeliveries.find((d) => d.$id === deliveryId);
 
       const response = await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
@@ -210,33 +183,16 @@ export const useDeliveryManagement = (agencyId) => {
       });
 
       if (newStatus === 'delivered' || newStatus === 'cancelled') {
-        if (delivery?.driverId) {
-          const driverResponse = await tablesDB.getRow({
-            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-            tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
-            rowId: delivery.driverId,
-          });
-
-          const remaining = (driverResponse?.assignedDelivery || '')
-            .split(',')
-            .filter(id => id && id !== deliveryId);
-
-          await tablesDB.updateRow({
-            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-            tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
-            rowId: delivery.driverId,
-            data: {
-              status: remaining.length > 0 ? 'on_delivery' : 'available',
-              assignedDelivery: remaining.join(',') || null,
-            },
-          });
+        // ← Use the injected callback instead of re-fetching the driver
+        if (delivery?.driverId && freeDriverFromDelivery) {
+          await freeDriverFromDelivery(delivery.driverId, deliveryId);
         }
 
-        setActiveDeliveries(prev => prev.filter(d => d.$id !== deliveryId));
-        setCompletedDeliveries(prev => [response, ...prev]);
+        setActiveDeliveries((prev) => prev.filter((d) => d.$id !== deliveryId));
+        setCompletedDeliveries((prev) => [response, ...prev]);
       } else {
-        setActiveDeliveries(prev =>
-          prev.map(d => d.$id === deliveryId ? { ...d, ...response } : d)
+        setActiveDeliveries((prev) =>
+          prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
         );
       }
 

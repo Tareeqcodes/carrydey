@@ -1,10 +1,9 @@
 'use client';
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { 
   CheckCircle,
   XCircle,
   Search,
-  TrendingUp,
   History as HistoryIcon,
 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
@@ -62,17 +61,11 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
 
   const totalDelivered = completedDeliveries.filter(d => d.status === 'delivered').length;
  const totalCancelled = completedDeliveries.filter(d => d.status === 'cancelled').length;
-  // const totalEarnings = completedDeliveries
-  //   .filter(d => d.status === 'delivered')
-  //   .reduce((sum, d) => sum + (d.offeredFare || d.suggestedFare || 0), 0);
 
-  const today = new Date().toDateString();
-  const todayDeliveries = completedDeliveries.filter(d => 
-    new Date(d.$createdAt || d.createdAt).toDateString() === today
-  );
-  const todayEarnings = todayDeliveries
-    .filter(d => d.status === 'delivered')
-    .reduce((sum, d) => sum + (d.offeredFare || d.suggestedFare || 0), 0);
+  // const today = new Date().toDateString();
+  // const todayDeliveries = completedDeliveries.filter(d => 
+  //   new Date(d.$createdAt || d.createdAt).toDateString() === today
+  // );
 
   const getStatusBadge = (status) => {
     if (status === 'delivered') {
@@ -98,7 +91,7 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
         <div className="flex items-center justify-between mb-3">
           {getStatusBadge(delivery.status)}
           <time className="text-xs text-gray-400 font-mono">
-            {new Date(delivery.$createdAt || delivery.createdAt).toLocaleDateString('en-US', {
+            {new Date(delivery.$createdAt).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric'
@@ -113,11 +106,9 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
               <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Pickup</span>
             </div>
-            <div className="flex-1">
-              <p className="text-[11px] text-gray-900 leading-snug">{delivery.pickup || delivery.pickupAddress}</p>
-              {/* {delivery.pickupContactName && (
-                <p className="text-xs text-gray-500 mt-0.5">{delivery.pickupContactName}</p>
-              )} */}
+            <div>
+              <p className="text-[11px] text-gray-900 leading-snug">{ delivery.pickupAddress}</p>
+              
             </div>
           </div>
           
@@ -126,11 +117,9 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
               <div className="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0" />
               <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Dropoff</span>
             </div>
-            <div className="flex-1">
-              <p className="text-[11px] text-gray-900 leading-snug">{delivery.dropoff || delivery.dropoffAddress}</p>
-              {/* {delivery.dropoffContactName && (
-                <p className="text-xs text-gray-500 mt-0.5">{delivery.dropoffContactName}</p>
-              )} */}
+            <div>
+              <p className="text-[11px] text-gray-900 leading-snug">{delivery.dropoffAddress}</p>
+              
             </div>
           </div>
         </div>
@@ -140,7 +129,7 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
           <div className="mb-3 p-2.5 bg-gray-50/50 rounded-lg border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-0.5">Courier</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-0.5">delivered by</p>
                 <p className="text-sm font-medium text-gray-900">{delivery.driverName}</p>
               </div>
             </div>
@@ -149,10 +138,7 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
 
         {/* Details - Horizontal Grid */}
         <div className="flex items-center gap-2 mb-3">
-          <div className="flex-1 text-center p-2 rounded-lg bg-gray-50/50">
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-0.5">Distance</p>
-            <p className="text-xs font-semibold text-gray-900">{delivery.distance || 'N/A'}</p>
-          </div>
+          
           <div className="flex-1 text-center p-2 rounded-lg bg-gray-50/50">
             <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-0.5">Package</p>
             <p className="text-xs font-semibold text-gray-900">{delivery.packageSize || 'Medium'}</p>
@@ -169,18 +155,6 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
           </div>
         </div>
 
-        {/* Package Description - Compact */}
-        {/* {delivery.packageDescription && (
-          <div className="p-2.5 bg-blue-50/50 rounded-lg border border-blue-100">
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Details</p>
-            <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{delivery.packageDescription}</p>
-            {delivery.isFragile && (
-              <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] rounded font-medium">
-                ⚠️ Fragile
-              </span>
-            )}
-          </div>
-        )} */}
       </div>
     );
   };
@@ -215,15 +189,7 @@ const DeliveryHistory = ({ completedDeliveries, loading }) => {
             <p className="text-xs text-gray-500">Cancelled</p>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 border border-emerald-400 hover:shadow-md hover:shadow-emerald-100 transition-all duration-200">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-white" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-white mb-0.5">{formatNairaSimple(todayEarnings)}</p>
-            <p className="text-xs text-emerald-50">Today's Earnings</p>
-          </div>
+          
         </div>
 
         {/* Filters - Compact */}

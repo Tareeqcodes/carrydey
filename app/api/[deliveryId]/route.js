@@ -43,7 +43,6 @@ export async function GET(request, { params }) {
       );
     }
     
-    // Return ONLY what guest needs to see
     const response = {
       $id: delivery.$id,
       status: delivery.status,
@@ -52,14 +51,12 @@ export async function GET(request, { params }) {
       $createdAt: delivery.$createdAt,
     };
     
-    // Add pickup code only if assigned or later
     if (['assigned', 'picked_up', 'in_transit', 'delivered'].includes(delivery.status)) {
       response.pickupCode = delivery.pickupCode;
       response.driverName = delivery.driverName;
       response.driverPhone = delivery.driverPhone;
     }
     
-    // Add dropoff OTP only if picked up
     if (['picked_up', 'in_transit', 'delivered'].includes(delivery.status)) {
       response.dropoffOTP = delivery.dropoffOTP;
     }

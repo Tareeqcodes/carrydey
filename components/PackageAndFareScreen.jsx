@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Phone } from 'lucide-react';
 import {
   useFareCalculator,
   useAgencyFareCalculator,
 } from '@/hooks/useFareCalculator';
 import { usePackageValidation } from '@/hooks/usePackageValidation';
+import { useBrandColors } from '@/hooks/BrandColors';
 import DeliverySummaryCard from '@/components/PackageAndFare/DeliverySummaryCard';
 import PackageSection from '@/components/PackageAndFare/PackageSection';
 import FareSection from '@/components/PackageAndFare/FareSection';
@@ -13,35 +14,68 @@ import PickupOptions from '@/components/PackageAndFare/PickupOptions';
 import StickyConfirmBar from '@/components/PackageAndFare/StickyConfirmBar';
 import PaymentSection from './PackageAndFare/PaymentSection';
 
-// ─── Inner component that calls the correct fare hook ────────────────────────
-// Hooks must be called unconditionally, so we split into two tiny wrappers
-// that each call one hook and render the shared UI.
+function AgencyPriceContactCard() {
+  const { brandColors } = useBrandColors();
 
-function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook }) {
+  return (
+    <section>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+        Fare
+      </p>
+      <div
+        className="rounded-2xl border border-dashed bg-gray-50 px-5 py-6 flex gap-4 items-start"
+        style={{ borderColor: `${brandColors.primary}40` }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+          style={{
+            background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+            boxShadow: `0 4px 14px ${brandColors.primary}30`,
+          }}
+        >
+          <Phone className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-gray-900 mb-1">
+            The agency will contact you with the price
+          </p>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            This agency sets pricing manually. After you confirm your booking
+            details, they will reach out to discuss and agree on a fare before
+            your delivery is dispatched.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Screen({
+  delivery,
+  onPackageConfirmed,
+  loading,
+  onBack,
+  fareHook,
+  showPricing = true,
+}) {
+  const { brandColors } = useBrandColors();
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const [packageDetails, setPackageDetails] = useState({
     size: '',
-    weight: '', // make sure weight is tracked
     description: '',
     isFragile: false,
     pickupTime: 'courier',
     pickupContact: {
       pickupContactName: '',
       pickupPhone: '',
-      pickupStoreName: '',
-      pickupUnitFloor: '',
-      pickupOption: 'curb',
-      pickupInstructions: '',
     },
     dropoffContact: {
       dropoffContactName: '',
       dropoffPhone: '',
-      dropoffStoreName: '',
-      dropoffUnitFloor: '',
-      dropoffOption: 'door',
       dropoffInstructions: '',
       recipientPermission: false,
     },
@@ -52,16 +86,17 @@ function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook }) {
     paymentMethod: '',
   });
 
-  // ← the hook (platform or agency) is injected from outside
   const suggestedFare = fareHook(packageDetails, delivery.routeData);
-  const fareFloor = Math.round(suggestedFare * 0.15);
+  const fareFloor = Math.round(suggestedFare * 0.5);
   const { isValid, errors } = usePackageValidation(
     packageDetails,
     fareDetails,
-    fareFloor
+    fareFloor,
+    showPricing
   );
 
   useEffect(() => {
+    if (!showPricing) return;
     setFareDetails((prev) => ({
       ...prev,
       offeredFare:
@@ -69,13 +104,13 @@ function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook }) {
           ? suggestedFare
           : Math.max(prev.offeredFare, suggestedFare),
     }));
-  }, [suggestedFare]);
+  }, [suggestedFare, showPricing]);
 
   const handleConfirm = () => {
     if (!isValid) return;
     onPackageConfirmed(packageDetails, {
-      suggestedFare,
-      offeredFare: fareDetails.offeredFare,
+      suggestedFare: showPricing ? suggestedFare : null,
+      offeredFare: showPricing ? fareDetails.offeredFare : null,
       paymentMethod: fareDetails.paymentMethod,
     });
   };
@@ -83,15 +118,25 @@ function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook }) {
   return (
     <div className="min-h-screen bg-white max-w-md pb-28 md:pb-0 mx-auto">
       <div className="max-w-3xl mx-auto px-4 py-5 space-y-6">
+
+        {/* Header */}
         <div className="flex items-start gap-3 px-5">
           <button
             onClick={onBack}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-colors hover:bg-gray-200"
           >
             <ChevronLeft className="w-4 h-4 text-gray-600" />
           </button>
           <h1 className="text-lg font-bold text-gray-900">New delivery</h1>
         </div>
+
+        {/* Branded accent bar — only shows for agency bookings where colors differ */}
+        <div
+          className="h-0.5 rounded-full mx-5"
+          style={{
+            background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.accent} 50%, ${brandColors.secondary} 100%)`,
+          }}
+        />
 
         <DeliverySummaryCard
           delivery={delivery}
@@ -120,15 +165,19 @@ function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook }) {
           }
         />
 
-        <FareSection
-          fareDetails={fareDetails}
-          onFareChange={(offeredFare) =>
-            setFareDetails((p) => ({ ...p, offeredFare }))
-          }
-          suggestedFare={suggestedFare}
-          fareFloor={fareFloor}
-          errors={errors}
-        />
+        {showPricing ? (
+          <FareSection
+            fareDetails={fareDetails}
+            onFareChange={(offeredFare) =>
+              setFareDetails((p) => ({ ...p, offeredFare }))
+            }
+            suggestedFare={suggestedFare}
+            fareFloor={fareFloor}
+            errors={errors}
+          />
+        ) : (
+          <AgencyPriceContactCard />
+        )}
 
         <PaymentSection
           paymentMethod={fareDetails.paymentMethod}
@@ -143,31 +192,36 @@ function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook }) {
         isValid={isValid}
         loading={loading}
         errors={errors}
-        fareDetails={fareDetails}
+        fareDetails={showPricing ? fareDetails : null}
         onConfirm={handleConfirm}
       />
     </div>
   );
 }
 
-// ─── Platform variant (CreateDelivery — logged-in users) ─────────────────────
+// ─── Platform variant ─────────────────────────────────────────────────────────
 function PlatformScreen(props) {
-  // useFareCalculator is called inside Screen via the injected fareHook
-  return <Screen {...props} fareHook={useFareCalculator} />;
+  return <Screen {...props} fareHook={useFareCalculator} showPricing={true} />;
 }
 
-// ─── Agency variant (AgencyBookingPage — reads pricing from context) ──────────
-function AgencyScreen(props) {
-  return <Screen {...props} fareHook={useAgencyFareCalculator} />;
+// ─── Agency variant ───────────────────────────────────────────────────────────
+function AgencyScreen({ showPricing, ...props }) {
+  return (
+    <Screen
+      {...props}
+      fareHook={useAgencyFareCalculator}
+      showPricing={showPricing ?? true}
+    />
+  );
 }
 
-// ─── Public export — single component, switches variant via prop ──────────────
 export default function PackageAndFareScreen({
   isAgencyBooking = false,
+  showPricing,
   ...props
 }) {
   return isAgencyBooking ? (
-    <AgencyScreen {...props} />
+    <AgencyScreen {...props} showPricing={showPricing} />
   ) : (
     <PlatformScreen {...props} />
   );

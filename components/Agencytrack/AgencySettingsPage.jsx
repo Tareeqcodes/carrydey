@@ -1,17 +1,24 @@
 'use client';
 import { useState, useEffect } from 'react';
 import {
-  Building2, CheckCircle, AlertCircle, X,
-  Award, Shield, Eye, EyeOff, Package,
-  Settings, Palette, Briefcase,
+  Building2,
+  CheckCircle,
+  AlertCircle,
+  X,
+  Award,
+  Shield,
+  Eye,
+  EyeOff,
+  Package,
+  Settings,
+  Palette,
+  Briefcase,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@headlessui/react';
 import AgencySettingLoading from './AgencySettingLoading';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
-
-// Modular tab components
 import GeneralSettings from './GeneralSettings';
 import BrandingSettings from './BrandingSettings';
 import OperationalSettings from './OperationalSettings';
@@ -23,18 +30,24 @@ const AgencySettingsPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('general');
-
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     serviceCities: '',
     isAvailable: false,
     logoUrl: '',
-    brandColors: { primary: '#3A0A21', secondary: '#5A1A41', accent: '#8B2E5A' },
+    brandColors: {
+      primary: '#3A0A21',
+      secondary: '#5A1A41',
+      accent: '#8B2E5A',
+    },
     tagline: '',
     operationalHours: '',
     baseDeliveryFee: '',
     pricePerKm: '',
+    minFare: '',
+    fragilePremium: '',
+    showPricing: true,
   });
 
   useEffect(() => {
@@ -50,14 +63,19 @@ const AgencySettingsPage = () => {
         tableId: process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID,
         queries: [Query.equal('userId', user.$id)],
       });
-
       if (response.rows.length > 0) {
         const agency = response.rows[0];
         setAgencyData(agency);
 
-        let brandColors = { primary: '#3A0A21', secondary: '#5A1A41', accent: '#8B2E5A' };
+        let brandColors = {
+          primary: '#3A0A21',
+          secondary: '#5A1A41',
+          accent: '#8B2E5A',
+        };
         if (agency.brandColors) {
-          try { brandColors = JSON.parse(agency.brandColors); } catch (e) {}
+          try {
+            brandColors = JSON.parse(agency.brandColors);
+          } catch (e) {}
         }
 
         setFormData({
@@ -71,6 +89,9 @@ const AgencySettingsPage = () => {
           operationalHours: agency.operationalHours || '',
           baseDeliveryFee: agency.baseDeliveryFee || '',
           pricePerKm: agency.pricePerKm || '',
+          minFare: agency.minFare || '',
+          fragilePremium: agency.fragilePremium || '',
+          showPricing: agency.showPricing ?? true,
         });
       }
     } catch (error) {
@@ -101,7 +122,11 @@ const AgencySettingsPage = () => {
         data: { isAvailable: newValue },
       });
       setAgencyData((prev) => ({ ...prev, isAvailable: newValue }));
-      showSuccess(newValue ? 'Your agency is now visible to customers' : 'Your agency is now hidden from customers');
+      showSuccess(
+        newValue
+          ? 'Your agency is now visible to our customers'
+          : 'Your agency is now hidden from our customers'
+      );
     } catch (error) {
       setFormData((prev) => ({ ...prev, isAvailable: !newValue }));
       showError('Failed to update availability');
@@ -121,17 +146,33 @@ const AgencySettingsPage = () => {
           <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
             <Building2 className="w-10 h-10 text-gray-400" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">No Agency Profile</h3>
-          <p className="text-gray-500 leading-relaxed">Complete your agency registration to get started</p>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
+            No Agency Profile
+          </h3>
+          <p className="text-gray-500 leading-relaxed">
+            Complete your agency registration to get started
+          </p>
         </div>
       </motion.div>
     );
   }
 
   const TABS = [
-    { key: 'general', label: 'General', icon: <Settings className="w-4 h-4" /> },
-    { key: 'branding', label: 'Branding', icon: <Palette className="w-4 h-4" /> },
-    { key: 'operational', label: 'Operations', icon: <Briefcase className="w-4 h-4" /> },
+    {
+      key: 'general',
+      label: 'General',
+      icon: <Settings className="w-4 h-4" />,
+    },
+    {
+      key: 'branding',
+      label: 'Branding',
+      icon: <Palette className="w-4 h-4" />,
+    },
+    {
+      key: 'operational',
+      label: 'Operations',
+      icon: <Briefcase className="w-4 h-4" />,
+    },
   ];
 
   return (
@@ -154,13 +195,15 @@ const AgencySettingsPage = () => {
                 <p className="font-semibold text-gray-900 text-sm">Success</p>
                 <p className="text-xs text-gray-600 mt-0.5">{successMessage}</p>
               </div>
-              <button onClick={() => setSuccessMessage(null)} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+              <button
+                onClick={() => setSuccessMessage(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
           </motion.div>
         )}
-
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -100, scale: 0.9 }}
@@ -177,7 +220,10 @@ const AgencySettingsPage = () => {
                 <p className="font-semibold text-gray-900 text-sm">Error</p>
                 <p className="text-xs text-gray-600 mt-0.5">{error}</p>
               </div>
-              <button onClick={() => setError(null)} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+              <button
+                onClick={() => setError(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -188,7 +234,11 @@ const AgencySettingsPage = () => {
       {/* Main Container */}
       <div className="mx-auto px-4 mb-28 lg:px-8 py-8 sm:py-12 max-w-7xl">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <h1 className="text-lg md:text-xl font-semibold text-gray-900 tracking-tight">
             Manage your logistics operations center
           </h1>
@@ -269,21 +319,30 @@ const AgencySettingsPage = () => {
             >
               <div className="p-6">
                 <div className="flex items-start gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    formData.isAvailable
-                      ? 'bg-gradient-to-br from-green-400 to-green-600 shadow-lg shadow-green-500/30'
-                      : 'bg-gray-200'
-                  }`}>
-                    {formData.isAvailable ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-gray-500" />}
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      formData.isAvailable
+                        ? 'bg-gradient-to-br from-green-400 to-green-600 shadow-lg shadow-green-500/30'
+                        : 'bg-gray-200'
+                    }`}
+                  >
+                    {formData.isAvailable ? (
+                      <Eye className="w-5 h-5 text-white" />
+                    ) : (
+                      <EyeOff className="w-5 h-5 text-gray-500" />
+                    )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-base font-bold text-gray-900 mb-1">Visibility</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">
-                      {formData.isAvailable ? 'Accepting new bookings' : 'Hidden from customers'}
+                    <h3 className="text-base font-bold text-gray-900 mb-1">
+                      Visibility
+                    </h3>
+                    <p className="text-[10px] text-gray-500 leading-relaxed">
+                      {formData.isAvailable
+                        ? 'Accepting new bookings from us'
+                        : 'Hidden from from our customers'}
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-between p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl">
                   <span className="text-sm font-semibold text-gray-700">
                     {formData.isAvailable ? 'Online' : 'Offline'}
@@ -314,30 +373,51 @@ const AgencySettingsPage = () => {
               className="bg-white rounded-3xl border border-gray-200/50 shadow-sm overflow-hidden"
             >
               <div className="p-6">
-                <h3 className="text-base font-bold text-gray-900 mb-6">Quick Stats</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-6">
+                  Quick Stats
+                </h3>
                 <div className="space-y-4">
-                  <motion.div whileHover={{ scale: 1.02 }} className="p-4 bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl border border-green-100/50">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl border border-green-100/50"
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <Award className="w-5 h-5 text-green-600" />
-                      <span className="text-2xl font-bold text-green-600">{agencyData.rating || '4.5'}⭐</span>
+                      <span className="text-2xl font-bold text-green-600">
+                        {agencyData.rating || '4.5'}⭐
+                      </span>
                     </div>
-                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Rating</p>
+                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      Rating
+                    </p>
                   </motion.div>
-
-                  <motion.div whileHover={{ scale: 1.02 }} className="p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl border border-purple-100/50">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl border border-purple-100/50"
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <Shield className="w-5 h-5 text-purple-600" />
-                      <span className="text-sm font-bold text-purple-600">{agencyData.verified ? 'Yes' : 'No'}</span>
+                      <span className="text-sm font-bold text-purple-600">
+                        {agencyData.verified ? 'Yes' : 'No'}
+                      </span>
                     </div>
-                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Verified Status</p>
+                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      Verified Status
+                    </p>
                   </motion.div>
-
-                  <motion.div whileHover={{ scale: 1.02 }} className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-100/50">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-100/50"
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <Package className="w-5 h-5 text-blue-600" />
-                      <span className="text-2xl font-bold text-blue-600">{agencyData.totalDeliveries || '0'}</span>
+                      <span className="text-2xl font-bold text-blue-600">
+                        {agencyData.totalDeliveries || '0'}
+                      </span>
                     </div>
-                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Deliveries</p>
+                    <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      Total Deliveries
+                    </p>
                   </motion.div>
                 </div>
               </div>

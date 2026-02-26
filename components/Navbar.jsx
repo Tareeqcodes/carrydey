@@ -25,7 +25,7 @@ const getNavLinks = (user, role) => {
     return [
       { href: '/send', label: 'Send', icon: Send },
       { href: '/track', label: 'Track', icon: PackageSearch },
-      { href: '/hub', label: 'Hub', icon: LayoutDashboard }
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard },
     ];
   } else if (role === 'courier') {
     return [
@@ -35,7 +35,7 @@ const getNavLinks = (user, role) => {
   } else if (role === 'agency') {
     return [
       { href: '/track', label: 'Track', icon: PackageSearch },
-      { href: '/hub', label: 'Hub', icon: LayoutDashboard }
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard },
     ];
   } else {
     return [
@@ -69,59 +69,47 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive, onClick }) => (
   </Link>
 );
 
-const DesktopNavLink = ({ href, label, icon: Icon, isActive }) => {
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium ${
-        isActive
-          ? 'text-[#3A0A21] bg-[#3A0A21]/5'
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-      }`}
-    >
-      <Icon size={18} />
-      <span>{label}</span>
-    </Link>
-  );
-};
+const DesktopNavLink = ({ href, label, icon: Icon, isActive }) => (
+  <Link
+    href={href}
+    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+      isActive
+        ? 'text-[#3A0A21] bg-[#3A0A21]/5'
+        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+    }`}
+  >
+    <Icon size={18} />
+    <span>{label}</span>
+  </Link>
+);
 
 const Navbar = () => {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('/');
   const { role, loading } = useUserRole();
+
+  const [activeTab, setActiveTab] = useState('/');
   const [scrolled, setScrolled] = useState(false);
 
-  const hiddenNavbarRoutes = [
-    '/AgencyBooking/',          
-    '/bookconfirm/', 
-    '/driver/',            
-  ];
-
-  const shouldHideNavbar = hiddenNavbarRoutes.some(route => 
-    pathname?.startsWith(route)
-  );
-
-  if (shouldHideNavbar) {
-    return null;
-  }
-
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (loading) {
-    return <NavbarMorphism />;
-  }
+  const hiddenNavbarRoutes = ['/AgencyBooking/', '/bookconfirm/', '/driver/'];
+  const shouldHideNavbar = hiddenNavbarRoutes.some(route =>
+    pathname?.startsWith(route)
+  );
+
+  if (shouldHideNavbar) return null;
+  if (loading) return <NavbarMorphism />;
 
   const navLinks = getNavLinks(user, role);
 
   return (
     <>
+      {/* Desktop nav */}
       <nav
         className={`hidden w-full md:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
@@ -134,7 +122,6 @@ const Navbar = () => {
             <Link href="/" className="flex items-center gap-2">
               <span className="text-xl font-bold text-[#3A0A21]">Carrydey</span>
             </Link>
-
             <div className="flex items-center gap-1">
               {navLinks.map((link) => (
                 <DesktopNavLink
@@ -150,6 +137,7 @@ const Navbar = () => {
         </div>
       </nav>
 
+      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/" className="text-lg font-bold text-[#3A0A21]">
@@ -157,7 +145,8 @@ const Navbar = () => {
           </Link>
         </div>
       </div>
- 
+
+      {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div className="bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-lg">
           <div className="flex items-center justify-around px-2 pb-safe">
@@ -174,6 +163,7 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
       <div className="md:hidden h-14" />
       <div className="hidden md:block h-16" />
     </>

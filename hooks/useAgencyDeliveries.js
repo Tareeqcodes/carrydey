@@ -102,8 +102,6 @@ export const useAgencyDeliveries = (userId) => {
       setError(err.message);
     }
   };
-
-  // ✅ Update ref whenever agencyId changes
   useEffect(() => {
     agencyIdRef.current = agencyId;
   }, [agencyId]);
@@ -121,7 +119,7 @@ export const useAgencyDeliveries = (userId) => {
         setError(null);
         const fetchedAgencyId = await fetchUserAgency();
         setAgencyId(fetchedAgencyId);
-        agencyIdRef.current = fetchedAgencyId; // ✅ Update ref immediately
+        agencyIdRef.current = fetchedAgencyId; 
 
         await fetchDeliveryRequests(fetchedAgencyId);
       } catch (err) {
@@ -148,7 +146,7 @@ export const useAgencyDeliveries = (userId) => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [userId]); // ✅ Keep userId dependency
+  }, [userId]);
 
   const refreshRequests = async () => {
     if (!userId) return;
