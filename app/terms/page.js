@@ -1,181 +1,186 @@
 'use client';
-import React from 'react';
 
-export default function TermsPage() {
-  const sections = [
-    {
-      title: "1. Agreement",
-      content: `These Terms govern your access to and use of Carrydey's platform. "Users" includes senders, travelers, and registered companies. By using our service you agree to these Terms and any policies referenced (Privacy Policy, Escrow Policy).`
-    },
-    {
-      title: "2. Eligibility",
-      content: `You must be 18+ and eligible to form binding contracts under Nigerian law. You must provide accurate information and keep your account up to date.`
-    },
-    {
-      title: "3. Accounts & Verification",
-      list: [
-        "You are responsible for maintaining a secure account.",
-        "Carrydey may require identity verification (NIN, BVN, driver's licence, selfie). Verified status is at our discretion.",
-        "False information may lead to account suspension."
-      ]
-    },
-    {
-      title: "4. Roles & Relationships",
-      content: `Carrydey acts as a technology platform connecting senders and travelers. We are not the carrier of goods (unless explicitly stated). The traveler is an independent agent selected by the sender. Carrydey does not assume responsibility for the physical goods beyond the escrow and dispute procedures defined below.`
-    },
-    {
-      title: "5. Posting & Accepting Requests",
-      subsections: [
-        {
-          subtitle: "Senders:",
-          text: "Shall provide honest and accurate package descriptions and select travelers thoughtfully. Packages with prohibited items are not allowed (see Prohibited Items)."
-        },
-        {
-          subtitle: "Travelers:",
-          text: "Shall ensure they have capacity and ability to deliver safely and on time. Travelers must follow instructions and comply with laws and transport rules."
-        }
-      ]
-    },
-    {
-      title: "6. Escrow & Payments",
-      list: [
-        "Senders must fund the delivery fee into escrow before pickup (unless special cases apply). Carrydey uses Paystack to collect and settle funds.",
-        "Funds are released to the traveler after the sender confirms delivery or after resolution of a dispute as described in the Escrow Policy."
-      ]
-    },
-    {
-      title: "7. Delivery, Proof & Confirmation",
-      subsections: [
-        {
-          subtitle: "Pickup:",
-          text: "Traveler must provide proof of collection (photo + GPS) where applicable."
-        },
-        {
-          subtitle: "Delivery:",
-          text: "Traveler must upload proof (photo, recipient name, OTP or signature). Recipient confirmation may be required."
-        },
-        {
-          subtitle: "Auto-release:",
-          text: "If sender does not confirm within X days (configurable; e.g., 3 days) and proof is present, funds may auto-release per Escrow Policy."
-        }
-      ]
-    },
-    {
-      title: "8. Prohibited Items",
-      content: `Users may not use Carrydey to transport illegal, hazardous, or restricted items including but not limited to: weapons, illicit drugs, flammable liquids, stolen property, perishable biological materials, or any items restricted by law.`
-    },
-    {
-      title: "9. Cancellations & Refunds",
-      content: `Cancellations are governed by the Escrow & Refund Policy. Early cancellations before pickup may result in partial or full refund depending on timing & fees.`
-    },
-    {
-      title: "10. Liability & Disclaimer",
-      list: [
-        "To the maximum extent permitted by law, Carrydey's liability is limited to direct proven losses caused by our gross negligence. We are not liable for indirect, incidental, or consequential losses.",
-        "We do not guarantee delivery times — times are estimates and depend on traveler availability & route.",
-        "Travelers are responsible for any damage or loss during their custody unless proven otherwise and covered by insurance or the dispute resolution outcome."
-      ]
-    },
-    {
-      title: "11. Insurance",
-      content: `Carrydey encourages senders to declare high-value items and purchase optional parcel insurance via our partner providers. Insurance terms are agreed separately.`
-    },
-    {
-      title: "12. Ratings & Conduct",
-      content: `Users shall behave respectfully. Abuse, harassment, threats, or illegal acts may result in account suspension. Ratings are used to maintain service quality.`
-    },
-    {
-      title: "13. Dispute Resolution",
-      content: `First: contact support via the app or support@carrydey.com. If unresolved, disputes may be escalated through our internal dispute resolution process. For legal matters, Nigerian law applies and disputes shall be resolved in Nigerian courts.`
-    }
-  ];
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus } from 'lucide-react';
 
+const sections = [
+  {
+    title: 'Agreement',
+    content: `These Terms govern your use of Carrydey's platform. "Users" includes senders, vendors, delivery agencies, and independent couriers. By using our service you agree to these Terms and all referenced policies.`,
+  },
+  {
+    title: 'Eligibility',
+    content: `You must be 18 or older and legally able to form binding contracts under Nigerian law. You must provide accurate information and keep your account up to date.`,
+  },
+  {
+    title: 'Accounts & verification',
+    list: [
+      'You are responsible for maintaining a secure account.',
+      'Carrydey may require identity verification (NIN, government ID, selfie). Verified status is granted at our discretion.',
+      'Providing false information may result in immediate account suspension.',
+    ],
+  },
+  {
+    title: 'Platform role',
+    content: `Carrydey is a technology platform — not a carrier. We connect senders with delivery agencies and independent couriers. We do not take custody of goods and are not liable for physical loss or damage beyond the dispute procedures described below.`,
+  },
+  {
+    title: 'Bookings & deliveries',
+    list: [
+      'Senders must provide honest, accurate package descriptions. Prohibited items are not allowed.',
+      'Couriers and agencies must confirm capacity before accepting jobs.',
+      'Proof of pickup and delivery (photo, GPS, or OTP) is required where applicable.',
+    ],
+  },
+  {
+    title: 'Payments & escrow',
+    list: [
+      'Payment must be funded before pickup. Carrydey uses Paystack to collect and settle funds.',
+      'Funds are released after delivery confirmation or dispute resolution.',
+      'If a sender does not confirm delivery within the review window and proof is present, funds may auto-release.',
+    ],
+  },
+  {
+    title: 'Prohibited items',
+    content: `You may not use Carrydey to send weapons, illicit drugs, flammable materials, stolen property, or any item restricted by Nigerian law. Violations may result in account termination and referral to authorities.`,
+  },
+  {
+    title: 'Cancellations & refunds',
+    content: `Cancellations are governed by our Escrow & Refund Policy. Refund eligibility depends on the stage of the delivery at the time of cancellation.`,
+  },
+  {
+    title: 'Liability',
+    list: [
+      'Carrydey\'s liability is limited to direct losses caused by our gross negligence.',
+      'We are not liable for indirect, incidental, or consequential losses.',
+      'Delivery times are estimates — we do not guarantee specific windows.',
+    ],
+  },
+  {
+    title: 'Conduct',
+    content: `All users must behave respectfully. Abuse, harassment, or illegal conduct may result in permanent suspension. Ratings exist to maintain quality and safety for everyone on the platform.`,
+  },
+  {
+    title: 'Disputes',
+    content: `First, contact support via the app or support@carrydey.tech. Unresolved disputes may be escalated through our internal resolution process. Nigerian law applies and disputes are resolved in Nigerian courts.`,
+  },
+  {
+    title: 'Changes to these terms',
+    content: `We may update these Terms. Continued use of the platform after changes constitutes acceptance. We will notify users of material changes.`,
+  },
+];
+
+function AccordionItem({ item, isOpen, onToggle }) {
   return (
-    <main className="min-h-screen mt-20 bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Terms & Conditions</h1>
-          <p className="text-sm text-gray-600">Carrydey Technologies</p>
-          <p className="text-sm text-gray-600">Effective date: November 2025</p>
-        </div>
+    <div className="border-b border-[#ebe6e9]">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between py-5 text-left group"
+      >
+        <span className="text-[15px] font-medium text-[#1a1a1a] group-hover:text-[#3A0A21] transition-colors">
+          {item.title}
+        </span>
+        <motion.div
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          className="shrink-0 ml-4"
+        >
+          <Plus size={15} className="text-[#3A0A21]" />
+        </motion.div>
+      </button>
 
-        {/* Introduction Notice */}
-        <div className="bg-blue-50 border-l-4 border-blue-600 p-4 mb-6 rounded-r-lg">
-          <p className="text-sm text-gray-700">
-            By using Carrydey's platform, you agree to be bound by these Terms & Conditions. 
-            Please read them carefully before using our services.
-          </p>
-        </div>
-
-        {/* Sections */}
-        <div className="space-y-6">
-          {sections.map((section, index) => (
-            <section key={index} className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                {section.title}
-              </h2>
-              
-              {section.content && (
-                <p className="text-gray-700 leading-relaxed">
-                  {section.content}
-                </p>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.04, 0.62, 0.23, 0.98] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className="pb-6 pr-8 space-y-3">
+              {item.content && (
+                <p className="text-sm text-[#888] leading-relaxed">{item.content}</p>
               )}
-              
-              {section.list && (
+              {item.list && (
                 <ul className="space-y-2">
-                  {section.list.map((item, i) => (
-                    <li key={i} className="text-gray-700 leading-relaxed flex">
-                      <span className="text-blue-600 mr-2 mt-1">•</span>
-                      <span>{item}</span>
+                  {item.list.map((li, i) => (
+                    <li key={i} className="text-sm text-[#888] leading-relaxed flex gap-2.5">
+                      <span className="text-[#3A0A21] shrink-0 mt-0.5">–</span>
+                      {li}
                     </li>
                   ))}
                 </ul>
               )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
-              {section.subsections && (
-                <div className="space-y-3">
-                  {section.subsections.map((sub, i) => (
-                    <div key={i}>
-                      <p className="font-medium text-gray-900 mb-1">{sub.subtitle}</p>
-                      <p className="text-gray-700 leading-relaxed ml-4">{sub.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+export default function TermsPage() {
+  const [open, setOpen] = useState(null);
+
+  return (
+    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
+        rel="stylesheet"
+      />
+
+      <motion.div
+        className="max-w-2xl mx-auto px-6 pt-24 pb-32"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-8">
+          Legal
+        </p>
+
+        <h1
+          className="text-[clamp(2.4rem,6vw,3.5rem)] font-normal leading-[1.1] text-[#1a1a1a] mb-4"
+          style={{ fontFamily: "'DM Serif Display', serif", letterSpacing: '-0.02em' }}
+        >
+          Terms &amp; Conditions
+        </h1>
+
+        <p className="text-sm text-[#bbb] mb-6">
+          Carrydey Technologies · Effective November 2025
+        </p>
+
+        <div className="bg-[#3A0A21]/5 border border-[#3A0A21]/15 rounded-xl px-5 py-4 mb-14">
+          <p className="text-sm text-[#3A0A21] leading-relaxed">
+            By creating an account or using Carrydey, you agree to be bound by these Terms. Please read them carefully.
+          </p>
+        </div>
+
+        <div>
+          {sections.map((item, i) => (
+            <AccordionItem
+              key={i}
+              item={item}
+              isOpen={open === i}
+              onToggle={() => setOpen(open === i ? null : i)}
+            />
           ))}
         </div>
 
-        {/* Important Notice */}
-        <div className="mt-8 bg-amber-50 border border-amber-200 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
-            <span className="text-amber-600 mr-2">⚠️</span>
-            Important Notice
-          </h3>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            These Terms & Conditions constitute a legally binding agreement. By creating an account 
-            or using Carrydey's services, you acknowledge that you have read, understood, and agree 
-            to be bound by these terms.
+        <div className="mt-14 border border-[#e2dce0] rounded-2xl px-6 py-5 bg-white">
+          <p className="text-sm text-[#999]">
+            Questions about these Terms?{' '}
+            <a
+              href="mailto:support@carrydey.tech"
+              className="text-[#3A0A21] font-medium hover:underline"
+            >
+              support@carrydey.tech
+            </a>
           </p>
         </div>
-
-        {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-600 mb-2">
-            Questions about these Terms & Conditions?
-          </p>
-          <a 
-            href="mailto:support@carrydey.tech" 
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-          >
-            support@carrydey.tech
-          </a>
-          <p className="text-xs text-gray-500 mt-4">
-            Carrydey Technologies • Registered in Nigeria
-          </p>
-        </div>
-      </div>
-    </main>
+      </motion.div>
+    </div>
   );
 }
