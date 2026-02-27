@@ -1,21 +1,12 @@
-
 export function GET() {
   const robots = `User-agent: *
 Allow: /
-
-# Disallow sensitive areas
-Disallow: /track/
-Disallow: /travel/
 Disallow: /dashboard/
-Disallow: /send/
 Disallow: /onboarding/
-Disallow: /pendingVerification/
+Disallow: /track/
+Disallow: /onboardagency/
 
-# Sitemap
-Sitemap: https://carrydey.tech/sitemap.xml
-
-# Crawl delay (optional)
-# Crawl-delay: 1`;
+Sitemap: https://carrydey.tech/sitemap.xml`;
 
   return new Response(robots, {
     headers: {

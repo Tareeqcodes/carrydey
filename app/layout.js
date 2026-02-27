@@ -27,6 +27,18 @@ const structuredData = {
   },
 };
 
+const siteNavStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'SiteNavigationElement',
+  name: ['Send percel', 'For Vendors', 'For Couriers', 'Privacy'],
+  url: [
+    'https://carrydey.tech/send',
+    'https://carrydey.tech/vendor',
+    'https://carrydey.tech/courier',
+    'https://carrydey.tech/privacy',
+  ],
+};
+
 const organizationStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -79,7 +91,6 @@ export const metadata = {
     'Carrydey connects customers with verified delivery agencies and independent couriers. Book deliveries, track orders in real time, manage payments, and scale logistics operations across Nigeria.',
 
   keywords: [
-    // Core logistics keywords
     'logistics marketplace',
     'delivery booking platform',
     'courier marketplace nigeria',
@@ -99,13 +110,11 @@ export const metadata = {
     'dispatch rider platform',
     'delivery agency software',
     
-    // Brand keywords
     'carrydey',
     'carrydey tech',
     'carrydey logistics',
     'carrydey nigeria',
     
-    // Popular search terms - sending & booking
     'send package nigeria',
     'how to send package in nigeria',
     'book delivery nigeria',
@@ -117,7 +126,6 @@ export const metadata = {
     'parcel delivery service',
     'package tracking nigeria',
     
-    // E-commerce & business logistics
     'ecommerce logistics nigeria',
     'logistics for online business',
     'delivery for small business',
@@ -127,7 +135,6 @@ export const metadata = {
     'logistics platform for vendors',
     'marketplace delivery',
     
-    // Location-based
     'courier service lagos',
     'delivery service abuja',
     'logistics company nigeria',
@@ -136,7 +143,6 @@ export const metadata = {
     'interstate delivery nigeria',
     'nationwide courier',
     
-    // Service-specific
     'freight forwarding nigeria',
     'courier express parcel',
     'CEP services nigeria',
@@ -146,7 +152,6 @@ export const metadata = {
     'delivery tracking system',
     'real-time package tracking',
     
-    // Rider/Agency focused
     'independent courier jobs',
     'dispatch rider jobs nigeria',
     'freelance courier',
@@ -156,13 +161,11 @@ export const metadata = {
     'rider management system',
     'courier performance tracking',
     
-    // Mobile & payment
     'mobile delivery booking',
     'delivery payment platform',
     'logistics fintech',
     'courier payment management',
     
-    // Comparative/trending
     'best courier nigeria 2025',
     'affordable logistics nigeria',
     'fast delivery service',
@@ -251,6 +254,11 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
+        <script
+        type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteNavStructuredData) }}
+          
+         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

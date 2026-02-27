@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic'; 
+export const dynamic = 'force-dynamic';
+
 export default function sitemap() {
   const baseUrl = 'https://carrydey.tech';
-
   return [
     {
       url: baseUrl,
@@ -10,16 +10,28 @@ export default function sitemap() {
       priority: 1,
     },
     {
-      url: `${baseUrl}/login`,
+      url: `${baseUrl}/vendor`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/courier`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/send`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/login`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
     },
     {
       url: `${baseUrl}/privacy`,
