@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
-import { freeDriverFromDelivery as freeDriverUtil } from '@/hooks/Driverutils';
+import { freeDriverFromDelivery as freeDriverUtil } from '@/utils/Driverutils';
 
 export const useDriverManagement = (agencyId) => {
   const [drivers, setDrivers] = useState([]);

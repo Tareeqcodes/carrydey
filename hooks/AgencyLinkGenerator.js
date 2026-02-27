@@ -1,38 +1,73 @@
 'use client';
-import { useState } from 'react';
-import { Copy, Check, Share2, ExternalLink, Sparkles, QrCode } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Copy, Check, Link2, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { tablesDB } from '@/lib/config/Appwriteconfig';
+import { slugify } from '@/utils/slugify';
 
-export default function AgencyLinkGenerator({ agencyId }) {
+export default function AgencyLinkGenerator({ agencyId, agencyName }) {
   const [copied, setCopied] = useState(false);
-  
-  // Generate the booking link
-  const bookingLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/AgencyBooking/${agencyId}`
-    : `https://carrydey.tech/AgencyBooking/${agencyId}`;
+  const [bookingLink, setBookingLink] = useState('');
+
+  useEffect(() => {
+    if (!agencyId) return;
+
+    async function resolveLink() {
+      try {
+        // Fetch the agency to check if shortCode already exists
+        const res = await tablesDB.getRow({
+          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+          tableId: process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID,
+          rowId: agencyId,
+        });
+
+        let shortCode = res.shortCode;
+
+        // First time: generate and save shortCode from agency name
+        if (!shortCode && agencyName) {
+          shortCode = slugify(agencyName);
+          await tablesDB.updateRow({
+            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+            tableId:
+              process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID,
+            rowId: agencyId,
+            data: { shortCode },
+          });
+        }
+
+        // Fallback to agencyId if name not available yet
+        const resolvedSlug = shortCode || agencyId;
+        setBookingLink(`${window.location.origin}/b/${resolvedSlug}`);
+      } catch (err) {
+        // Fallback silently
+        const fallbackSlug = agencyName ? slugify(agencyName) : agencyId;
+        setBookingLink(`${window.location.origin}/b/${fallbackSlug}`);
+      }
+    }
+
+    resolveLink();
+  }, [agencyId, agencyName]);
 
   const handleCopyLink = async () => {
+    if (!bookingLink) return;
     try {
       await navigator.clipboard.writeText(bookingLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch {
       alert('Failed to copy link');
     }
   };
 
   const handleShareLink = async () => {
-    if (navigator.share) {
+    if (navigator.share && bookingLink) {
       try {
         await navigator.share({
           title: 'Book a Delivery',
           text: 'Book your delivery with us!',
           url: bookingLink,
         });
-      } catch (err) {
-        console.log('Share cancelled or failed:', err);
-      }
+      } catch {}
     } else {
       handleCopyLink();
     }
@@ -40,49 +75,31 @@ export default function AgencyLinkGenerator({ agencyId }) {
 
   return (
     <div className="relative">
-      {/* Link Display Section */}
-      <div className="relative group"> 
-       
-        
-        <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 shadow-2xl">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                <ExternalLink className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xs font-semibold text-white/80 uppercase tracking-wider">
-                Your Link
-              </span>
-            </div>
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            >
-              <Sparkles className="w-4 h-4 text-yellow-300" />
-            </motion.div>
-          </div>
-          
-          {/* Link Text */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <p className="text-sm font-mono text-white break-all leading-relaxed">
-              {bookingLink}
+      {/* Link Preview */}
+      {bookingLink && (
+        <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 mb-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3 mb-2">
+            <Link2 className="w-7 h-7 text-white" />
+            <p className="text-white/50 text-[10px] font-medium mb-1 uppercase tracking-wider">
+              Your booking link
             </p>
           </div>
+          <p className="text-white text-sm font-semibold truncate">
+            {bookingLink}
+          </p>
         </div>
-      </div>
+      )}
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        {/* Copy Button */}
+      <div className="grid grid-cols-2 gap-3">
         <motion.button
           whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleCopyLink}
-          className="relative overflow-hidden group bg-white rounded-xl px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300"
+          disabled={!bookingLink}
+          className="relative overflow-hidden group bg-white rounded-xl px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
         >
-          {/* Gradient on hover */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
           <div className="relative flex items-center justify-center gap-2">
             <AnimatePresence mode="wait">
               {copied ? (
@@ -97,7 +114,9 @@ export default function AgencyLinkGenerator({ agencyId }) {
                   <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
                     <Check className="w-3 h-3 text-green-600" />
                   </div>
-                  <span className="text-sm font-semibold text-green-600">Copied!</span>
+                  <span className="text-sm font-semibold text-green-600">
+                    Copied!
+                  </span>
                 </motion.div>
               ) : (
                 <motion.div
@@ -117,14 +136,13 @@ export default function AgencyLinkGenerator({ agencyId }) {
           </div>
         </motion.button>
 
-        {/* Share Button */}
         <motion.button
           whileHover={{ scale: 1.02, y: -2 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleShareLink}
-          className="relative overflow-hidden group bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300"
+          disabled={!bookingLink}
+          className="relative overflow-hidden group bg-white/15 border border-white/30 rounded-xl px-4 py-3.5 shadow-lg hover:shadow-xl hover:bg-white/25 transition-all duration-300 disabled:opacity-50"
         >
-          
           <div className="relative flex items-center justify-center gap-2">
             <Share2 className="w-4 h-4 text-white" />
             <span className="text-sm font-semibold text-white">Share</span>
@@ -137,23 +155,12 @@ export default function AgencyLinkGenerator({ agencyId }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mt-4 relative overflow-hidden"
+        className="mt-4 bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-sm"
       >
-        {/* Animated Border */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200 rounded-2xl opacity-50" />
-        <div className="absolute inset-[1px] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl" />
-        
-        <div className="relative p-4 flex items-start gap-3">
-         
-          <div className="flex-1">
-            <p className="text-xs font-semibold text-gray-900 mb-1">
-              Quick Tip
-            </p>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Share on WhatsApp, Instagram, or your website. Customers book instantly!
-            </p>
-          </div>
-        </div>
+        <p className="text-xs font-semibold text-white mb-1">Quick Tip</p>
+        <p className="text-xs text-white/60 leading-relaxed">
+          Share this link with your customers to allow them to easily book
+        </p>
       </motion.div>
     </div>
   );

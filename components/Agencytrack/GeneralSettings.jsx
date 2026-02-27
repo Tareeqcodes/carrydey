@@ -1,12 +1,21 @@
 'use client';
 import { useState } from 'react';
-import { Building2, Phone, Mail, MapPin, Edit3, Save } from 'lucide-react';
+import { Phone, Mail, MapPin, Edit3, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AgencyLinkGenerator from '@/hooks/AgencyLinkGenerator';
-import { Link2 } from 'lucide-react';
+import { slugify } from '@/utils/slugify';
+
 import { tablesDB } from '@/lib/config/Appwriteconfig';
 
-const GeneralSettings = ({ agencyData, formData, setFormData, setAgencyData, user, onSuccess, onError }) => {
+const GeneralSettings = ({
+  agencyData,
+  formData,
+  setFormData,
+  setAgencyData,
+  user,
+  onSuccess,
+  onError,
+}) => {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -20,13 +29,16 @@ const GeneralSettings = ({ agencyData, formData, setFormData, setAgencyData, use
 
       const dataToUpdate = {
         name: formData.name.trim(),
+        shortCode: slugify(formData.name.trim()),
         phone: formData.phone.trim(),
         serviceCities: formData.serviceCities.trim(),
         isAvailable: formData.isAvailable,
         brandColors: JSON.stringify(formData.brandColors),
         tagline: formData.tagline.trim(),
         operationalHours: formData.operationalHours.trim(),
-        baseDeliveryFee: formData.baseDeliveryFee ? parseInt(formData.baseDeliveryFee) : null,
+        baseDeliveryFee: formData.baseDeliveryFee
+          ? parseInt(formData.baseDeliveryFee)
+          : null,
         pricePerKm: formData.pricePerKm ? parseInt(formData.pricePerKm) : null,
       };
 
@@ -58,28 +70,13 @@ const GeneralSettings = ({ agencyData, formData, setFormData, setAgencyData, use
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#3A0A21] via-[#4A1A31] to-[#2A0A21] rounded-3xl" />
         <div className="relative z-10 p-6">
-          <div className="flex items-start gap-4 mb-6">
-            <motion.div
-              whileHover={{ rotate: 12, scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400 }}
-              className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-xl"
-            >
-              <Link2 className="w-7 h-7 text-white" />
-            </motion.div>
-            <div className="flex-1">
-              <h2 className="text-sm font-semibold text-white mb-1.5 tracking-tight">
-                Your Booking Link
-              </h2>
-              <p className="text-white/70 text-xs leading-relaxed">
-                Share this link with customers to receive bookings
-              </p>
-            </div>
-          </div>
-          <AgencyLinkGenerator agencyId={agencyData.$id} />
+          <AgencyLinkGenerator
+            agencyId={agencyData.$id}
+            agencyName={agencyData.name}
+          />
         </div>
       </motion.div>
 
-      {/* Agency Information Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -89,11 +86,9 @@ const GeneralSettings = ({ agencyData, formData, setFormData, setAgencyData, use
         <div className="p-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3A0A21] to-[#5A1A41] flex items-center justify-center shadow-lg shadow-[#3A0A21]/20">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
+              
               <h3 className="text-sm font-semibold text-gray-900 tracking-tight">
-                Agency Information
+                Your Information
               </h3>
             </div>
 
@@ -176,7 +171,9 @@ const GeneralSettings = ({ agencyData, formData, setFormData, setAgencyData, use
                   <input
                     type="text"
                     value={formData.serviceCities}
-                    onChange={(e) => handleInputChange('serviceCities', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('serviceCities', e.target.value)
+                    }
                     className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3A0A21] focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
                     placeholder="e.g., Lagos, Abuja, Kano"
                   />

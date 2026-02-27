@@ -45,11 +45,10 @@ function parseJson(raw, fallback) {
   try {
     return JSON.parse(raw);
   } catch {
-    return fallback; 
+    return fallback;
   }
 }
 
-// Only three sizes — weight premiums removed entirely
 const DEFAULT_SIZE = { small: 0, medium: 100, large: 250 };
 
 export default function OperationalSettings({
@@ -70,7 +69,10 @@ export default function OperationalSettings({
 
   const showPricing = formData.showPricing ?? true;
   const setShowPricing = (val) =>
-    setFormData((p) => ({ ...p, showPricing: typeof val === 'function' ? val(p.showPricing) : val }));
+    setFormData((p) => ({
+      ...p,
+      showPricing: typeof val === 'function' ? val(p.showPricing) : val,
+    }));
 
   const set = (field, value) => setFormData((p) => ({ ...p, [field]: value }));
 
@@ -170,12 +172,9 @@ export default function OperationalSettings({
               <Clock className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">
-                Operational Hours
-              </h3>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <h3 className="text-[11px] md:text-sm font-semibold text-gray-900">
                 Toggle which days you're open and set your hours
-              </p>
+              </h3>
             </div>
           </div>
 
@@ -235,7 +234,6 @@ export default function OperationalSettings({
         </div>
       </motion.div>
 
-      {/* ── Customer Pricing Visibility Toggle ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -259,13 +257,8 @@ export default function OperationalSettings({
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-gray-900">
-                Show Pricing to Customers
+                Show Custom pricing
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {showPricing
-                  ? 'Customers see a calculated fare when booking'
-                  : 'Customers are told your agency will contact them with a price'}
-              </p>
             </div>
 
             {/* Toggle switch */}
@@ -298,8 +291,8 @@ export default function OperationalSettings({
               </p>
             ) : (
               <p className="text-sm text-gray-500">
-                ✗ Fare section is hidden — customers see a card saying your
-                agency will reach out with pricing
+                ✗ Fare section is hidden customers see a card saying your agency
+                will reach out with pricing when booking
               </p>
             )}
           </div>
@@ -325,16 +318,32 @@ export default function OperationalSettings({
                     Base Pricing
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Distance tiers applied automatically rates taper for longer trips
+                    Distance tiers applied automatically rates taper for longer
+                    trips
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {[
-                  { label: 'Base Delivery Fee (₦)', field: 'baseDeliveryFee', placeholder: '1000', hint: 'Flat fee on every order' },
-                  { label: 'Price per KM (₦)', field: 'pricePerKm', placeholder: '150', hint: 'Full rate ≤5 km, tapers beyond' },
-                  { label: 'Minimum Fare (₦)', field: 'minFare', placeholder: '1500', hint: 'Floor price for any booking' },
+                  {
+                    label: 'Base Delivery Fee (₦)',
+                    field: 'baseDeliveryFee',
+                    placeholder: '1000',
+                    hint: 'Flat fee on every order',
+                  },
+                  {
+                    label: 'Price per KM (₦)',
+                    field: 'pricePerKm',
+                    placeholder: '150',
+                    hint: 'Full rate ≤5 km, tapers beyond',
+                  },
+                  {
+                    label: 'Minimum Fare (₦)',
+                    field: 'minFare',
+                    placeholder: '1500',
+                    hint: 'Floor price for any booking',
+                  },
                 ].map(({ label, field, placeholder, hint }) => (
                   <div key={field}>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
@@ -360,13 +369,20 @@ export default function OperationalSettings({
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     {[5, 10, 20].map((km) => (
-                      <div key={km} className="text-center p-2 bg-white rounded-lg border border-amber-100">
+                      <div
+                        key={km}
+                        className="text-center p-2 bg-white rounded-lg border border-amber-100"
+                      >
                         <p className="text-xs text-gray-500 mb-1">{km} km</p>
-                        <p className="font-bold text-amber-700">₦{previewFare(km).toLocaleString()}</p>
+                        <p className="font-bold text-amber-700">
+                          ₦{previewFare(km).toLocaleString()}
+                        </p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">Excludes time, size & fragile</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Excludes time, size & fragile
+                  </p>
                 </div>
               )}
             </div>
@@ -385,20 +401,29 @@ export default function OperationalSettings({
                   <Package className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Package Size (₦)</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Added on top of distance fare based on declared size</p>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Package Size (₦)
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Added on top of distance fare based on declared size
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 {['small', 'medium', 'large'].map((size) => (
                   <div key={size}>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5 capitalize">{size}</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5 capitalize">
+                      {size}
+                    </label>
                     <input
                       type="number"
                       min="0"
                       value={sizePremiums[size] ?? 0}
                       onChange={(e) =>
-                        setSizePremiums((p) => ({ ...p, [size]: Number(e.target.value) }))
+                        setSizePremiums((p) => ({
+                          ...p,
+                          [size]: Number(e.target.value),
+                        }))
                       }
                       className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-400 focus:bg-white transition-all text-gray-900 font-medium"
                     />
@@ -420,8 +445,12 @@ export default function OperationalSettings({
                   <AlertTriangle className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Fragile items (₦)</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Added when customer marks their package as fragile</p>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Fragile items (₦)
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Added when customer marks their package as fragile
+                  </p>
                 </div>
               </div>
               <div className="max-w-xs">
@@ -433,7 +462,9 @@ export default function OperationalSettings({
                   onChange={(e) => set('fragilePremium', e.target.value)}
                   className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-rose-400 focus:bg-white transition-all text-gray-900 font-medium"
                 />
-                <p className="text-xs text-gray-400 mt-1">Applied on top of all other charges</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Applied on top of all other charges
+                </p>
               </div>
             </div>
           </motion.div>

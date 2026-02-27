@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, use } from 'react';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
-import { freeDriverFromDelivery } from '@/hooks/Driverutils';
+import { freeDriverFromDelivery } from '@/utils/Driverutils';
 import {
   Package,
   MapPin,

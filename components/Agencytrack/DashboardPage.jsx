@@ -1,9 +1,7 @@
 'use client';
-import React from 'react';
 import { motion } from 'framer-motion';
 import DashboardSummary from './DashboardSummary';
 
-// ─── SVG Icons with 3D / gradient feel ──────────────────────────────
 
 const MotorcycleSVG = ({ size = 26 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
@@ -118,8 +116,6 @@ const NavSVG = () => (
   </svg>
 );
 
-// ─── Main Component ──────────────────────────────────────────────────
-
 const DashboardPage = ({
   activeDeliveries,
   completedDeliveries = [],
@@ -132,7 +128,6 @@ const DashboardPage = ({
     (d) => !['delivered', 'pending_assignment'].includes(d.status)
   ).length;
 
-  // ── Earnings ────────────────────────────────────────────────────
   const today = new Date().toDateString();
 
   const todayEarnings = completedDeliveries
@@ -147,12 +142,11 @@ const DashboardPage = ({
   const fmt = (n) =>
     n >= 1000 ? `₦${(n / 1000).toFixed(1)}k` : `₦${n.toLocaleString()}`;
 
-  // ── Stat cards config ────────────────────────────────────────────
-  const stats = [
-    { icon: <MotorcycleSVG />, value: activeDrivers.length,    label: 'On Delivery', bg: 'from-blue-50 to-indigo-50',   border: 'border-blue-100',   color: 'text-blue-900' },
-    { icon: <PinSVG />,   value: inTransit,                label: 'In Transit',  bg: 'from-green-50 to-emerald-50', border: 'border-green-100',  color: 'text-green-900' },
-    { icon: <CheckSVG />, value: availableDrivers.length,  label: 'Available',   bg: 'from-purple-50 to-pink-50',   border: 'border-purple-100', color: 'text-purple-900' },
-  ];
+  // const stats = [
+  //   { icon: <MotorcycleSVG />, value: activeDrivers.length,    label: 'On Delivery', bg: 'from-blue-50 to-indigo-50',   border: 'border-blue-100',   color: 'text-blue-900' },
+  //   { icon: <PinSVG />,   value: inTransit,                label: 'In Transit',  bg: 'from-green-50 to-emerald-50', border: 'border-green-100',  color: 'text-green-900' },
+  //   { icon: <CheckSVG />, value: availableDrivers.length,  label: 'Available',   bg: 'from-purple-50 to-pink-50',   border: 'border-purple-100', color: 'text-purple-900' },
+  // ];
 
   return (
     <div className="space-y-5 px-3 pb-16">
@@ -266,7 +260,7 @@ const DashboardPage = ({
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
+          {/* <div className="grid grid-cols-3 gap-3 mt-4">
             {stats.map(({ icon, value, label, bg, border, color }) => (
               <div
                 key={label}
@@ -279,7 +273,7 @@ const DashboardPage = ({
                 </p>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </motion.div>
     </div>

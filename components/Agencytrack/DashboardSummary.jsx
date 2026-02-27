@@ -12,7 +12,6 @@ const DashboardSummary = ({ activeDeliveries, drivers }) => {
       gradient: 'from-blue-500 to-indigo-600',
       bgGradient: 'from-blue-50 to-indigo-50',
       iconBg: 'bg-blue-500',
-      // change: '+12%',
       changePositive: true,
     },
     {
@@ -83,15 +82,6 @@ const DashboardSummary = ({ activeDeliveries, drivers }) => {
               </motion.div>
             </div>
 
-            {/* Progress Bar */}
-            {/* <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${(parseInt(card.value) / Math.max(...summaryCards.map(c => parseInt(c.value)))) * 100}%` }}
-                transition={{ duration: 1, delay: index * 0.2 }}
-                className={`h-full bg-gradient-to-r ${card.gradient} rounded-full`}
-              />
-            </div> */}
           </div>
         </motion.div>
       ))}
