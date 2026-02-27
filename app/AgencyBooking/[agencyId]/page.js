@@ -307,10 +307,7 @@ export default function AgencyBookingPage() {
                 )}
               </div>
             </div>
-            <div
-              className="h-1 w-full"
-              style={{ background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.accent} 50%, ${brandColors.secondary} 100%)` }}
-            />
+            
           </motion.div>
 
           {/* Screens */}
