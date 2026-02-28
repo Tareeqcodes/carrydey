@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Package, Building2, ArrowRight } from 'lucide-react';
+import { User, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-import { WalletService } from '@/lib/WalletService';
+// import { WalletService } from '@/lib/WalletService';
 
 const roles = [
   {
@@ -18,13 +18,13 @@ const roles = [
     id: 'courier',
     title: 'Independent Courier',
     sub: 'Receive jobs & earn money',
-    icon: Package,
+    icon: User,
   },
   {
     id: 'agency',
     title: 'Agency',
     sub: 'Manage couriers & operations',
-    icon: Building2,
+    icon: User,
   },
 ];
 
@@ -67,11 +67,7 @@ export default function Onboarding() {
   };
 
   const handleRoleBasedRedirect = (userRole) => {
-    const routes = {
-      sender: '/send',
-      courier: '/track',
-      agency: '/track',
-    };
+    const routes = { sender: '/send', courier: '/track', agency: '/track' };
     router.push(routes[userRole] || '/');
   };
 
@@ -96,14 +92,18 @@ export default function Onboarding() {
           isAvailable: true,
         },
       });
-      const walletResult = await WalletService.createWallet(
-        user.$id,
-        user.email,
-        user.email.split('@')[0]
-      );
-      if (!walletResult.success)
-        console.error('Wallet creation failed:', walletResult.error);
-      handleRoleBasedRedirect(role);
+      // const walletResult = await WalletService.createWallet(
+      //   user.$id,
+      //   user.email,
+      //   user.email.split('@')[0]
+      // );
+      // if (!walletResult.success)
+      //   console.error('Wallet creation failed:', walletResult.error);
+
+      if (role === 'sender') router.push('/send');
+      else if (role === 'courier') router.push('/track');
+      else if (role === 'agency') router.push('/onboardagency');
+      else router.push('/');
     } catch (err) {
       console.error('Failed to save onboarding:', err);
       alert('Failed to save profile. Please try again.');
@@ -122,7 +122,7 @@ export default function Onboarding() {
 
   return (
     <div
-      className="min-h-screen bg-[#faf9f7] flex items-center justify-center px-6 py-1"
+      className="min-h-screen bg-[#faf9f7] flex items-center justify-center px-6 py-16"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <link
@@ -236,7 +236,7 @@ export default function Onboarding() {
           whileTap={role ? { scale: 0.97 } : {}}
           className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-semibold transition-all duration-200 ${
             !role
-              ? 'bg-[#f0ece e] text-[#ccc] cursor-not-allowed'
+              ? 'bg-[#f0ecee] text-[#ccc] cursor-not-allowed'
               : 'bg-[#3A0A21] text-white hover:bg-[#521229]'
           }`}
         >
