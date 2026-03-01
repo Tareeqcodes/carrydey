@@ -83,18 +83,7 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive }) => (
   </Link>
 );
 
-// User avatar (top-right on mobile) 
-const UserAvatar = ({ user }) => {
-  const initial = user?.email?.[0]?.toUpperCase() ?? 'U';
-  return (
-    <Link
-      href="/hub"
-      className="w-8 h-8 rounded-xl bg-[#3A0A21] text-white flex items-center justify-center text-xs font-bold hover:bg-[#5C1438] transition-colors"
-    >
-      {initial}
-    </Link>
-  );
-};
+
 
 const Navbar = () => {
   const pathname  = usePathname();
@@ -164,14 +153,11 @@ const Navbar = () => {
                 {/* Red dot — wire to real notification count later */}
                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
               </button>
-              {/* Avatar */}
-              <UserAvatar user={user} />
             </div>
           )}
         </div>
       </nav>
 
-      {/* ── MOBILE TOP BAR ──────────────────────────────────────── */}
       <div className={`
         md:hidden fixed top-0 left-0 right-0 z-40 h-14
         flex items-center justify-between px-4
@@ -206,8 +192,6 @@ const Navbar = () => {
                 <Bell size={16} />
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
               </button>
-              {/* Avatar */}
-              <UserAvatar user={user} />
             </>
           )}
         </div>
