@@ -19,26 +19,26 @@ import NavbarMorphism from '@/ui/NavbarMorphism';
 const getNavLinks = (user, role) => {
   if (!user) {
     return [
-      { href: '/vendor',        label: 'Send',  icon: Send },
+      { href: '/vendor', label: 'Send', icon: Send },
       { href: '/courier', label: 'Earn', icon: TrendingUp },
     ];
   }
   if (role === 'sender') {
     return [
-      { href: '/send',  label: 'Send',  icon: Send },
+      { href: '/send', label: 'Send', icon: Send },
       { href: '/track', label: 'Track', icon: PackageSearch },
-      { href: '/hub',   label: 'Hub',   icon: LayoutDashboard },
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard },
     ];
   }
   if (role === 'courier' || role === 'agency') {
     return [
       { href: '/track', label: 'Track', icon: PackageSearch },
-      { href: '/hub',   label: 'Hub',   icon: LayoutDashboard },
+      { href: '/hub', label: 'Hub', icon: LayoutDashboard },
     ];
   }
   return [
-    { href: '/',    label: 'Home', icon: Home },
-    { href: '/hub', label: 'Hub',  icon: LayoutDashboard },
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/hub', label: 'Hub', icon: LayoutDashboard },
   ];
 };
 
@@ -47,11 +47,12 @@ const DesktopNavLink = ({ href, label, icon: Icon, isActive, isEarn }) => (
     href={href}
     className={`
       flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-semibold
-      ${isEarn
-        ? 'bg-[#FF6B35] text-white hover:bg-[#e85e2a] shadow-sm shadow-orange-200'
-        : isActive
-          ? 'text-[#3A0A21] bg-[#3A0A21]/8'
-          : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+      ${
+        isEarn
+          ? 'bg-[#FF6B35] text-white hover:bg-[#e85e2a] shadow-sm shadow-orange-200'
+          : isActive
+            ? 'text-[#3A0A21] bg-[#3A0A21]/8'
+            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
       }
     `}
   >
@@ -65,29 +66,32 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive }) => (
     href={href}
     className="flex flex-col items-center justify-center flex-1 py-2 px-1"
   >
-    <div className={`
+    <div
+      className={`
       flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200
-      ${isActive
-        ? 'bg-[#3A0A21] text-white shadow-lg shadow-[#3A0A21]/25 scale-105'
-        : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+      ${
+        isActive
+          ? 'bg-[#3A0A21] text-white shadow-lg shadow-[#3A0A21]/25 scale-105'
+          : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
       }
-    `}>
+    `}
+    >
       <Icon size={20} strokeWidth={2.2} />
     </div>
-    <span className={`
+    <span
+      className={`
       text-[10px] font-semibold mt-1 transition-colors duration-200
       ${isActive ? 'text-[#3A0A21]' : 'text-gray-400'}
-    `}>
+    `}
+    >
       {label}
     </span>
   </Link>
 );
 
-
-
 const Navbar = () => {
-  const pathname  = usePathname();
-  const { user }  = useAuth();
+  const pathname = usePathname();
+  const { user } = useAuth();
   const { role, loading } = useUserRole();
   const [scrolled, setScrolled] = useState(false);
 
@@ -98,29 +102,34 @@ const Navbar = () => {
   }, []);
 
   // Routes where navbar is hidden entirely
-  const hiddenRoutes = ['/AgencyBooking/', '/bookconfirm/', '/driver/'];
-  if (hiddenRoutes.some(r => pathname?.startsWith(r))) return null;
+  const hiddenRoutes = ['/AgencyBooking/', '/bookconfirm/', '/driver/, /b/'];
+  if (hiddenRoutes.some((r) => pathname?.startsWith(r))) return null;
   if (loading) return <NavbarMorphism />;
 
   const navLinks = getNavLinks(user, role);
 
   return (
     <>
-      <nav className={`
+      <nav
+        className={`
         hidden md:flex w-full fixed top-0 left-0 right-0 z-50
         items-center justify-between h-16 px-6
         transition-all duration-300
-        ${scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm shadow-gray-100/80'
-          : 'bg-white border-b border-gray-100'
+        ${
+          scrolled
+            ? 'bg-white/95 backdrop-blur-md shadow-sm shadow-gray-100/80'
+            : 'bg-white border-b border-gray-100'
         }
-      `}>
+      `}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 bg-[#3A0A21] rounded-lg flex items-center justify-center group-hover:bg-[#5C1438] transition-colors">
             <span className="text-white font-bold text-sm">C</span>
           </div>
-          <span className="text-lg font-bold text-[#3A0A21] tracking-tight">Carrydey</span>
+          <span className="text-lg font-bold text-[#3A0A21] tracking-tight">
+            Carrydey
+          </span>
         </Link>
 
         {/* Links */}
@@ -158,21 +167,26 @@ const Navbar = () => {
         </div>
       </nav>
 
-      <div className={`
+      <div
+        className={`
         md:hidden fixed top-0 left-0 right-0 z-40 h-14
         flex items-center justify-between px-4
         transition-all duration-300
-        ${scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm'
-          : 'bg-white border-b border-gray-100'
+        ${
+          scrolled
+            ? 'bg-white/95 backdrop-blur-md shadow-sm'
+            : 'bg-white border-b border-gray-100'
         }
-      `}>
+      `}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 bg-[#3A0A21] rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xs">C</span>
           </div>
-          <span className="text-base font-bold text-[#3A0A21] tracking-tight">Carrydey</span>
+          <span className="text-base font-bold text-[#3A0A21] tracking-tight">
+            Carrydey
+          </span>
         </Link>
 
         {/* Right side — login btn or user avatar */}
@@ -209,7 +223,6 @@ const Navbar = () => {
                 href={link.href}
                 label={link.label}
                 icon={link.icon}
-                // FIX: derive active state from pathname, not local click state
                 isActive={pathname === link.href}
               />
             ))}
