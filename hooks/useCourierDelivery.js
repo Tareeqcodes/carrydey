@@ -25,52 +25,19 @@ export const useCourierDelivery = (userId) => {
   };
 
   const fetchCourierDeliveries = async (courierId) => {
-    if (!courierId) {
-      setDeliveries([]);
-      return;
-    }
+    console.log('Fetching for courierId:', courierId); 
+  const assignedRes = await tablesDB.listRows({
+    databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+    tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+    queries: [
+      Query.equal('assignedCourierId', courierId),
+      Query.orderDesc('$createdAt'),
+      Query.limit(100),
+    ],
+  });
 
-    try {
-      const assignedRes = await tablesDB.listRows({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        queries: [
-          Query.equal('assignedCourierId', courierId),
-          Query.orderDesc('$createdAt'),
-          Query.limit(100),
-        ],
-      });
-
-      const pendingRes = await tablesDB.listRows({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        queries: [
-          Query.equal('status', 'pending'),
-          Query.orderDesc('$createdAt'),
-          Query.limit(50),
-        ],
-      });
-
-      const assignedDeliveries = assignedRes.rows || [];
-      const pendingDeliveries  = pendingRes.rows  || [];
-
-      const allDeliveries = [...assignedDeliveries];
-      pendingDeliveries.forEach((pending) => {
-        if (!allDeliveries.find((d) => d.$id === pending.$id)) {
-          allDeliveries.push(pending);
-        }
-      });
-
-      allDeliveries.sort(
-        (a, b) => new Date(b.$createdAt) - new Date(a.$createdAt)
-      );
-
-      setDeliveries(allDeliveries);
-    } catch (err) {
-      console.error('Error fetching deliveries:', err);
-      throw err;
-    }
-  };
+  setDeliveries(assignedRes.rows || []);
+};
 
   useEffect(() => {
     const load = async () => {

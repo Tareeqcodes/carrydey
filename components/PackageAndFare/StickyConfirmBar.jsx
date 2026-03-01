@@ -7,9 +7,9 @@ import { useAuth } from '@/hooks/Authcontext';
 export default function StickyConfirmBar({
   isValid,
   loading,
-  onConfirm,
+  onConfirm,        // called with no args — Screen's handleConfirm closes over the data
   fareDetails,
-  deliverySnapshot, // full delivery state passed from PackageAndFareScreen
+  deliverySnapshot, // full snapshot for localStorage if user not logged in
 }) {
   const { brandColors } = useBrandColors();
   const { user } = useAuth();
@@ -24,17 +24,16 @@ export default function StickyConfirmBar({
     if (!isValid || loading) return;
 
     if (!user) {
-      // Save the full delivery state so ChooseTraveler can restore it after auth
       if (deliverySnapshot) {
         localStorage.setItem('pendingDelivery', JSON.stringify(deliverySnapshot));
       }
-      // After login + onboarding, redirect back to /check
       localStorage.setItem('postAuthRedirect', '/check');
       router.push('/login');
       return;
     }
 
-    // User is logged in — proceed normally
+    // ✅ Call with no arguments — Screen's handleConfirm already has packageDetails
+    // and fareDetails closed over from its own state
     onConfirm();
   };
 

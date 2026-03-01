@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 
-export default function useChooseTraveler() {
+export default function useChooseAvailable() {
   const [agencies, setAgencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

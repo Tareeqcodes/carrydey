@@ -1,37 +1,36 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-import useChooseTraveler from '@/hooks/useChooseTraveler';
+import useChooseAvailable from '@/hooks/useChooseAvailable';
 import AgencyLoadingSkeleton from '@/ui/AgencyLoadingSkeleton';
-import AgencyEmptyState from '@/ui/AgencyEmptyState';
-import TravelerCard from '@/components/TravelerCard';
-import SelectAgencyModal from '@/components/SelectAgencyModal';
+import SelectAvailableModal from '@/components/SelectAvailableModal';
+import AvailableCard from '@/components/AvailableCard';
 
-const ChooseTraveler = () => {
+const ChooseAvailable = () => {
   const [travelers, setTravelers] = useState([]);
   const [selectedTraveler, setSelectedTraveler] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [deliveryId, setDeliveryId] = useState(null);
-  const [restoring, setRestoring] = useState(false); // pending delivery restore in progress
+  const [restoring, setRestoring] = useState(false);
+  const [tab, setTab] = useState('all'); // 'all' | 'agency' | 'courier'
 
-  const { agencies, loading, error } = useChooseTraveler();
+  const { agencies, loading, error } = useChooseAvailable();
   const { user } = useAuth();
   const router = useRouter();
 
-  // ── On mount: check for a pending delivery saved before login ─────────────
+  // ── Restore delivery ID (or create from pendingDelivery) ─────────────────
   useEffect(() => {
     const init = async () => {
-      // 1. Normal flow — delivery was already saved to Appwrite before /check
       const sessionId = sessionStorage.getItem('latestDeliveryId');
       if (sessionId) {
         setDeliveryId(sessionId);
         return;
       }
 
-      // 2. Post-auth restore — user was redirected here after login/onboarding
       const raw = localStorage.getItem('pendingDelivery');
       if (!raw || !user) return;
 
@@ -42,14 +41,12 @@ const ChooseTraveler = () => {
           pending;
 
         if (!pickup || !dropoff || !routeData) {
-          // Incomplete data — send back to /send to start over
           localStorage.removeItem('pendingDelivery');
           localStorage.removeItem('postAuthRedirect');
           router.push('/send');
           return;
         }
 
-        // Save the delivery to Appwrite now that we have a logged-in user
         const newDeliveryId = ID.unique();
         await tablesDB.createRow({
           databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
@@ -91,22 +88,19 @@ const ChooseTraveler = () => {
 
         sessionStorage.setItem('latestDeliveryId', newDeliveryId);
         setDeliveryId(newDeliveryId);
-
-        // Clean up — delivery is now in Appwrite, no longer needed in localStorage
         localStorage.removeItem('pendingDelivery');
         localStorage.removeItem('postAuthRedirect');
       } catch (err) {
         console.error('Failed to restore pending delivery:', err);
-        // Don't block the UI — user can still browse couriers, just won't be able to book
       } finally {
         setRestoring(false);
       }
     };
 
     init();
-  }, [user]); // re-run once user is available (covers the post-auth case)
+  }, [user]);
 
-  // ── Transform agencies into traveler cards ─────────────────────────────────
+  // ── Transform agencies/couriers ───────────────────────────────────────────
   useEffect(() => {
     if (!agencies?.length) return;
 
@@ -121,7 +115,6 @@ const ChooseTraveler = () => {
             .map((c) => c.trim())
             .filter(Boolean);
         }
-
         const routeDisplay = isAgency
           ? serviceCities.length === 0
             ? 'Nigeria'
@@ -143,16 +136,13 @@ const ChooseTraveler = () => {
           serviceCities,
           distance: (Math.random() * 3 + 0.5).toFixed(1),
           pickupTime: Math.floor(Math.random() * 20 + 10),
-          lat: 6.5244 + (Math.random() * 0.04 - 0.02),
-          lng: 3.3792 + (Math.random() * 0.04 - 0.02),
-          type: isAgency ? entity.type : 'Individual Courier',
+          type: isAgency ? entity.type : 'Independent Courier',
           phone: entity.phone || entity.phoneNumber,
-          email: entity.email,
           services: isAgency
             ? entity.services
               ? JSON.parse(entity.services)
               : []
-            : ['Package Delivery', 'Express Delivery'],
+            : ['Package Delivery'],
           vehicleTypes: isAgency
             ? entity.vehicleTypes
               ? JSON.parse(entity.vehicleTypes)
@@ -168,31 +158,39 @@ const ChooseTraveler = () => {
   }, [agencies]);
 
   const handleBookTraveler = (traveler) => {
+    // ✅ BUG FIX: Guard — don't allow booking if deliveryId is not set yet
+    if (!deliveryId) {
+      alert('Your delivery is still being prepared. Please wait a moment.');
+      return;
+    }
     setSelectedTraveler(traveler);
     setShowConfirmation(true);
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedTraveler || !deliveryId) {
+    // ✅ BUG FIX: Double-check both are present before any Appwrite call
+    if (!selectedTraveler?.id || !deliveryId) {
       alert('Missing delivery or traveler information');
       return;
     }
+
     setBookingLoading(true);
     try {
       const isAgency = selectedTraveler.entityType === 'agency';
       const updateData = { status: 'pending' };
+
+      // ✅ BUG FIX: Only one of these is set per booking — exactly one row updated
       if (isAgency) updateData.assignedAgencyId = selectedTraveler.id;
       else updateData.assignedCourierId = selectedTraveler.id;
 
       await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: deliveryId,
+        rowId: deliveryId, // ← specific row, not a query
         data: updateData,
       });
 
       sessionStorage.removeItem('latestDeliveryId');
-
       if (isAgency) {
         sessionStorage.setItem('agencyId', selectedTraveler.id);
         sessionStorage.setItem('agencyName', selectedTraveler.name);
@@ -211,55 +209,144 @@ const ChooseTraveler = () => {
     }
   };
 
+  // ── Tab filter ─────────────────────────────────────────────────────────────
+  const tabs = [
+    { id: 'all', label: 'All', count: travelers.length },
+    {
+      id: 'agency',
+      label: 'Agencies',
+      count: travelers.filter((t) => t.entityType === 'agency').length,
+    },
+    {
+      id: 'courier',
+      label: 'Couriers',
+      count: travelers.filter((t) => t.entityType === 'courier').length,
+    },
+  ];
+
+  const filtered =
+    tab === 'all' ? travelers : travelers.filter((t) => t.entityType === tab);
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-red-600 p-4 rounded-md bg-red-50 max-w-md w-full">
-          Error loading agencies and couriers: {error}
+        <div className="text-red-600 p-4 rounded-2xl bg-red-50 max-w-md w-full text-sm">
+          Error loading couriers: {error}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-4 md:my-24 mx-2 md:mx-36 flex flex-col bg-white overflow-hidden">
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex-1">
-            <p className="text-sm text-gray-500">
-              {loading || restoring
-                ? 'Getting things ready…'
-                : `Available courier${travelers.length !== 1 ? 's' : ''} and agencies ready to handle your delivery`}
+    <div className="min-h-screen bg-[#f5f3f4]">
+      <div className="max-w-2xl mx-auto px-4 pt-6 pb-32">
+        {/* Header */}
+        <div className="mb-5">
+          <h1 className="text-[20px] font-bold text-[#1a1a1a]">
+            Choose a courier
+          </h1>
+          <p className="text-[12px] text-gray-400 mt-0.5">
+            {loading || restoring
+              ? 'Finding available couriers near you…'
+              : `${filtered.length} available now`}
+          </p>
+        </div>
+
+        {/* ── WHAT'S THE DIFFERENCE? Info strip ─────────────────────────── */}
+        <div className="grid grid-cols-2 gap-2.5 mb-5">
+          <div className="bg-white rounded-2xl border border-gray-100 p-3.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-6 h-6 bg-[#3A0A21]/8 rounded-lg flex items-center justify-center">
+                <span className="text-[11px]">🏢</span>
+              </div>
+              <p className="text-[12px] font-bold text-[#1a1a1a]">Agency</p>
+            </div>
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              A registered business with multiple riders. More reliable for
+              large or regular shipments.
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 p-3.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-6 h-6 bg-[#FF6B35]/8 rounded-lg flex items-center justify-center">
+                <span className="text-[11px]">🏍️</span>
+              </div>
+              <p className="text-[12px] font-bold text-[#1a1a1a]">Courier</p>
+            </div>
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              An independent rider. Usually faster for small packages and short
+              distances.
             </p>
           </div>
         </div>
-      </header>
 
-      <div className="flex-1 overflow-hidden bg-white rounded-t-3xl -mt-6 shadow-2xl relative z-10">
-        <div className="h-full overflow-y-auto px-4 pt-6 pb-24">
-          {loading || restoring ? (
-            <AgencyLoadingSkeleton />
-          ) : travelers.length === 0 ? (
-            <AgencyEmptyState message="No available couriers or agencies found at the moment. Please try again later." />
-          ) : (
-            <div className="space-y-3 pb-4">
-              {travelers.map((traveler, index) => (
-                <TravelerCard
-                  key={traveler.id}
-                  traveler={traveler}
-                  index={index}
-                  isSelected={selectedTraveler?.id === traveler.id}
-                  onSelect={setSelectedTraveler}
-                  onBook={handleBookTraveler}
-                />
-              ))}
-            </div>
-          )}
+        {/* ── TABS ──────────────────────────────────────────────────────── */}
+        <div className="flex gap-2 mb-4">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-bold transition-all duration-150
+                ${
+                  tab === t.id
+                    ? 'bg-[#3A0A21] text-white'
+                    : 'bg-white text-gray-500 border border-gray-100 hover:border-gray-200'
+                }`}
+            >
+              {t.label}
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold
+                ${tab === t.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}
+              >
+                {t.count}
+              </span>
+            </button>
+          ))}
         </div>
+
+        {/* ── LIST ──────────────────────────────────────────────────────── */}
+        {loading || restoring ? (
+          <AgencyLoadingSkeleton />
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-14 h-14 bg-white rounded-2xl border border-gray-100 flex items-center justify-center mb-3 text-2xl">
+              {tab === 'agency' ? '🏢' : tab === 'courier' ? '🏍️' : '📦'}
+            </div>
+            <p className="text-[13px] font-semibold text-gray-500">
+              No {tab === 'all' ? 'couriers' : tab + 's'} available right now
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Try again in a few minutes
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((traveler, index) => (
+                <motion.div
+                  key={traveler.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ delay: index * 0.04, duration: 0.22 }}
+                >
+                  <AvailableCard
+                    traveler={traveler}
+                    index={index}
+                    isSelected={selectedTraveler?.id === traveler.id}
+                    onSelect={setSelectedTraveler}
+                    onBook={handleBookTraveler}
+                    deliveryReady={!!deliveryId}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {showConfirmation && (
-        <SelectAgencyModal
+        <SelectAvailableModal
           traveler={selectedTraveler}
           onCancel={() => setShowConfirmation(false)}
           onConfirm={handleConfirmBooking}
@@ -270,4 +357,4 @@ const ChooseTraveler = () => {
   );
 };
 
-export default ChooseTraveler;
+export default ChooseAvailable;

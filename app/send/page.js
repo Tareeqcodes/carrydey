@@ -5,7 +5,7 @@ import LocationAndPreviewScreen from '@/components/LocationAndPreviewScreen';
 import PackageAndFareScreen from '@/components/PackageAndFareScreen';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-import NotUser from '@/hooks/NotUser';
+
 
 export default function CreateDelivery() {
   const router = useRouter();

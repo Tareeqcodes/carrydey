@@ -49,14 +49,7 @@ function AgencyPriceContactCard() {
   );
 }
 
-function Screen({
-  delivery,
-  onPackageConfirmed,
-  loading,
-  onBack,
-  fareHook,
-  showPricing = true,
-}) {
+function Screen({ delivery, onPackageConfirmed, loading, onBack, fareHook, showPricing = true }) {
   const { brandColors } = useBrandColors();
 
   useEffect(() => {
@@ -109,21 +102,19 @@ function Screen({
     if (!isValid) return;
     onPackageConfirmed(packageDetails, {
       suggestedFare: showPricing ? suggestedFare : null,
-      offeredFare: showPricing ? fareDetails.offeredFare : null,
+      offeredFare:   showPricing ? fareDetails.offeredFare : null,
       paymentMethod: fareDetails.paymentMethod,
     });
   };
 
-  // Snapshot of everything the user has filled in — persisted to localStorage
-  // by StickyConfirmBar if the user is not logged in yet
   const deliverySnapshot = {
-    pickup: delivery.pickup,
-    dropoff: delivery.dropoff,
-    routeData: delivery.routeData,
+    pickup:     delivery.pickup,
+    dropoff:    delivery.dropoff,
+    routeData:  delivery.routeData,
     packageDetails,
     fareDetails: {
       suggestedFare: showPricing ? suggestedFare : null,
-      offeredFare: showPricing ? fareDetails.offeredFare : null,
+      offeredFare:   showPricing ? fareDetails.offeredFare : null,
       paymentMethod: fareDetails.paymentMethod,
     },
   };
@@ -131,8 +122,9 @@ function Screen({
   return (
     <div className="min-h-screen bg-white max-w-md pb-28 md:pb-0 mx-auto">
       <div className="max-w-3xl mx-auto px-4 py-5 space-y-6">
+
         {/* Header */}
-        <div className="flex items-start gap-3 px-5">
+        <div className="flex  items-center gap-2">
           <button
             onClick={onBack}
             className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-colors hover:bg-gray-200"
@@ -199,18 +191,13 @@ function Screen({
         />
       </div>
 
+      {/* ✅ onConfirm={handleConfirm} — NOT onPackageConfirmed directly */}
       <StickyConfirmBar
         isValid={isValid}
         loading={loading}
-        onConfirm={onPackageConfirmed}
+        onConfirm={handleConfirm}
         fareDetails={fareDetails}
-        deliverySnapshot={{
-          pickup: delivery.pickup,
-          dropoff: delivery.dropoff,
-          routeData: delivery.routeData,
-          packageDetails: packageDetails,
-          fareDetails: fareDetails, 
-        }}
+        deliverySnapshot={deliverySnapshot}
       />
     </div>
   );
