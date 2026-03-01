@@ -1,243 +1,118 @@
-
 'use client';
-import { useState, useEffect } from 'react';
-import { WalletService } from '@/lib/WalletService';
-import WalletScreen from '@/components/Wallets/WalletScreen';
-import AddFundsScreen from '@/components/Wallets/AddFundsScreen';
-import PayoutScreen from '@/components/Wallets/PayoutScreen';
-import { SuccessModal, LowBalanceAlert } from '@/components/Wallets/Modals';
-import { useAuth } from '@/hooks/Authcontext';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Banknote, Building2, Wallet, Check, Shield } from 'lucide-react';
 
-const Payment = () => {
-  const [activeScreen, setActiveScreen] = useState('wallet');
-  const [balance, setBalance] = useState(0);
-  const [transactions, setTransactions] = useState([]);
-  const [virtualAccount, setVirtualAccount] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showLowBalanceAlert, setShowLowBalanceAlert] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { user } = useAuth();
+const methods = [
+  {
+    id: 'transfer',
+    icon: Building2,
+    label: 'Bank Transfer',
+    desc: 'Transfer directly to our account',
+  },
+  {
+    id: 'cash',
+    icon: Banknote,
+    label: 'Cash on Delivery',
+    desc: 'Pay rider when package arrives',
+      badge: 'Most popular',
+  },
+  {
+    id: 'wallet',
+    icon: Wallet,
+    label: 'Carrydey Wallet',
+    desc: 'Use your wallet balance',
+    badge: 'Coming soon',
+    disabled: true,
+  },
+];
 
-  // Fetch wallet data on mount
-  useEffect(() => {
-    if (user) {
-      fetchWalletData();
-    }
-  }, [user]);
+export default function Payment() {
+  const [selected, setSelected] = useState('transfer');
+  const [saved, setSaved] = useState(false);
 
-  const fetchWalletData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const userId = user.$id;
-      
-      // 1. Get wallet balance
-      const walletResponse = await WalletService.getWallet(userId);
-      console.log('Wallet response:', walletResponse);
-      
-      if (walletResponse.success) {
-        setBalance(walletResponse.balance || 0);
-        
-        // 2. Get virtual account if wallet exists
-        if (walletResponse.wallet) {
-          const accountResponse = await WalletService.getVirtualAccount(userId);
-          console.log('Virtual account response:', accountResponse);
-          
-          if (accountResponse.success && accountResponse.virtualAccount) {
-            setVirtualAccount(accountResponse.virtualAccount);
-          }
-        }
-        
-        // 3. Get transactions
-        const transactionsResponse = await WalletService.getTransactions(userId);
-        console.log('Transactions response:', transactionsResponse);
-        
-        if (transactionsResponse.success) {
-          setTransactions(transactionsResponse.transactions || []);
-        }
-        
-      } else {
-        // If wallet doesn't exist, create it
-        if (walletResponse.code === 'WALLET_NOT_FOUND') {
-          console.log('Wallet not found, creating new wallet...');
-          await createUserWallet();
-        } else {
-          setError(walletResponse.error || 'Failed to load wallet');
-        }
-      }
-      
-    } catch (err) {
-      console.error('Error fetching wallet data:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
-
-  const createUserWallet = async () => {
-    try {
-      const createResponse = await WalletService.createWallet(
-        user.$id,
-        user.email,
-        user.name || 'User'
-      );
-      
-      if (createResponse.success) {
-        // Retry fetching wallet data
-        fetchWalletData();
-      } else {
-        setError(createResponse.error || 'Failed to create wallet');
-      }
-    } catch (err) {
-      console.error('Error creating wallet:', err);
-      setError(err.message);
-    }
-  };
-
-  const handleAddFunds = () => {
-    setActiveScreen('addFunds');
-  };
-
-  const handleCardPayment = async (amount = 10000) => {
-    try {
-      const paymentResponse = await WalletService.initializePayment(
-        user.$id,
-        amount,
-        user.email,
-        user.name || 'User'
-      );
-      
-      console.log('Card payment response:', paymentResponse);
-      
-      if (paymentResponse.success) {
-        // Redirect to Monnify checkout
-        window.location.href = paymentResponse.data.checkoutUrl;
-      } else {
-        alert(`Payment error: ${paymentResponse.error}`);
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
-    }
-  };
-
-  const handlePayout = async (amount) => {
-    if (amount > balance) {
-      setShowLowBalanceAlert(true);
-      return;
-    }
-
-    try {
-      // TODO: Get user's bank details from saved payment methods
-      const bankCode = '058'; // GTBank code
-      const accountNumber = '0123456789'; // Should come from user's saved banks
-      const accountName = user.name || 'User';
-      
-      const payoutResponse = await WalletService.createPayout(
-        user.$id,
-        amount,
-        bankCode,
-        accountNumber,
-        accountName
-      );
-      
-      console.log('Payout response:', payoutResponse);
-      
-      if (payoutResponse.success) {
-        setBalance(payoutResponse.newBalance || (balance - amount));
-        setShowSuccessModal(true);
-        // Refresh transactions
-        fetchWalletData();
-      } else {
-        alert(`Payout failed: ${payoutResponse.error}`);
-      }
-    } catch (error) {
-      console.error('Payout error:', error);
-      alert('Payout failed. Please try again.');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#3A0A21] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#3A0A21]">Loading wallet...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-[#3A0A21] mb-2">Error Loading Wallet</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchWalletData}
-            className="bg-[#3A0A21] text-white px-4 py-2 rounded-lg hover:bg-[#5A1331] transition"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div>
-      {activeScreen === 'wallet' && (
-        <WalletScreen
-          balance={balance}
-          onAddFunds={handleAddFunds}
-          onPayout={() => setActiveScreen('payout')}
-          transactions={transactions}
-        />
-      )}
-      
-      {activeScreen === 'addFunds' && (
-        <AddFundsScreen
-          virtualAccount={virtualAccount}
-          onBack={() => setActiveScreen('wallet')}
-          onCardPayment={() => handleCardPayment()}
-        /> 
-      )}
-      
-      {activeScreen === 'payout' && (
-        <PayoutScreen
-          balance={balance}
-          onBack={() => setActiveScreen('wallet')}
-          onPayout={handlePayout}
-        />
-      )}
-      
-      {showSuccessModal && (
-        <SuccessModal onClose={() => {
-          setShowSuccessModal(false);
-          setActiveScreen('wallet');
-          fetchWalletData();
-        }} />
-      )}
-      
-      {showLowBalanceAlert && (
-        <LowBalanceAlert
-          onCancel={() => setShowLowBalanceAlert(false)}
-          onAddFunds={() => {
-            setShowLowBalanceAlert(false);
-            setActiveScreen('addFunds');
-          }}
-        />
-      )}
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-[18px] font-bold text-[#1a1a1a]">Payment Methods</h2>
+        <p className="text-[12px] text-gray-400 mt-0.5">Choose how you want to pay for deliveries</p>
+      </div>
+
+      {/* Wallet balance */}
+      <div className="bg-[#3A0A21] rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <p className="text-white/50 text-[11px] font-medium uppercase tracking-wide mb-1">Wallet Balance</p>
+          <p className="text-white font-bold text-[22px] leading-none">₦0.00</p>
+        </div>
+        <div className="bg-white/10 border border-white/15 text-white/50 text-[12px] font-semibold px-3 py-2 rounded-xl">
+          Top up — coming soon
+        </div>
+      </div>
+
+      {/* Method list */}
+      <div className="space-y-2">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">Default payment</p>
+        {methods.map((m, i) => {
+          const Icon = m.icon;
+          const isSelected = selected === m.id;
+          return (
+            <motion.button
+              key={m.id}
+              onClick={() => !m.disabled && setSelected(m.id)}
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.06 }}
+              whileTap={!m.disabled ? { scale: 0.985 } : {}}
+              className={`w-full flex items-center gap-3.5 p-4 rounded-2xl border transition-all duration-150 text-left
+                ${m.disabled
+                  ? 'opacity-40 cursor-not-allowed bg-white border-gray-100'
+                  : isSelected
+                    ? 'bg-white border-[#3A0A21] shadow-sm'
+                    : 'bg-white border-gray-100 hover:border-gray-200'
+                }`}
+            >
+              <div className="w-10 h-10 bg-[#faf8f9] rounded-xl flex items-center justify-center flex-shrink-0">
+                <Icon size={17} className="text-[#3A0A21]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-[13.5px] font-semibold text-[#1a1a1a]">{m.label}</p>
+                  {m.badge && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full
+                      ${m.badge === 'Coming soon' ? 'bg-gray-100 text-gray-400' : 'bg-orange-50 text-orange-500'}`}>
+                      {m.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-0.5">{m.desc}</p>
+              </div>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
+                ${isSelected ? 'border-[#3A0A21] bg-[#3A0A21]' : 'border-gray-200'}`}>
+                {isSelected && <Check size={11} className="text-white" strokeWidth={3} />}
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      <motion.button
+        onClick={handleSave}
+        whileTap={{ scale: 0.97 }}
+        className={`w-full py-4 rounded-2xl text-[13px] font-bold transition-all duration-300
+          ${saved ? 'bg-green-500 text-white' : 'bg-[#3A0A21] text-white'}`}
+      >
+        {saved ? '✓ Saved' : 'Save Preference'}
+      </motion.button>
+
+      <div className="flex items-center gap-2 justify-center">
+        <Shield size={12} className="text-gray-300" />
+        <p className="text-[11px] text-gray-400">All payments are secure and protected</p>
+      </div>
     </div>
   );
-};
-
-export default Payment;
+}
