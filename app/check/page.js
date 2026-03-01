@@ -259,9 +259,9 @@ const ChooseAvailable = () => {
               <div className="w-6 h-6 bg-[#3A0A21]/8 rounded-lg flex items-center justify-center">
                 <span className="text-[11px]">🏢</span>
               </div>
-              <p className="text-[12px] font-bold text-[#1a1a1a]">Agency</p>
+              <p className="text-[11px] font-bold text-[#1a1a1a]">Agency</p>
             </div>
-            <p className="text-[11px] text-gray-400 leading-relaxed">
+            <p className="text-[10px] text-gray-400 leading-relaxed">
               A registered business with multiple riders. More reliable for
               large or regular shipments.
             </p>
@@ -271,9 +271,9 @@ const ChooseAvailable = () => {
               <div className="w-6 h-6 bg-[#FF6B35]/8 rounded-lg flex items-center justify-center">
                 <span className="text-[11px]">🏍️</span>
               </div>
-              <p className="text-[12px] font-bold text-[#1a1a1a]">Courier</p>
+              <p className="text-[11px] font-bold text-[#1a1a1a]">Courier</p>
             </div>
-            <p className="text-[11px] text-gray-400 leading-relaxed">
+            <p className="text-[10px] text-gray-400 leading-relaxed">
               An independent rider. Usually faster for small packages and short
               distances.
             </p>
@@ -294,12 +294,7 @@ const ChooseAvailable = () => {
                 }`}
             >
               {t.label}
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold
-                ${tab === t.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}
-              >
-                {t.count}
-              </span>
+              
             </button>
           ))}
         </div>
