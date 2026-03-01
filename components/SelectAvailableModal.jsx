@@ -93,15 +93,7 @@ const SelectAvailableModal = ({ traveler, onCancel, loading, onConfirm }) => {
               </div>
             </div>
 
-            {/* What happens next */}
-            <div className="bg-blue-50 rounded-2xl p-3.5 mb-5">
-              <p className="text-[11px] font-bold text-blue-600 mb-1">What happens next</p>
-              <p className="text-[11px] text-blue-500 leading-relaxed">
-                {isAgency
-                  ? 'The agency will receive your request and assign a rider. They may contact you to confirm the fare.'
-                  : 'The courier will receive a notification and can accept your job. You\'ll be notified once they accept.'}
-              </p>
-            </div>
+          
 
             {/* Actions */}
             <div className="flex gap-2.5">

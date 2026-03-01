@@ -16,13 +16,12 @@ const ChooseAvailable = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [deliveryId, setDeliveryId] = useState(null);
   const [restoring, setRestoring] = useState(false);
-  const [tab, setTab] = useState('all'); // 'all' | 'agency' | 'courier'
+  const [tab, setTab] = useState('all'); 
 
   const { agencies, loading, error } = useChooseAvailable();
   const { user } = useAuth();
   const router = useRouter();
 
-  // ── Restore delivery ID (or create from pendingDelivery) ─────────────────
   useEffect(() => {
     const init = async () => {
       const sessionId = sessionStorage.getItem('latestDeliveryId');
@@ -100,7 +99,6 @@ const ChooseAvailable = () => {
     init();
   }, [user]);
 
-  // ── Transform agencies/couriers ───────────────────────────────────────────
   useEffect(() => {
     if (!agencies?.length) return;
 
@@ -158,7 +156,6 @@ const ChooseAvailable = () => {
   }, [agencies]);
 
   const handleBookTraveler = (traveler) => {
-    // ✅ BUG FIX: Guard — don't allow booking if deliveryId is not set yet
     if (!deliveryId) {
       alert('Your delivery is still being prepared. Please wait a moment.');
       return;
@@ -168,7 +165,6 @@ const ChooseAvailable = () => {
   };
 
   const handleConfirmBooking = async () => {
-    // ✅ BUG FIX: Double-check both are present before any Appwrite call
     if (!selectedTraveler?.id || !deliveryId) {
       alert('Missing delivery or traveler information');
       return;
@@ -179,14 +175,13 @@ const ChooseAvailable = () => {
       const isAgency = selectedTraveler.entityType === 'agency';
       const updateData = { status: 'pending' };
 
-      // ✅ BUG FIX: Only one of these is set per booking — exactly one row updated
       if (isAgency) updateData.assignedAgencyId = selectedTraveler.id;
       else updateData.assignedCourierId = selectedTraveler.id;
 
       await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId: deliveryId, // ← specific row, not a query
+        rowId: deliveryId, 
         data: updateData,
       });
 
@@ -209,7 +204,6 @@ const ChooseAvailable = () => {
     }
   };
 
-  // ── Tab filter ─────────────────────────────────────────────────────────────
   const tabs = [
     { id: 'all', label: 'All', count: travelers.length },
     {
@@ -248,11 +242,10 @@ const ChooseAvailable = () => {
           <p className="text-[12px] text-gray-400 mt-0.5">
             {loading || restoring
               ? 'Finding available couriers near you…'
-              : `${filtered.length} available now`}
+              : ` available now`}
           </p>
         </div>
 
-        {/* ── WHAT'S THE DIFFERENCE? Info strip ─────────────────────────── */}
         <div className="grid grid-cols-2 gap-2.5 mb-5">
           <div className="bg-white rounded-2xl border border-gray-100 p-3.5">
             <div className="flex items-center gap-2 mb-1.5">
@@ -280,7 +273,6 @@ const ChooseAvailable = () => {
           </div>
         </div>
 
-        {/* ── TABS ──────────────────────────────────────────────────────── */}
         <div className="flex gap-2 mb-4">
           {tabs.map((t) => (
             <button
@@ -299,7 +291,6 @@ const ChooseAvailable = () => {
           ))}
         </div>
 
-        {/* ── LIST ──────────────────────────────────────────────────────── */}
         {loading || restoring ? (
           <AgencyLoadingSkeleton />
         ) : filtered.length === 0 ? (
