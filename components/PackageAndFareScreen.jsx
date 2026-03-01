@@ -16,7 +16,6 @@ import PaymentSection from './PackageAndFare/PaymentSection';
 
 function AgencyPriceContactCard() {
   const { brandColors } = useBrandColors();
-
   return (
     <section>
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
@@ -115,10 +114,23 @@ function Screen({
     });
   };
 
+  // Snapshot of everything the user has filled in — persisted to localStorage
+  // by StickyConfirmBar if the user is not logged in yet
+  const deliverySnapshot = {
+    pickup: delivery.pickup,
+    dropoff: delivery.dropoff,
+    routeData: delivery.routeData,
+    packageDetails,
+    fareDetails: {
+      suggestedFare: showPricing ? suggestedFare : null,
+      offeredFare: showPricing ? fareDetails.offeredFare : null,
+      paymentMethod: fareDetails.paymentMethod,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-white max-w-md pb-28 md:pb-0 mx-auto">
       <div className="max-w-3xl mx-auto px-4 py-5 space-y-6">
-
         {/* Header */}
         <div className="flex items-start gap-3 px-5">
           <button
@@ -130,7 +142,6 @@ function Screen({
           <h1 className="text-lg font-bold text-gray-900">New delivery</h1>
         </div>
 
-        {/* Branded accent bar — only shows for agency bookings where colors differ */}
         <div
           className="h-0.5 rounded-full mx-5"
           style={{
@@ -191,20 +202,24 @@ function Screen({
       <StickyConfirmBar
         isValid={isValid}
         loading={loading}
-        errors={errors}
-        fareDetails={showPricing ? fareDetails : null}
-        onConfirm={handleConfirm}
+        onConfirm={onPackageConfirmed}
+        fareDetails={fareDetails}
+        deliverySnapshot={{
+          pickup: delivery.pickup,
+          dropoff: delivery.dropoff,
+          routeData: delivery.routeData,
+          packageDetails: packageDetails,
+          fareDetails: fareDetails, 
+        }}
       />
     </div>
   );
 }
 
-// ─── Platform variant ─────────────────────────────────────────────────────────
 function PlatformScreen(props) {
   return <Screen {...props} fareHook={useFareCalculator} showPricing={true} />;
 }
 
-// ─── Agency variant ───────────────────────────────────────────────────────────
 function AgencyScreen({ showPricing, ...props }) {
   return (
     <Screen

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/Authcontext';
-import { account } from '@/lib/config/Appwriteconfig';
+import { account, tablesDB, Query } from '@/lib/config/Appwriteconfig';
 
 export default function Confirm() {
   const router = useRouter();
@@ -26,12 +26,9 @@ export default function Confirm() {
 
       try {
         Processed.current = true;
-
         let sessionExists = false;
         try {
-          const currentSession = await account.getSession({
-            sessionId: 'current'
-          });
+          const currentSession = await account.getSession({ sessionId: 'current' });
           if (currentSession) {
             sessionExists = true;
             setStatus('Session already active, redirecting...');
@@ -41,18 +38,36 @@ export default function Confirm() {
         }
 
         if (!sessionExists) {
-          await account.createSession({
-            userId: userId,
-            secret: secret
-          });
+          await account.createSession({ userId, secret });
           setStatus('Session created successfully!');
-        } 
-
+        }
         await checkSession();
-        
-        setStatus('Redirecting to your account...');
-        setTimeout(() => router.push('/onboarding'), 1000);
-        
+        setStatus('Checking your profile...');
+        let alreadyOnboarded = false;
+
+        try {
+          const userData = await account.get();
+          const response = await tablesDB.listRows({
+            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+            tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+            queries: [Query.equal('userId', userData.$id)],
+          });
+
+          if (response.rows.length > 0 && response.rows[0].onboardingCompleted) {
+            alreadyOnboarded = true;
+          }
+        } catch (profileErr) {
+          console.warn('Could not check profile, falling through to onboarding:', profileErr);
+        }
+        setStatus('Redirecting...');
+
+        if (alreadyOnboarded) {
+          const pendingRedirect = localStorage.getItem('postAuthRedirect');
+          setTimeout(() => router.push(pendingRedirect || '/send'), 500);
+        } else {
+          setTimeout(() => router.push('/onboarding'), 500);
+        }
+
       } catch (error) {
         console.error('Verification failed:', error);
         setStatus('Verification failed. Please try again.');
@@ -61,13 +76,13 @@ export default function Confirm() {
       }
     };
 
-    verifySession(); 
+    verifySession();
   }, [router, checkSession]);
 
   return (
     <div className="h-screen flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3A0A21] mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3A0A21] mx-auto mb-4" />
         <p className="text-sm text-[#3A0A21]">{status}</p>
       </div>
     </div>

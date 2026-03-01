@@ -100,6 +100,16 @@ export const AuthProvider = ({ children }) => {
     redirect('/');
   };
 
+  const deleteAccount = async () => {
+    try {
+      await account.delete();
+      setUser(null);
+      redirect('/');
+    } catch (error) {
+      throw new Error(error.message || 'Failed to delete account');
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -109,6 +119,7 @@ export const AuthProvider = ({ children }) => {
         loginWithGoogle,
         loginWithFacebook,
         logout,
+        deleteAccount,
         checkSession,
         // listSessions,
         // logoutAllDevices,

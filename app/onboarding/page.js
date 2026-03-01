@@ -5,28 +5,27 @@ import { User, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-// import { WalletService } from '@/lib/WalletService';
 
 const roles = [
-  {
-    id: 'sender',
-    title: 'Sender',
-    sub: 'Book deliveries & track packages',
-    icon: User,
-  },
-  {
-    id: 'courier',
-    title: 'Independent Courier',
-    sub: 'Receive jobs & earn money',
-    icon: User,
-  },
-  {
-    id: 'agency',
-    title: 'Agency',
-    sub: 'Manage couriers & operations',
-    icon: User,
-  },
+  { id: 'sender',  title: 'Sender',             sub: 'Book deliveries & track packages', icon: User },
+  { id: 'courier', title: 'Independent Courier', sub: 'Receive jobs & earn money',        icon: User },
+  { id: 'agency',  title: 'Agency',              sub: 'Manage couriers & operations',     icon: User },
 ];
+
+// ── After onboarding, respect postAuthRedirect if a delivery was saved ────────
+// NOTE: Do NOT clear postAuthRedirect here — ChooseTraveler (/check) owns
+// that cleanup after it has successfully saved the delivery to Appwrite.
+function getPostOnboardingRoute(role) {
+  const pendingRedirect = localStorage.getItem('postAuthRedirect');
+  if (pendingRedirect) {
+    return pendingRedirect; // e.g. '/check'
+  }
+  // Normal role-based routing (no pending delivery)
+  if (role === 'sender')  return '/send';
+  if (role === 'courier') return '/track';
+  if (role === 'agency')  return '/onboardagency';
+  return '/';
+}
 
 export default function Onboarding() {
   const router = useRouter();
@@ -36,15 +35,8 @@ export default function Onboarding() {
   const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
-    if (loading) {
-      setCheckingProfile(true);
-      return;
-    }
-    if (!user) {
-      setCheckingProfile(false);
-      router.push('/login');
-      return;
-    }
+    if (loading) { setCheckingProfile(true); return; }
+    if (!user)   { setCheckingProfile(false); router.push('/login'); return; }
     checkOnboardingStatus();
   }, [user, loading]);
 
@@ -53,11 +45,14 @@ export default function Onboarding() {
       setCheckingProfile(true);
       const response = await tablesDB.listRows({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-        queries: [Query.equal('userId', user.$id)],
+        tableId:    process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+        queries:    [Query.equal('userId', user.$id)],
       });
+
       if (response.rows.length > 0 && response.rows[0].onboardingCompleted) {
-        handleRoleBasedRedirect(response.rows[0].role);
+        // Already onboarded — still respect postAuthRedirect if present
+        // (handles the edge case where onboarding page is hit after a re-login)
+        router.push(getPostOnboardingRoute(response.rows[0].role));
       }
     } catch (err) {
       console.error('Failed to check onboarding status:', err);
@@ -66,44 +61,28 @@ export default function Onboarding() {
     }
   };
 
-  const handleRoleBasedRedirect = (userRole) => {
-    const routes = { sender: '/send', courier: '/track', agency: '/track' };
-    router.push(routes[userRole] || '/');
-  };
-
   const handleSubmit = async () => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    if (!role) return;
+    if (!user || !role) return;
     try {
       setIsLoading(true);
       await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-        rowId: ID.unique(),
+        tableId:    process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+        rowId:      ID.unique(),
         data: {
-          userId: user.$id,
-          userName: user.email.split('@')[0],
+          userId:              user.$id,
+          userName:            user.email.split('@')[0],
           role,
-          phone: null,
+          phone:               null,
           onboardingCompleted: true,
-          isAvailable: true,
+          isAvailable:         true,
         },
       });
-      // const walletResult = await WalletService.createWallet(
-      //   user.$id,
-      //   user.email,
-      //   user.email.split('@')[0]
-      // );
-      // if (!walletResult.success)
-      //   console.error('Wallet creation failed:', walletResult.error);
 
-      if (role === 'sender') router.push('/send');
-      else if (role === 'courier') router.push('/track');
-      else if (role === 'agency') router.push('/onboardagency');
-      else router.push('/');
+      // getPostOnboardingRoute reads postAuthRedirect from localStorage.
+      // ChooseTraveler will clear both 'postAuthRedirect' and 'pendingDelivery'
+      // after the delivery is saved to Appwrite — we must NOT clear them here.
+      router.push(getPostOnboardingRoute(role));
     } catch (err) {
       console.error('Failed to save onboarding:', err);
       alert('Failed to save profile. Please try again.');
@@ -136,17 +115,11 @@ export default function Onboarding() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-4">
-            Welcome
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-4">Welcome</p>
           <h1
             className="text-[2.2rem] font-normal leading-[1.15] text-[#1a1a1a]"
-            style={{
-              fontFamily: "'DM Serif Display', serif",
-              letterSpacing: '-0.02em',
-            }}
+            style={{ fontFamily: "'DM Serif Display', serif", letterSpacing: '-0.02em' }}
           >
             How will you
             <br />
@@ -154,7 +127,6 @@ export default function Onboarding() {
           </h1>
         </div>
 
-        {/* Role cards */}
         <div className="space-y-2.5 mb-10">
           {roles.map((item, i) => {
             const Icon = item.icon;
@@ -166,11 +138,7 @@ export default function Onboarding() {
                 onClick={() => setRole(item.id)}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.1 + i * 0.07,
-                  duration: 0.3,
-                  ease: 'easeOut',
-                }}
+                transition={{ delay: 0.1 + i * 0.07, duration: 0.3, ease: 'easeOut' }}
                 whileTap={{ scale: 0.985 }}
                 className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all duration-200 text-left ${
                   isActive
@@ -178,40 +146,14 @@ export default function Onboarding() {
                     : 'bg-white border-[#e8e2e5] hover:border-[#3A0A21]/30'
                 }`}
               >
-                {/* Icon */}
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                    isActive ? 'bg-white/15' : 'bg-[#3A0A21]/7'
-                  }`}
-                >
-                  <Icon
-                    size={17}
-                    className={isActive ? 'text-white' : 'text-[#3A0A21]'}
-                  />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isActive ? 'bg-white/15' : 'bg-[#3A0A21]/7'}`}>
+                  <Icon size={17} className={isActive ? 'text-white' : 'text-[#3A0A21]'} />
                 </div>
-
-                {/* Text */}
                 <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm font-semibold leading-tight ${isActive ? 'text-white' : 'text-[#1a1a1a]'}`}
-                  >
-                    {item.title}
-                  </p>
-                  <p
-                    className={`text-xs mt-0.5 leading-snug ${isActive ? 'text-white/60' : 'text-[#aaa]'}`}
-                  >
-                    {item.sub}
-                  </p>
+                  <p className={`text-sm font-semibold leading-tight ${isActive ? 'text-white' : 'text-[#1a1a1a]'}`}>{item.title}</p>
+                  <p className={`text-xs mt-0.5 leading-snug ${isActive ? 'text-white/60' : 'text-[#aaa]'}`}>{item.sub}</p>
                 </div>
-
-                {/* Selection indicator */}
-                <div
-                  className={`w-4 h-4 rounded-full border-2 shrink-0 transition-all duration-200 ${
-                    isActive
-                      ? 'border-white bg-white'
-                      : 'border-[#ddd] bg-transparent'
-                  }`}
-                >
+                <div className={`w-4 h-4 rounded-full border-2 shrink-0 transition-all duration-200 ${isActive ? 'border-white bg-white' : 'border-[#ddd] bg-transparent'}`}>
                   <AnimatePresence>
                     {isActive && (
                       <motion.div
@@ -229,7 +171,6 @@ export default function Onboarding() {
           })}
         </div>
 
-        {/* CTA */}
         <motion.button
           onClick={handleSubmit}
           disabled={isLoading || !role}
@@ -243,23 +184,15 @@ export default function Onboarding() {
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <>
-              Continue
-              {role && <ArrowRight size={15} />}
-            </>
+            <> Continue {role && <ArrowRight size={15} />} </>
           )}
         </motion.button>
 
-        {/* Terms note */}
         <p className="text-center text-xs text-[#bbb] mt-5 leading-relaxed">
           By continuing you agree to our{' '}
-          <a href="/terms" className="text-[#3A0A21] hover:underline">
-            Terms
-          </a>{' '}
+          <a href="/terms" className="text-[#3A0A21] hover:underline">Terms</a>{' '}
           and{' '}
-          <a href="/privacy" className="text-[#3A0A21] hover:underline">
-            Privacy Policy
-          </a>
+          <a href="/privacy" className="text-[#3A0A21] hover:underline">Privacy Policy</a>
         </p>
       </motion.div>
     </div>

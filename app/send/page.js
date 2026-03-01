@@ -5,7 +5,7 @@ import LocationAndPreviewScreen from '@/components/LocationAndPreviewScreen';
 import PackageAndFareScreen from '@/components/PackageAndFareScreen';
 import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
-// import NotUser from '@/hooks/NotUser';
+import NotUser from '@/hooks/NotUser';
 
 export default function CreateDelivery() {
   const router = useRouter();
@@ -49,10 +49,6 @@ export default function CreateDelivery() {
     }
   }, []);
 
-  // if (!user) {
-  //   return <NotUser />;
-  // }
-
   const handleLocationsConfirmed = (pickup, dropoff, routeData) => {
     setDeliveryData((prev) => ({
       ...prev,
@@ -69,6 +65,9 @@ export default function CreateDelivery() {
       packageDetails,
       fareDetails,
     }));
+    if (!user) {
+      return;
+    }
     saveDeliveryToAppwrite(packageDetails, fareDetails);
   };
 
