@@ -7,43 +7,51 @@ import { ArrowUpRight, Plus } from 'lucide-react';
 
 const features = [
   {
-    label: 'Book deliveries',
-    desc: 'Compare and book verified couriers in seconds.',
+    label: 'Fast, same-day delivery',
+    desc: 'Your customer orders. We deliver the same day. Simple.',
   },
   {
-    label: 'Track in real time',
-    desc: 'Know exactly where your package is at all times.',
-  },
-  {
-    label: 'Pay securely',
-    desc: 'Digital payments with automatic receipts every order.',
+    label: 'Affordable flat rates',
+    desc: "Know exactly what you're paying before you book. No surprises.",
   },
   {
     label: 'No WhatsApp chaos',
     desc: 'Everything in one place — bookings, history, support.',
   },
+  {
+    label: 'Reliable riders who show up',
+    desc: 'Every courier is verified and rated by real businesses like yours.',
+  },
+  {
+    label: 'Handles the follow-up for you',
+    desc: 'Your customer gets a tracking link. You stop answering "where is my order?" messages.',
+  },
 ];
 
 const faqs = [
   {
-    q: 'How do I book a delivery?',
-    a: 'Enter your pickup and dropoff. Pick a courier. Done.',
+    q: 'How fast will my package arrive?',
+    a: 'Most deliveries within Lagos and Abuja arrive same-day, usually within 1–3 hours depending on distance and traffic.',
   },
   {
-    q: 'Are the couriers verified?',
-    a: 'Yes. Every courier on Carrydey is verified with ratings and delivery history.',
-  },
-  {
-    q: 'Can I track my package?',
-    a: 'Yes real-time tracking from pickup to doorstep.',
-  },
-  {
-    q: 'What if something goes wrong?',
-    a: 'Our support team is here 24/7. Contact us through the app or website for any issues.',
+    q: 'How much does a delivery cost?',
+    a: 'Prices start from ₦800 and are calculated by distance. You see the full price before you confirm — no hidden charges.',
   },
   {
     q: 'Can I schedule deliveries in advance?',
     a: 'Yes. You can schedule deliveries up to 7 days in advance to fit your needs.',
+  },
+  {
+    q: "What if the rider doesn't show up?",
+    a: "We reassign immediately. And your money doesn't leave until delivery is confirmed, so you're never left stranded.",
+  },
+  {
+    q: 'I send packages every day. Is there a better plan for me?',
+    a: 'Yes. Businesses that send frequently get access to bulk rates and a dedicated dashboard to manage all their orders.',
+  },
+  {
+    q: 'Can my customers track their delivery?',
+    a: 'Yes. They get a link sent to them automatically  no app download needed. You stop being the middle man.',
   },
   {
     q: 'What areas do you cover?',
@@ -115,7 +123,7 @@ export default function ForVendors() {
           For Businesses & Vendors
         </p>
 
-        {/* Headline */}
+        {/* Headline — speaks to the real pain */}
         <h1
           className="text-[clamp(2.6rem,7vw,4rem)] font-normal leading-[1.1] text-[#1a1a1a] mb-5"
           style={{
@@ -123,14 +131,14 @@ export default function ForVendors() {
             letterSpacing: '-0.02em',
           }}
         >
-          Send packages.
+          Your customer
           <br />
-          <em>Stop stressing.</em>
+          paid. <em>Deliver fast.</em>
         </h1>
 
         <p className="text-[17px] text-[#777] leading-relaxed mb-12 max-w-sm">
-          Book verified couriers, track deliveries live, and pay securely all
-          without leaving your browser.
+          Carrydey gets your packages to customers the same day affordably,
+          reliably, without the WhatsApp back-and-forth.
         </p>
 
         {/* CTA */}
@@ -138,7 +146,7 @@ export default function ForVendors() {
           href="/send"
           className="inline-flex items-center gap-2 bg-[#3A0A21] text-white text-sm font-medium px-6 py-3 rounded-full hover:bg-[#521229] transition-colors mb-16"
         >
-          Book a delivery <ArrowUpRight size={14} />
+          Send a package now <ArrowUpRight size={14} />
         </Link>
 
         {/* Feature list */}
@@ -168,6 +176,26 @@ export default function ForVendors() {
         {/* Divider */}
         <div className="my-16 h-px bg-[#ebe6e9]" />
 
+        {/* Testimonial — one real voice beats five bullet points */}
+        <div className="bg-white border border-[#ebe6e9] rounded-2xl px-6 py-6 mb-16">
+          <p className="text-[15px] text-[#444] leading-relaxed italic mb-4">
+            "I used to spend 30 minutes every day on WhatsApp chasing riders.
+            Now I book on Carrydey in 2 minutes and my customers get updates
+            automatically. My refund complaints dropped completely."
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[#3A0A21] text-white text-xs font-bold flex items-center justify-center">
+              A
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-[#1a1a1a]">
+                Adaeze O.
+              </p>
+              <p className="text-[11px] text-[#aaa]">Fashion vendor, Lagos</p>
+            </div>
+          </div>
+        </div>
+
         {/* FAQ */}
         <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-6">
           Questions
@@ -175,13 +203,13 @@ export default function ForVendors() {
         <Accordion items={faqs} />
 
         {/* Bottom CTA strip */}
-        <div className="mt-16 flex items-center justify-between border border-[#e2dce0] rounded-2xl px-6 py-5 bg-white">
-          <p className="text-sm font-medium text-[#1a1a1a]">
-            Ready to send your first package?
+        <div className="mt-16 flex items-center justify-between border border-[#e2dce0] rounded-2xl px-4 py-5 bg-white">
+          <p className="text-[12px] font-medium text-[#1a1a1a]">
+            Send packages daily? 
           </p>
           <Link
             href="/send"
-            className="inline-flex items-center gap-1.5 text-[#3A0A21] text-sm font-semibold hover:underline"
+            className="inline-flex items-center gap-1 text-[#3A0A21] text-sm font-bold hover:underline"
           >
             Send now <ArrowUpRight size={13} />
           </Link>
