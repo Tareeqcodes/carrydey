@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/Authcontext';
 import NotUser from '@/hooks/NotUser';
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 4;
   const { user } = useAuth();
 
   const {
@@ -35,7 +35,7 @@ const OnboardingPage = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => { 
     if (validateStep(currentStep)) {
       console.log('Submitting form data:', formData);
 
@@ -101,14 +101,15 @@ const OnboardingPage = () => {
     <OnboardingLayout currentStep={currentStep}>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 md:p-8 mb-28">
         {renderStep()}
-        {currentStep < totalSteps && (
+        {currentStep <= totalSteps && (
           <StepNavigation
             currentStep={currentStep}
             totalSteps={totalSteps}
             onPrevious={handlePrevious}
             onNext={handleNext}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit} 
             isSubmitting={isSubmitting}
+            
           />
         )}
       </div>

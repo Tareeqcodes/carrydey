@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Mail, Shield, Home, Sparkles } from 'lucide-react';
+import { Mail, Shield, Home, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SuccessStep = () => {
@@ -20,38 +20,7 @@ const SuccessStep = () => {
         className="max-w-lg w-full"
       >
         <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 sm:p-12">
-          {/* Success Animation */}
-          {/* <div className="relative mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="relative z-10"
-            >
-              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-2xl shadow-green-500/40">
-                <CheckCircle className="w-14 h-14 text-white" strokeWidth={2.5} />
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1.5, opacity: [0, 0.5, 0] }}
-              transition={{ delay: 0.3, duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <div className="w-24 h-24 rounded-full border-4 border-green-300" />
-            </motion.div>
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 2, opacity: [0, 0.3, 0] }}
-              transition={{ delay: 0.5, duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <div className="w-24 h-24 rounded-full border-4 border-green-200" />
-            </motion.div>
-          </div> */}
-
-          {/* Content */}
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -64,11 +64,12 @@ const useOnboardingForm = () => {
   //     }));
   //   }
   // };
+  
 const validateStep = (step) => {
   const newErrors = {};
   const phoneRegex = /^[+]?[\d\s\-()]+$/;
 
-  switch (step) { 
+  switch (step) {
     case 1: 
       if (!formData.organizationName.trim())
         newErrors.organizationName = 'Organization name is required';
@@ -79,26 +80,22 @@ const validateStep = (step) => {
       else if (!phoneRegex.test(formData.phone.replace(/\s/g, '')))
         newErrors.phone = 'Please enter a valid phone number';
       break;
-      
-    case 2:
+
+    case 2: 
       if (!formData.street.trim())
         newErrors.street = 'Street address is required';
-      break;
-      
-    case 3:
       if (!formData.serviceCities || formData.serviceCities.trim().length === 0)
         newErrors.serviceCities = 'Please enter at least one service city';
       break;
-      
-    case 4:
-      if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
+
+    case 3:
+      if (!formData.vehicleTypes || formData.vehicleTypes.length === 0)
         newErrors.vehicleTypes = 'Please select at least one vehicle type';
-      }
       if (formData.services.length === 0)
         newErrors.services = 'Please select at least one service';
       break;
-    
-    case 5:
+
+    case 4:
       if (!formData.termsAccepted)
         newErrors.termsAccepted = 'You must accept the Terms of Service';
       if (!formData.privacyPolicyAccepted)
@@ -166,7 +163,7 @@ const validateStep = (step) => {
         alternatePhone: formData.alternatePhone,
         userId: user.$id,
         rating: null,
-        minPrice: null,
+        minPrice: null, 
         status: true, 
         verified: false,
          serviceCities: formData.serviceCities || null, 
