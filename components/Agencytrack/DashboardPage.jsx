@@ -2,23 +2,62 @@
 import { motion } from 'framer-motion';
 import DashboardSummary from './DashboardSummary';
 
-
 const MotorcycleSVG = ({ size = 26 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
     <defs>
-      <linearGradient id="mframe" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#60A5FA" /><stop offset="1" stopColor="#1D4ED8" />
+      <linearGradient
+        id="mframe"
+        x1="0"
+        y1="0"
+        x2="64"
+        y2="64"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#60A5FA" />
+        <stop offset="1" stopColor="#1D4ED8" />
       </linearGradient>
-      <linearGradient id="mwheel" x1="0" y1="0" x2="0" y2="1" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#374151" /><stop offset="1" stopColor="#111827" />
+      <linearGradient
+        id="mwheel"
+        x1="0"
+        y1="0"
+        x2="0"
+        y2="1"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#374151" />
+        <stop offset="1" stopColor="#111827" />
       </linearGradient>
-      <linearGradient id="mrider" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FDE68A" /><stop offset="1" stopColor="#F59E0B" />
+      <linearGradient
+        id="mrider"
+        x1="0"
+        y1="0"
+        x2="64"
+        y2="64"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#FDE68A" />
+        <stop offset="1" stopColor="#F59E0B" />
       </linearGradient>
-      <linearGradient id="mpack" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#F87171" /><stop offset="1" stopColor="#DC2626" />
+      <linearGradient
+        id="mpack"
+        x1="0"
+        y1="0"
+        x2="64"
+        y2="64"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#F87171" />
+        <stop offset="1" stopColor="#DC2626" />
       </linearGradient>
-      <filter id="mf"><feDropShadow dx="0" dy="2" stdDeviation="1.5" floodColor="#1D4ED8" floodOpacity="0.35" /></filter>
+      <filter id="mf">
+        <feDropShadow
+          dx="0"
+          dy="2"
+          stdDeviation="1.5"
+          floodColor="#1D4ED8"
+          floodOpacity="0.35"
+        />
+      </filter>
     </defs>
 
     {/* ── Rear wheel ── */}
@@ -32,13 +71,39 @@ const MotorcycleSVG = ({ size = 26 }) => (
     <circle cx="50" cy="44" r="2" fill="#9CA3AF" />
 
     {/* ── Frame / body ── */}
-    <path d="M14 44 L22 28 L36 28 L50 44" stroke="url(#mframe)" strokeWidth="4" strokeLinecap="round" filter="url(#mf)" fill="none" />
+    <path
+      d="M14 44 L22 28 L36 28 L50 44"
+      stroke="url(#mframe)"
+      strokeWidth="4"
+      strokeLinecap="round"
+      filter="url(#mf)"
+      fill="none"
+    />
     {/* Engine block */}
-    <rect x="22" y="30" width="16" height="10" rx="3" fill="url(#mframe)" filter="url(#mf)" />
+    <rect
+      x="22"
+      y="30"
+      width="16"
+      height="10"
+      rx="3"
+      fill="url(#mframe)"
+      filter="url(#mf)"
+    />
     {/* Exhaust */}
-    <path d="M14 40 Q10 42 8 46" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path
+      d="M14 40 Q10 42 8 46"
+      stroke="#9CA3AF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      fill="none"
+    />
     {/* Handlebar */}
-    <path d="M44 28 L52 24" stroke="#93C5FD" strokeWidth="2.5" strokeLinecap="round" />
+    <path
+      d="M44 28 L52 24"
+      stroke="#93C5FD"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
     {/* Seat */}
     <rect x="24" y="24" width="14" height="5" rx="2.5" fill="#1E40AF" />
     {/* Headlight */}
@@ -46,67 +111,210 @@ const MotorcycleSVG = ({ size = 26 }) => (
 
     {/* ── Delivery box on rear ── */}
     <rect x="6" y="28" width="13" height="11" rx="2" fill="url(#mpack)" />
-    <line x1="12" y1="28" x2="12" y2="39" stroke="white" strokeWidth="1" opacity="0.5" />
-    <line x1="6" y1="33" x2="19" y2="33" stroke="white" strokeWidth="1" opacity="0.5" />
+    <line
+      x1="12"
+      y1="28"
+      x2="12"
+      y2="39"
+      stroke="white"
+      strokeWidth="1"
+      opacity="0.5"
+    />
+    <line
+      x1="6"
+      y1="33"
+      x2="19"
+      y2="33"
+      stroke="white"
+      strokeWidth="1"
+      opacity="0.5"
+    />
 
     {/* ── Rider body ── */}
     {/* Torso leaning forward */}
-    <path d="M32 26 Q36 18 44 20" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" fill="none" />
+    <path
+      d="M32 26 Q36 18 44 20"
+      stroke="#F59E0B"
+      strokeWidth="4"
+      strokeLinecap="round"
+      fill="none"
+    />
     {/* Head / helmet */}
     <circle cx="44" cy="18" r="5" fill="#1D4ED8" />
-    <path d="M40 16 Q44 12 48 16" stroke="#93C5FD" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    <path
+      d="M40 16 Q44 12 48 16"
+      stroke="#93C5FD"
+      strokeWidth="1.5"
+      fill="none"
+      strokeLinecap="round"
+    />
     {/* Visor shine */}
-    <path d="M41 19 Q44 16 47 19" stroke="#DBEAFE" strokeWidth="1" fill="none" opacity="0.7" />
+    <path
+      d="M41 19 Q44 16 47 19"
+      stroke="#DBEAFE"
+      strokeWidth="1"
+      fill="none"
+      opacity="0.7"
+    />
     {/* Arms */}
-    <path d="M38 22 L44 26" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" />
+    <path
+      d="M38 22 L44 26"
+      stroke="#F59E0B"
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
     {/* Legs */}
-    <path d="M32 26 L28 34 L22 34" stroke="#374151" strokeWidth="3" strokeLinecap="round" />
+    <path
+      d="M32 26 L28 34 L22 34"
+      stroke="#374151"
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
 const PinSVG = () => (
   <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
     <defs>
-      <linearGradient id="pg" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#F87171" /><stop offset="1" stopColor="#DC2626" />
+      <linearGradient
+        id="pg"
+        x1="0"
+        y1="0"
+        x2="0"
+        y2="48"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#F87171" />
+        <stop offset="1" stopColor="#DC2626" />
       </linearGradient>
-      <filter id="ps"><feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#EF4444" floodOpacity="0.5" /></filter>
+      <filter id="ps">
+        <feDropShadow
+          dx="0"
+          dy="2"
+          stdDeviation="3"
+          floodColor="#EF4444"
+          floodOpacity="0.5"
+        />
+      </filter>
     </defs>
-    <path d="M24 4C18.5 4 14 8.5 14 14c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z" fill="url(#pg)" filter="url(#ps)" />
+    <path
+      d="M24 4C18.5 4 14 8.5 14 14c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z"
+      fill="url(#pg)"
+      filter="url(#ps)"
+    />
     <circle cx="24" cy="14" r="4" fill="white" opacity="0.65" />
-    <ellipse cx="19" cy="10" rx="3" ry="1.5" fill="white" opacity="0.3" transform="rotate(-30 19 10)" />
+    <ellipse
+      cx="19"
+      cy="10"
+      rx="3"
+      ry="1.5"
+      fill="white"
+      opacity="0.3"
+      transform="rotate(-30 19 10)"
+    />
   </svg>
 );
 
 const CheckSVG = () => (
   <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
     <defs>
-      <linearGradient id="cg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#34D399" /><stop offset="1" stopColor="#059669" />
+      <linearGradient
+        id="cg"
+        x1="0"
+        y1="0"
+        x2="48"
+        y2="48"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#34D399" />
+        <stop offset="1" stopColor="#059669" />
       </linearGradient>
-      <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10B981" floodOpacity="0.45" /></filter>
+      <filter id="cs">
+        <feDropShadow
+          dx="0"
+          dy="2"
+          stdDeviation="3"
+          floodColor="#10B981"
+          floodOpacity="0.45"
+        />
+      </filter>
     </defs>
     <circle cx="24" cy="24" r="20" fill="url(#cg)" filter="url(#cs)" />
-    <ellipse cx="18" cy="14" rx="5" ry="2.5" fill="white" opacity="0.22" transform="rotate(-30 18 14)" />
-    <path d="M14 24l7 7 13-14" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+    <ellipse
+      cx="18"
+      cy="14"
+      rx="5"
+      ry="2.5"
+      fill="white"
+      opacity="0.22"
+      transform="rotate(-30 18 14)"
+    />
+    <path
+      d="M14 24l7 7 13-14"
+      stroke="white"
+      strokeWidth="3.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const CoinSVG = ({ size = 26 }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
     <defs>
-      <linearGradient id="cf" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FDE68A" /><stop offset="1" stopColor="#F59E0B" />
+      <linearGradient
+        id="cf"
+        x1="0"
+        y1="0"
+        x2="48"
+        y2="48"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#FDE68A" />
+        <stop offset="1" stopColor="#F59E0B" />
       </linearGradient>
-      <filter id="cshadow"><feDropShadow dx="0" dy="3" stdDeviation="2.5" floodColor="#D97706" floodOpacity="0.5" /></filter>
+      <filter id="cshadow">
+        <feDropShadow
+          dx="0"
+          dy="3"
+          stdDeviation="2.5"
+          floodColor="#D97706"
+          floodOpacity="0.5"
+        />
+      </filter>
     </defs>
     {/* 3D side */}
     <ellipse cx="24" cy="33" rx="17" ry="4" fill="#92400E" opacity="0.55" />
     {/* Face */}
-    <ellipse cx="24" cy="20" rx="17" ry="10" fill="url(#cf)" filter="url(#cshadow)" />
+    <ellipse
+      cx="24"
+      cy="20"
+      rx="17"
+      ry="10"
+      fill="url(#cf)"
+      filter="url(#cshadow)"
+    />
     {/* Shine */}
-    <ellipse cx="17" cy="15" rx="5" ry="2.5" fill="white" opacity="0.35" transform="rotate(-25 17 15)" />
-    <text x="24" y="24.5" textAnchor="middle" fill="#92400E" fontSize="10" fontWeight="bold" fontFamily="Georgia,serif">₦</text>
+    <ellipse
+      cx="17"
+      cy="15"
+      rx="5"
+      ry="2.5"
+      fill="white"
+      opacity="0.35"
+      transform="rotate(-25 17 15)"
+    />
+    <text
+      x="24"
+      y="24.5"
+      textAnchor="middle"
+      fill="#92400E"
+      fontSize="10"
+      fontWeight="bold"
+      fontFamily="Georgia,serif"
+    >
+      ₦
+    </text>
   </svg>
 );
 
@@ -122,17 +330,20 @@ const DashboardPage = ({
   drivers,
   onNavigateToTracking,
 }) => {
-  const activeDrivers   = drivers.filter((d) => d.status === 'on_delivery');
-  const availableDrivers = drivers.filter((d) => d.status === 'available');
-  const inTransit = activeDeliveries.filter(
-    (d) => !['delivered', 'pending_assignment'].includes(d.status)
-  ).length;
+  const activeDrivers = drivers.filter((d) => d.status === 'on_delivery');
+  // const availableDrivers = drivers.filter((d) => d.status === 'available');
+  // const inTransit = activeDeliveries.filter(
+  //   (d) => !['delivered', 'pending_assignment'].includes(d.status)
+  // ).length;
 
   const today = new Date().toDateString();
 
   const todayEarnings = completedDeliveries
-    .filter((d) => d.status === 'delivered' &&
-      new Date(d.$createdAt || d.createdAt).toDateString() === today)
+    .filter(
+      (d) =>
+        d.status === 'delivered' &&
+        new Date(d.$createdAt || d.createdAt).toDateString() === today
+    )
     .reduce((sum, d) => sum + (d.offeredFare || d.suggestedFare || 0), 0);
 
   const totalEarnings = completedDeliveries
@@ -150,7 +361,6 @@ const DashboardPage = ({
 
   return (
     <div className="space-y-5 px-3 pb-16">
-
       {/* Header */}
       <motion.h1
         initial={{ opacity: 0, y: -14 }}
@@ -163,7 +373,6 @@ const DashboardPage = ({
       {/* Existing summary cards */}
       <DashboardSummary activeDeliveries={activeDeliveries} drivers={drivers} />
 
-     
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -175,9 +384,13 @@ const DashboardPage = ({
           <div className="absolute -right-5 -top-5 w-20 h-20 rounded-full bg-white opacity-10" />
           <div className="flex items-center gap-2 mb-2">
             <CoinSVG size={22} />
-            <p className="text-[10px] font-bold text-amber-900 uppercase tracking-widest">Today</p>
+            <p className="text-[10px] font-bold text-amber-900 uppercase tracking-widest">
+              Today
+            </p>
           </div>
-          <p className="text-2xl font-bold text-white leading-none">{fmt(todayEarnings)}</p>
+          <p className="text-2xl font-bold text-white leading-none">
+            {fmt(todayEarnings)}
+          </p>
           <p className="text-[11px] text-amber-100 mt-1">Earnings</p>
         </div>
 
@@ -186,9 +399,13 @@ const DashboardPage = ({
           <div className="absolute -right-5 -top-5 w-20 h-20 rounded-full bg-white opacity-5" />
           <div className="flex items-center gap-2 mb-2">
             <CoinSVG size={22} />
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Total
+            </p>
           </div>
-          <p className="text-2xl font-bold text-white leading-none">{fmt(totalEarnings)}</p>
+          <p className="text-2xl font-bold text-white leading-none">
+            {fmt(totalEarnings)}
+          </p>
           <p className="text-[11px] text-slate-500 mt-1">All time</p>
         </div>
       </motion.div>
@@ -216,15 +433,21 @@ const DashboardPage = ({
           {/* Map area */}
           <div
             className="relative rounded-2xl h-52 overflow-hidden border border-indigo-100"
-            style={{ background: 'linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 55%,#F5F3FF 100%)' }}
+            style={{
+              background:
+                'linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 55%,#F5F3FF 100%)',
+            }}
           >
             {/* Grid */}
-            <div className="absolute inset-0" style={{
-              backgroundImage: `
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `
                 linear-gradient(to right,rgba(99,102,241,.1) 1px,transparent 1px),
                 linear-gradient(to bottom,rgba(99,102,241,.1) 1px,transparent 1px)`,
-              backgroundSize: '36px 36px',
-            }} />
+                backgroundSize: '36px 36px',
+              }}
+            />
 
             {activeDrivers.length > 0 ? (
               activeDrivers.map((driver, i) => (
@@ -242,7 +465,7 @@ const DashboardPage = ({
                       transition={{ duration: 1.6, repeat: Infinity }}
                       className="absolute inset-0 rounded-full bg-blue-400"
                     />
-                    <div >
+                    <div>
                       <MotorcycleSVG size={32} />
                     </div>
                   </div>
@@ -258,22 +481,6 @@ const DashboardPage = ({
               </div>
             )}
           </div>
-
-          {/* Stats */}
-          {/* <div className="grid grid-cols-3 gap-3 mt-4">
-            {stats.map(({ icon, value, label, bg, border, color }) => (
-              <div
-                key={label}
-                className={`text-center p-3 rounded-2xl bg-gradient-to-br ${bg} border ${border}`}
-              >
-                <div className="flex justify-center mb-1.5">{icon}</div>
-                <p className={`text-xl font-bold ${color}`}>{value}</p>
-                <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mt-0.5">
-                  {label}
-                </p>
-              </div>
-            ))}
-          </div> */}
         </div>
       </motion.div>
     </div>

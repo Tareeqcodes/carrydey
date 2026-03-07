@@ -118,20 +118,56 @@ const TrackAgencyDelivery = () => {
   if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
 
   const selectedDriver = drivers.find(
-    (d) => d.$id === assignmentModal.selectedDriver || d.id === assignmentModal.selectedDriver
+    (d) =>
+      d.$id === assignmentModal.selectedDriver ||
+      d.id === assignmentModal.selectedDriver
   );
 
-  if (selectedDriver) {
-    await assignDelivery(
-      assignmentModal.deliveryId,
-      selectedDriver.$id,
-      selectedDriver.name,
-      selectedDriver.phone
-    );
-    await assignDriverToDelivery(selectedDriver.$id, assignmentModal.deliveryId);
+  if (!selectedDriver) return;
+
+  // 1. Update delivery record + assign driver record (existing logic)
+  await assignDelivery(
+    assignmentModal.deliveryId,
+    selectedDriver.$id,
+    selectedDriver.name,
+    selectedDriver.phone
+  );
+  await assignDriverToDelivery(selectedDriver.$id, assignmentModal.deliveryId);
+
+  // 2. Fire SMS function — only does work when phoneType === 'keypad'
+  //    Uses async: true so it never blocks the UI
+  if (selectedDriver.phoneType === 'keypad') {
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/v1/functions/${process.env.NEXT_PUBLIC_APPWRITE_SMS_FUNCTION_ID}/executions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
+          },
+          body: JSON.stringify({
+            body: JSON.stringify({
+              deliveryId: assignmentModal.deliveryId,
+              driverId: selectedDriver.$id,
+            }),
+            async: true,
+          }),
+        }
+      );
+    } catch (smsErr) {
+      // SMS failure must never block or roll back the assignment
+      console.warn('SMS trigger failed (non-critical):', smsErr.message);
+    }
   }
 
-  setAssignmentModal({ isOpen: false, deliveryId: null, selectedDriver: null, deliveryDetails: null });
+  // 3. Close modal
+  setAssignmentModal({
+    isOpen: false,
+    deliveryId: null,
+    selectedDriver: null,
+    deliveryDetails: null,
+  });
 };
 
   // const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
