@@ -114,7 +114,13 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  const handleCompleteAssignment = async () => {
+  // ─────────────────────────────────────────────────────────────────────────────
+// Replace handleCompleteAssignment in TrackAgencyDelivery.jsx with this.
+// Fix: the Appwrite Functions execution API expects `body` to be a plain
+// JSON string — not a double-stringified object.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const handleCompleteAssignment = async () => {
   if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
 
   const selectedDriver = drivers.find(
@@ -125,7 +131,7 @@ const TrackAgencyDelivery = () => {
 
   if (!selectedDriver) return;
 
-  // 1. Update delivery record + assign driver record (existing logic)
+  // 1. Update delivery record + assign driver record
   await assignDelivery(
     assignmentModal.deliveryId,
     selectedDriver.$id,
@@ -134,29 +140,33 @@ const TrackAgencyDelivery = () => {
   );
   await assignDriverToDelivery(selectedDriver.$id, assignmentModal.deliveryId);
 
-  // 2. Fire SMS function — only does work when phoneType === 'keypad'
-  //    Uses async: true so it never blocks the UI
+  // 2. Fire SMS for keypad drivers only
   if (selectedDriver.phoneType === 'keypad') {
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/v1/functions/${process.env.NEXT_PUBLIC_APPWRITE_SMS_FUNCTION_ID}/executions`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Appwrite-Project': process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
-          },
-          body: JSON.stringify({
-            body: JSON.stringify({
-              deliveryId: assignmentModal.deliveryId,
-              driverId: selectedDriver.$id,
-            }),
-            async: true,
-          }),
-        }
-      );
+      const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(/\/$/, '');
+      const functionId = process.env.NEXT_PUBLIC_APPWRITE_SMS_FUNCTION_ID;
+      const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+
+      // The Appwrite Functions execution API expects `body` as a plain string
+      // — the function's req.body will receive this string directly.
+      const payload = JSON.stringify({
+        deliveryId: assignmentModal.deliveryId,
+        driverId: selectedDriver.$id,
+      });
+
+      await fetch(`${endpoint}/v1/functions/${functionId}/executions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': projectId,
+        },
+        body: JSON.stringify({
+          body: payload,   // ← plain JSON string, NOT double-stringified
+          async: true,
+        }),
+      });
     } catch (smsErr) {
-      // SMS failure must never block or roll back the assignment
+      // Never block or roll back the assignment on SMS failure
       console.warn('SMS trigger failed (non-critical):', smsErr.message);
     }
   }

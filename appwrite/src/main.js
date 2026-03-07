@@ -26,8 +26,8 @@ function formatPhoneNG(raw) {
   const digits = raw.replace(/\D/g, '');
   if (digits.startsWith('234') && digits.length >= 13) return digits;
   if (digits.startsWith('0') && digits.length === 11) return '234' + digits.slice(1);
-  if (digits.length === 10) return '234' + digits; // missing leading 0
-  return digits; // pass through whatever we have
+  if (digits.length === 10) return '234' + digits;
+  return digits;
 }
 
 // ─── Build SMS body ───────────────────────────────────────────────────────────
@@ -55,6 +55,31 @@ function buildSMS({ delivery, driverName }) {
   ];
 
   return lines.filter((l) => l !== null).join('\n');
+}
+
+// ─── Safe body parser ─────────────────────────────────────────────────────────
+// Appwrite passes the body differently depending on how the function was triggered.
+// When called via API with a JSON body string in the `body` field, req.body is
+// that raw string. When called synchronously it may already be an object.
+function parseBody(req) {
+  try {
+    // req.body can be: a plain string, a JSON string, or already an object
+    if (!req.body) return {};
+
+    if (typeof req.body === 'object') return req.body;
+
+    const parsed = JSON.parse(req.body);
+
+    // Appwrite wraps async execution payloads: { body: "{\"deliveryId\":\"...\"}" }
+    // So if the parsed result has a `body` string, parse that too.
+    if (typeof parsed?.body === 'string') {
+      return JSON.parse(parsed.body);
+    }
+
+    return parsed;
+  } catch {
+    return {};
+  }
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
@@ -86,36 +111,36 @@ export default async ({ req, res, log, error }) => {
     TERMII_SENDER_ID,
   } = process.env;
 
-  // Parse body
-  let body = {};
-  try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {});
-  } catch {
-    return res.json({ success: false, error: 'Invalid JSON body' }, 400);
-  }
+  // Parse body — handles all Appwrite trigger shapes
+  const body = parseBody(req);
+  log(`Parsed body: ${JSON.stringify(body)}`);
 
   const { deliveryId, driverId } = body;
   if (!deliveryId || !driverId) {
-    return res.json({ success: false, error: 'deliveryId and driverId are required' }, 400);
+    error(`Body missing fields. Raw req.body type: ${typeof req.body}, value: ${JSON.stringify(req.body)}`);
+    return res.json({
+      success: false,
+      error: 'deliveryId and driverId are required',
+      received: body,
+    }, 400);
   }
 
-  // Init Appwrite
+  // Init Appwrite — correct positional args for node-appwrite v13
   const client = new Client()
     .setEndpoint(APPWRITE_ENDPOINT)
     .setProject(APPWRITE_PROJECT_ID)
     .setKey(APPWRITE_API_KEY);
   const db = new Databases(client);
 
-  // Fetch driver
+  // Fetch driver — getDocument(databaseId, collectionId, documentId)
   let driver;
   try {
-    driver = await db.getDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      tableId: APPWRITE_DRIVER_COLLECTION_ID,
-      rowId: driverId,
-    }
-      
+    driver = await db.getDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_DRIVER_COLLECTION_ID,
+      driverId
     );
+    log(`Driver fetched: ${driver.name}, phoneType: ${driver.phoneType}`);
   } catch (err) {
     error(`Driver fetch failed [${driverId}]: ${err.message}`);
     return res.json({ success: false, error: 'Driver not found' }, 404);
@@ -137,15 +162,17 @@ export default async ({ req, res, log, error }) => {
     error(`Driver ${driverId} has no usable phone number`);
     return res.json({ success: false, error: 'Driver phone number missing' }, 400);
   }
+  log(`Formatted phone: ${phone}`);
 
-  // Fetch delivery
+  // Fetch delivery — getDocument(databaseId, collectionId, documentId)
   let delivery;
   try {
-    delivery = await db.getDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      tableId: APPWRITE_DELIVERIES_COLLECTION_ID,
-      rowId: deliveryId
-    });
+    delivery = await db.getDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_DELIVERIES_COLLECTION_ID,
+      deliveryId
+    );
+    log(`Delivery fetched: ${deliveryId}`);
   } catch (err) {
     error(`Delivery fetch failed [${deliveryId}]: ${err.message}`);
     return res.json({ success: false, error: 'Delivery not found' }, 404);
@@ -153,7 +180,7 @@ export default async ({ req, res, log, error }) => {
 
   // Send SMS
   const message = buildSMS({ delivery, driverName: driver.name });
-  log(`Sending SMS → ${phone} for delivery ${deliveryId}`);
+  log(`SMS message:\n${message}`);
 
   try {
     const result = await sendTermiiSMS({
