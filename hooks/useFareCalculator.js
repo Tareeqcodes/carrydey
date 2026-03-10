@@ -1,11 +1,15 @@
 import { useMemo } from 'react';
 import { useAgencyPricing, DEFAULT_PRICING } from '@/hooks/Agencypricing';
 
+const LONG_DISTANCE_THRESHOLD_KM = 20;
+
 function calculateFare(packageDetails, routeData, pricing) {
-  if (!routeData?.distance) return 0;
+  if (!routeData?.distance) {
+    return { fare: 0, isLongDistance: false, fareMode: 'suggested', minFare: pricing.minFare };
+  }
 
   const distanceKm = Number(routeData.distance);
-  const durationMin = Number(routeData.duration || 0);
+  const isLongDistance = distanceKm > LONG_DISTANCE_THRESHOLD_KM;
 
   const {
     baseDeliveryFee,
@@ -15,7 +19,18 @@ function calculateFare(packageDetails, routeData, pricing) {
     sizePremiums,
   } = pricing;
 
-  // Distance — tiered taper: full rate ≤5 km, 80% 5–15 km, 65% >15 km
+  
+  if (isLongDistance) {
+    return {
+      fare: null,
+      isLongDistance: true,
+      fareMode: 'free',
+      minFare,
+    };
+  }
+
+  // ── Short distance: tiered taper ──────────────────────────────────────────
+  // Full rate ≤5 km | 80% for 5–15 km | 65% for 15–20 km
   let distanceFare = 0;
   if (distanceKm <= 5) {
     distanceFare = distanceKm * pricePerKm;
@@ -28,20 +43,24 @@ function calculateFare(packageDetails, routeData, pricing) {
       (distanceKm - 15) * (pricePerKm * 0.65);
   }
 
-  // Time — platform cost, not agency-configurable
-  const timeFare = durationMin * 20;
 
-  // Package premiums (weight removed)
   const fragile = packageDetails?.isFragile ? fragilePremium : 0;
   const packagePremium = (sizePremiums[packageDetails?.size] || 0) + fragile;
 
   const roundToClean = (n) =>
     n < 1000 ? Math.round(n / 50) * 50 : Math.round(n / 100) * 100;
 
-  return Math.max(
-    roundToClean(baseDeliveryFee + distanceFare + timeFare + packagePremium),
+  const fare = Math.max(
+    roundToClean(baseDeliveryFee + distanceFare + packagePremium),
     minFare
   );
+
+  return {
+    fare,
+    isLongDistance: false,
+    fareMode: 'suggested',
+    minFare,
+  };
 }
 
 export function useFareCalculator(packageDetails, routeData) {
@@ -51,9 +70,6 @@ export function useFareCalculator(packageDetails, routeData) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 2. AGENCY HOOK — PackageAndFareScreen inside AgencyBookingPage
-// ─────────────────────────────────────────────────────────────────────────────
 export function useAgencyFareCalculator(packageDetails, routeData) {
   const pricing = useAgencyPricing();
   return useMemo(
@@ -63,7 +79,8 @@ export function useAgencyFareCalculator(packageDetails, routeData) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Itemised breakdown
+// 3. Itemised breakdown — short distance only
+//    Returns null for long distance (no breakdown to show)
 // ─────────────────────────────────────────────────────────────────────────────
 export function getFareBreakdown(
   packageDetails,
@@ -73,6 +90,8 @@ export function getFareBreakdown(
   if (!routeData?.distance) return null;
 
   const distanceKm = Number(routeData.distance);
+  if (distanceKm > LONG_DISTANCE_THRESHOLD_KM) return null;
+
   const durationMin = Number(routeData.duration || 0);
   const {
     baseDeliveryFee,

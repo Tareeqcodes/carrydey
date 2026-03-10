@@ -7,9 +7,9 @@ import { useAuth } from '@/hooks/Authcontext';
 export default function StickyConfirmBar({
   isValid,
   loading,
-  onConfirm,        // called with no args — Screen's handleConfirm closes over the data
+  onConfirm,
   fareDetails,
-  deliverySnapshot, // full snapshot for localStorage if user not logged in
+  deliverySnapshot,
 }) {
   const { brandColors } = useBrandColors();
   const { user } = useAuth();
@@ -17,7 +17,7 @@ export default function StickyConfirmBar({
 
   const paymentLabel = {
     cash_on_pickup: 'Cash on pickup',
-    pay_now:        'Card · Pay now',
+    pay_now: 'Card · Pay now',
   }[fareDetails?.paymentMethod] || '';
 
   const handleClick = () => {
@@ -32,14 +32,12 @@ export default function StickyConfirmBar({
       return;
     }
 
-    // ✅ Call with no arguments — Screen's handleConfirm already has packageDetails
-    // and fareDetails closed over from its own state
     onConfirm();
   };
 
   return (
     <div
-      className="sticky bottom-0 left-0 right-0 px-5 pt-6 max-w-md mx-auto"
+      className="sticky bottom-0 left-0 right-0 px-5 pt-6 pb-6 max-w-md mx-auto"
       style={{ background: 'linear-gradient(to top, white 75%, transparent)' }}
     >
       {isValid && paymentLabel && (
@@ -50,17 +48,29 @@ export default function StickyConfirmBar({
           </p>
         </div>
       )}
+
       <button
         onClick={handleClick}
         disabled={!isValid || loading}
         className="w-full py-4 rounded-2xl text-sm font-bold transition-all disabled:cursor-not-allowed"
         style={{
           background: isValid && !loading ? brandColors.primary : '#e5e7eb',
-          color:      isValid && !loading ? 'white' : '#9ca3af',
+          color: isValid && !loading ? 'white' : '#9ca3af',
         }}
       >
-        {loading ? 'Creating…' : 'Confirm & continue'}
+        {loading
+          ? 'Creating…'
+          : !user
+          ? 'Login to Continue'   
+          : 'Confirm & continue'}
       </button>
+
+      {/* Guest nudge — only show when form is valid and user is not logged in */}
+      {isValid && !user && (
+        <p className="text-center text-xs text-gray-400 mt-2">
+          Your delivery details will be saved
+        </p>
+      )}
     </div>
   );
 }

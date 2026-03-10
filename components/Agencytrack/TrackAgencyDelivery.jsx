@@ -114,11 +114,6 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-// Replace handleCompleteAssignment in TrackAgencyDelivery.jsx with this.
-// Fix: the Appwrite Functions execution API expects `body` to be a plain
-// JSON string — not a double-stringified object.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const handleCompleteAssignment = async () => {
   if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;

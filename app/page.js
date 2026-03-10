@@ -7,7 +7,7 @@ import {
 import Main from '@/components/Main';
 import Footer from '@/components/Footer';
 
-export default function Page() {
+export default function MainPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFFBF5] to-[#FFF8F0] rounded-3xl px-3 md:py-7 shadow-2xl">
        <Main />
