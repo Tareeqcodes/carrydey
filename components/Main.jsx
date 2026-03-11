@@ -34,11 +34,7 @@ export default function Main() {
     <main className="bg-white rounded-2xl overflow-hidden my-0 md:mx-5 p-6 md:p-10">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-
-          {/* ── Left ─────────────────────────────────────────── */}
           <div className="space-y-6">
-
-            {/* Badge — fixed colour */}
             <div className="inline-flex items-center gap-2 bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 px-4 py-2 rounded-full text-sm font-semibold">
               <span>⚡</span> Nigeria's logistics platform
             </div>
@@ -50,9 +46,6 @@ export default function Main() {
                 <br />
                 <span className="text-[#FF6B35]">You set the price.</span>
               </h1>
-              <p className="mt-4 text-[#6B4955] text-base md:text-lg leading-relaxed max-w-md">
-                Book a verified courier or agency, propose your fare, and track every delivery live — no WhatsApp, no surprises.
-              </p>
             </div>
 
             {/* Location inputs */}
@@ -64,7 +57,6 @@ export default function Main() {
               showNextButton={false}
             />
 
-            {/* CTA — always active, colour changes on fill state */}
             <button
               onClick={handleBookDelivery}
               className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-base transition-all shadow-lg active:scale-[0.98]"
@@ -74,30 +66,17 @@ export default function Main() {
                 cursor: 'pointer',
               }}
             >
-              {bothFilled ? 'Find a courier →' : 'Book a delivery'}
+              {bothFilled ? 'Find a courier' : 'Book a delivery'}
               {!bothFilled && <ArrowRight className="w-5 h-5" />}
             </button>
-
-            {/* Trust signals — compact row */}
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1">
-              {[
-                { dot: '#10B981', label: 'Same-day delivery' },
-                { dot: '#60A5FA', label: 'Verified couriers' },
-                { dot: '#FF6B35', label: 'You agree the fare' },
-              ].map(({ dot, label }) => (
-                <div key={label} className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
-                  <span className="text-[#3A0A21] text-sm font-medium">{label}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* ── Right — Map UI (unchanged) ───────────────────── */}
           <div className="relative hidden lg:block">
             <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 border border-gray-200 shadow-2xl">
-              <div className="relative bg-white rounded-2xl overflow-hidden" style={{ height: '460px' }}>
-
+              <div
+                className="relative bg-white rounded-2xl overflow-hidden"
+                style={{ height: '460px' }}
+              >
                 {/* Map background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
                   <div className="absolute inset-0 opacity-10">
@@ -107,11 +86,26 @@ export default function Main() {
                       ))}
                     </div>
                   </div>
-                  <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+                  <svg
+                    className="absolute inset-0 w-full h-full"
+                    style={{ zIndex: 1 }}
+                  >
                     <defs>
-                      <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: '#3A0A21', stopOpacity: 0.8 }} />
-                        <stop offset="100%" style={{ stopColor: '#FF6B35', stopOpacity: 0.5 }} />
+                      <linearGradient
+                        id="routeGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop
+                          offset="0%"
+                          style={{ stopColor: '#3A0A21', stopOpacity: 0.8 }}
+                        />
+                        <stop
+                          offset="100%"
+                          style={{ stopColor: '#FF6B35', stopOpacity: 0.5 }}
+                        />
                       </linearGradient>
                     </defs>
                     <path
@@ -161,13 +155,21 @@ export default function Main() {
                       <Package className="w-5 h-5 text-[#FF6B35]" />
                     </div>
                     <div>
-                      <div className="font-bold text-xs text-[#FF6B35]">Express Delivery</div>
-                      <div className="text-xs text-gray-500">8.5 km · 25 mins</div>
+                      <div className="font-bold text-xs text-[#FF6B35]">
+                        Express Delivery
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        8.5 km · 25 mins
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-400 text-right mb-0.5">Your offer</div>
-                    <div className="text-xl font-bold text-[#3A0A21]">₦1,800</div>
+                    <div className="text-xs text-gray-400 text-right mb-0.5">
+                      Your offer
+                    </div>
+                    <div className="text-xl font-bold text-[#3A0A21]">
+                      ₦1,800
+                    </div>
                   </div>
                 </div>
               </div>
@@ -177,7 +179,9 @@ export default function Main() {
             <div className="absolute -top-4 -left-4 bg-white px-4 py-2.5 rounded-xl shadow-lg border border-gray-100">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-bold text-[#10B981]">12 couriers nearby</span>
+                <span className="text-sm font-bold text-[#10B981]">
+                  12 couriers nearby
+                </span>
               </div>
             </div>
 
@@ -188,7 +192,6 @@ export default function Main() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </main>
