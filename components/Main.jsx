@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Truck, Package, Zap } from 'lucide-react';
+import { Truck, Package, Zap, ArrowRight } from 'lucide-react';
 import InputLocation from './InputLocation';
 
 export default function Main() {
@@ -15,41 +15,47 @@ export default function Main() {
     else setDropoff(location);
   };
 
-  const handleRouteCalculated = (data) => {
-    setRouteData(data);
-  };
+  const handleRouteCalculated = (data) => setRouteData(data);
 
-  const handleFindCourier = () => {
-    if (!pickup || !dropoff) return;
-
-    // Pass location data to /send so InputLocation is pre-filled
-    sessionStorage.setItem(
-      'deliveryData',
-      JSON.stringify({ pickup, dropoff, routeData, skipLocationScreen: true })
-    );
+  const handleBookDelivery = () => {
+    if (pickup && dropoff) {
+      sessionStorage.setItem(
+        'deliveryData',
+        JSON.stringify({ pickup, dropoff, routeData, skipLocationScreen: true })
+      );
+    }
+    // Always navigate — /send handles empty state gracefully
     router.push('/send');
   };
 
+  const bothFilled = pickup && dropoff;
+
   return (
-    <main className="bg-white rounded-2xl overflow-hidden shadow-lg my-0 md:mx-5 p-6">
+    <main className="bg-white rounded-2xl overflow-hidden my-0 md:mx-5 p-6 md:p-10">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
-          <div className="space-y-8">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-[#FF6B35] bg-opacity-10 text-[#FFF] px-4 py-2 rounded-full text-sm font-semibold mb-4">
-              <span>⚡</span> Fast & Reliable Delivery
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+          {/* ── Left ─────────────────────────────────────────── */}
+          <div className="space-y-6">
+
+            {/* Badge — fixed colour */}
+            <div className="inline-flex items-center gap-2 bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 px-4 py-2 rounded-full text-sm font-semibold">
+              <span>⚡</span> Nigeria's logistics platform
             </div>
 
-            {/* Heading */}
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#3A0A21] leading-tight">
-                Your Package,
+            {/* Headline — directive, explains the differentiator */}
+            <div>
+              <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
+                Send anything.
                 <br />
-                <span className="text-[#3A0A21]/80">Their Journey</span>
+                <span className="text-[#FF6B35]">You set the price.</span>
               </h1>
+              <p className="mt-4 text-[#6B4955] text-base md:text-lg leading-relaxed max-w-md">
+                Book a verified courier or agency, propose your fare, and track every delivery live — no WhatsApp, no surprises.
+              </p>
             </div>
 
+            {/* Location inputs */}
             <InputLocation
               onLocationSelect={handleLocationSelect}
               onRouteCalculated={handleRouteCalculated}
@@ -58,23 +64,41 @@ export default function Main() {
               showNextButton={false}
             />
 
+            {/* CTA — always active, colour changes on fill state */}
             <button
-              onClick={handleFindCourier}
-              disabled={!pickup || !dropoff}
-              className="w-full bg-[#3A0A21] text-white py-4 rounded-lg hover:bg-[#4A0A31] transition-colors font-medium text-lg cursor-pointer shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleBookDelivery}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-base transition-all shadow-lg active:scale-[0.98]"
+              style={{
+                background: bothFilled ? '#FF6B35' : '#3A0A21',
+                color: '#fff',
+                cursor: 'pointer',
+              }}
             >
-              {pickup && dropoff ? 'Find a Courier' : 'Enter pickup & dropoff'}
+              {bothFilled ? 'Find a courier →' : 'Book a delivery'}
+              {!bothFilled && <ArrowRight className="w-5 h-5" />}
             </button>
+
+            {/* Trust signals — compact row */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1">
+              {[
+                { dot: '#10B981', label: 'Same-day delivery' },
+                { dot: '#60A5FA', label: 'Verified couriers' },
+                { dot: '#FF6B35', label: 'You agree the fare' },
+              ].map(({ dot, label }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
+                  <span className="text-[#3A0A21] text-sm font-medium">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Right Content - Map UI */}
-          <div className="relative">
+          {/* ── Right — Map UI (unchanged) ───────────────────── */}
+          <div className="relative hidden lg:block">
             <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 border border-gray-200 shadow-2xl">
-              <div
-                className="relative bg-white rounded-2xl overflow-hidden"
-                style={{ height: '500px' }}
-              >
-                {/* Simulated Map Background */}
+              <div className="relative bg-white rounded-2xl overflow-hidden" style={{ height: '460px' }}>
+
+                {/* Map background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
                   <div className="absolute inset-0 opacity-10">
                     <div className="grid grid-cols-8 grid-rows-8 h-full">
@@ -83,16 +107,15 @@ export default function Main() {
                       ))}
                     </div>
                   </div>
-
                   <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
                     <defs>
                       <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" style={{ stopColor: '#3A0A21', stopOpacity: 0.8 }} />
-                        <stop offset="100%" style={{ stopColor: '#3A0A21', stopOpacity: 0.4 }} />
+                        <stop offset="100%" style={{ stopColor: '#FF6B35', stopOpacity: 0.5 }} />
                       </linearGradient>
                     </defs>
                     <path
-                      d="M 80 120 Q 200 180, 320 240 T 420 360"
+                      d="M 80 100 Q 200 160, 320 220 T 430 370"
                       stroke="url(#routeGradient)"
                       strokeWidth="4"
                       fill="none"
@@ -101,73 +124,71 @@ export default function Main() {
                   </svg>
                 </div>
 
-                {/* Pickup Marker */}
-                <div className="absolute top-20 left-12 z-10">
-                  <div className="relative">
-                    <div className="bg-[#3A0A21] text-white px-4 py-2 rounded-lg shadow-lg font-medium text-sm mb-2">
-                      📍 Pickup: Lekki Phase 1
-                    </div>
-                    <div className="w-6 h-6 bg-[#3A0A21] rounded-full border-4 border-white shadow-lg mx-auto" />
+                {/* Pickup */}
+                <div className="absolute top-16 left-10 z-10">
+                  <div className="bg-[#3A0A21] text-white px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium mb-2">
+                    📍 Lekki Phase 1
                   </div>
+                  <div className="w-5 h-5 bg-[#3A0A21] rounded-full border-4 border-white shadow-lg mx-auto" />
                 </div>
 
-                {/* Dropoff Marker */}
-                <div className="absolute bottom-24 right-16 z-10">
-                  <div className="relative">
-                    <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg font-medium text-sm mb-2">
-                      🎯 Dropoff: Victoria Island
-                    </div>
-                    <div className="w-6 h-6 bg-red-500 rounded-full border-4 border-white shadow-lg mx-auto" />
+                {/* Dropoff */}
+                <div className="absolute bottom-20 right-12 z-10">
+                  <div className="bg-[#FF6B35] text-white px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium mb-2">
+                    🎯 Victoria Island
                   </div>
+                  <div className="w-5 h-5 bg-[#FF6B35] rounded-full border-4 border-white shadow-lg mx-auto" />
                 </div>
 
-                {/* Delivery Person Icon */}
+                {/* Rider */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                   <div className="relative animate-pulse">
                     <div className="bg-white p-3 rounded-full shadow-xl border-2 border-[#3A0A21]">
                       <Truck className="w-6 h-6 text-[#3A0A21]" />
                     </div>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full shadow-md text-xs font-medium text-[#3A0A21] whitespace-nowrap">
-                      En route • 15 mins
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full shadow-md text-xs font-semibold text-[#3A0A21] whitespace-nowrap">
+                      En route · 15 mins
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Delivery Info Card */}
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-6 w-11/12 border border-gray-200">
+              {/* Info card */}
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-5 w-11/12 border border-gray-100">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-[#3A0A21]/10 rounded-full flex items-center justify-center">
-                      <Package className="w-6 h-6 text-[#FF6B35]" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#3A0A21]/08 rounded-full flex items-center justify-center bg-orange-50">
+                      <Package className="w-5 h-5 text-[#FF6B35]" />
                     </div>
                     <div>
                       <div className="font-bold text-xs text-[#FF6B35]">Express Delivery</div>
-                      <div className="text-xs font-bold text-[#FF6B35]">8.5 km • 25 mins</div>
+                      <div className="text-xs text-gray-500">8.5 km · 25 mins</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-[#3A0A21]">₦1,800</div>
+                  <div>
+                    <div className="text-xs text-gray-400 text-right mb-0.5">Your offer</div>
+                    <div className="text-xl font-bold text-[#3A0A21]">₦1,800</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Floating badges */}
-            <div className="absolute -top-4 -left-4 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
-              <div className="flex items-center space-x-2">
+            <div className="absolute -top-4 -left-4 bg-white px-4 py-2.5 rounded-xl shadow-lg border border-gray-100">
+              <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-sm font-bold text-[#10B981]">12 couriers nearby</span>
               </div>
             </div>
 
-            <div className="absolute -bottom-4 -right-4 bg-[#3A0A21] text-white p-2 rounded-xl shadow-lg">
-              <div className="flex items-center space-x-2">
-                <Zap className="w-5 h-5" />
+            <div className="absolute -bottom-4 -right-4 bg-[#3A0A21] text-white px-4 py-2.5 rounded-xl shadow-lg">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#FF6B35]" />
                 <span className="text-sm font-bold">30 min avg. delivery</span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </main>

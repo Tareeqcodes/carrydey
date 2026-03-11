@@ -1,6 +1,6 @@
 'use client';
 import { useCallback } from 'react';
-import { AlertCircle, Minus, Plus, Truck, } from 'lucide-react';
+import { AlertCircle, Minus, Plus, Truck } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
 function OfferQuality({ offered, suggested, minFare, isLongDistance }) {
@@ -66,9 +66,6 @@ function OfferQuality({ offered, suggested, minFare, isLongDistance }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared stepper fare input — hero element
-// ─────────────────────────────────────────────────────────────────────────────
 function FareInput({
   value,
   onChange,
@@ -91,7 +88,7 @@ function FareInput({
       <button
         type="button"
         onClick={decrement}
-        className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 active:scale-95 transition-all hover:border-gray-400 hover:text-gray-800 flex-shrink-0"
+        className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 active:scale-95 transition-all hover:border-gray-400 hover:text-gray-800 flex-shrink-0"
       >
         <Minus className="w-5 h-5" />
       </button>
@@ -114,7 +111,7 @@ function FareInput({
       <button
         type="button"
         onClick={increment}
-        className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 active:scale-95 transition-all hover:border-gray-400 hover:text-gray-800 flex-shrink-0"
+        className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 active:scale-95 transition-all hover:border-gray-400 hover:text-gray-800 flex-shrink-0"
       >
         <Plus className="w-5 h-5" />
       </button>
@@ -152,13 +149,7 @@ function ShortDistanceFare({
         placeholder={String(suggestedFare)}
       />
 
-      <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-        <span className="text-xs text-gray-400">
-          Suggested{' '}
-          <span className="font-medium text-gray-600">
-            {formatNairaSimple(suggestedFare)}
-          </span>
-        </span>
+      <div className=" items-center pt-1 border-t border-gray-100">
         <span className="text-xs text-gray-400">
           Min{' '}
           <span className="font-medium text-gray-600">

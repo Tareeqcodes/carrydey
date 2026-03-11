@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Loader2, Navigation } from 'lucide-react';
+import { MapPin, Loader2, Navigation, X } from 'lucide-react';
 import { useBrandColors } from '@/hooks/BrandColors';
 
 export default function InputLocation({
@@ -12,478 +12,343 @@ export default function InputLocation({
   showNextButton = false,
 }) {
   const { brandColors } = useBrandColors();
-  
-  // Initialize all state with defined values (empty strings, not undefined)
-  const [pickupAddress, setPickupAddress] = useState('');
+  const MAROON = brandColors.primary;
+  const ORANGE = brandColors.accent;
+  const [pickupAddress, setPickupAddress]   = useState('');
   const [dropoffAddress, setDropoffAddress] = useState('');
   const [calculatingRoute, setCalculatingRoute] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const [suggestions, setSuggestions] = useState({ pickup: [], dropoff: [] });
-  const [showSuggestions, setShowSuggestions] = useState({
-    pickup: false,
-    dropoff: false,
-  });
-  const [routeInfo, setRouteInfo] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
+  const [isClient, setIsClient]             = useState(false);
+  const [suggestions, setSuggestions]       = useState({ pickup: [], dropoff: [] });
+  const [showSuggestions, setShowSuggestions] = useState({ pickup: false, dropoff: false });
+  const [userLocation, setUserLocation]     = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
-  
-  // Debounce timers
-  const pickupTimerRef = useRef(null);
-  const dropoffTimerRef = useRef(null);
+  const [activeField, setActiveField]       = useState(null); // 'pickup' | 'dropoff' | null
 
+  const pickupTimerRef  = useRef(null);
+  const dropoffTimerRef = useRef(null);
+  const containerRef    = useRef(null);
+
+  // ── Init ──────────────────────────────────────────────────
   useEffect(() => {
     setIsClient(true);
-    // Get user's current location for proximity bias
     getUserLocation();
+
+    // Close suggestions when clicking outside
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowSuggestions({ pickup: false, dropoff: false });
+        setActiveField(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Sync addresses when pickup/dropoff props change
+  // Sync prop → display text
   useEffect(() => {
-    if (pickup?.place_name && pickupAddress !== pickup.place_name) {
-      setPickupAddress(pickup.place_name);
-    }
+    if (pickup?.place_name) setPickupAddress(pickup.place_name);
   }, [pickup]);
 
   useEffect(() => {
-    if (dropoff?.place_name && dropoffAddress !== dropoff.place_name) {
-      setDropoffAddress(dropoff.place_name);
-    }
+    if (dropoff?.place_name) setDropoffAddress(dropoff.place_name);
   }, [dropoff]);
 
+  // Auto-calculate route when both set
+  useEffect(() => {
+    if (pickup && dropoff) calculateRoute();
+  }, [pickup, dropoff]);
+
+  // Cleanup timers
+  useEffect(() => () => {
+    if (pickupTimerRef.current)  clearTimeout(pickupTimerRef.current);
+    if (dropoffTimerRef.current) clearTimeout(dropoffTimerRef.current);
+  }, []);
+
+  // ── Geolocation ────────────────────────────────────────────
   const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            longitude: position.coords.longitude,
-            latitude: position.coords.latitude,
-          });
-        },
-        (error) => {
-          console.log('Could not get user location:', error);
-          // Default to Abuja, Nigeria center if geolocation fails
-          setUserLocation({
-            longitude: 7.4951,
-            latitude: 9.0765,
-          });
-        }
-      );
-    } else {
-      // Default to Abuja, Nigeria
-      setUserLocation({
-        longitude: 7.4951,
-        latitude: 9.0765,
-      });
-    }
+    if (!navigator.geolocation) return setUserLocation({ longitude: 7.4951, latitude: 9.0765 });
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => setUserLocation({ longitude: coords.longitude, latitude: coords.latitude }),
+      ()           => setUserLocation({ longitude: 7.4951, latitude: 9.0765 })
+    );
   };
 
+  // ── Mapbox address search ──────────────────────────────────
   const searchAddress = async (query, type) => {
     if (!query || query.length < 3) {
-      setSuggestions((prev) => ({ ...prev, [type]: [] }));
-      setShowSuggestions((prev) => ({ ...prev, [type]: false }));
+      setSuggestions(prev => ({ ...prev, [type]: [] }));
+      setShowSuggestions(prev => ({ ...prev, [type]: false }));
       return;
     }
-
     try {
       const params = {
         access_token: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
         country: 'NG',
-        // More comprehensive types for better results
-        types: 'address,poi,place,postcode,locality,neighborhood',
+        types: 'address,poi,place,locality,neighborhood',
         autocomplete: 'true',
-        limit: '8',
+        limit: '6',
         language: 'en',
+        bbox: '2.668432,4.240594,14.680073,13.892007',
       };
+      if (userLocation) params.proximity = `${userLocation.longitude},${userLocation.latitude}`;
 
-      // Add proximity bias if user location is available
-      if (userLocation) {
-        params.proximity = `${userLocation.longitude},${userLocation.latitude}`;
-      }
-
-      // Add bbox for Nigeria to ensure results are within the country
-      // Nigeria bounding box: [minLon, minLat, maxLon, maxLat]
-      params.bbox = '2.668432,4.240594,14.680073,13.892007';
-
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          query
-        )}.json?${new URLSearchParams(params)}`
+      const res  = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${new URLSearchParams(params)}`
       );
-
-      const data = await response.json();
+      const data = await res.json();
 
       if (data.features) {
-        // Filter and enhance results
-        const enhancedFeatures = data.features.map((feature) => ({
-          ...feature,
-          // Add relevance score display
-          relevance_display: feature.relevance ? 
-            Math.round(feature.relevance * 100) : 0,
-        }));
-
-        setSuggestions((prev) => ({ 
-          ...prev, 
-          [type]: enhancedFeatures 
-        }));
-        setShowSuggestions((prev) => ({ ...prev, [type]: true }));
+        setSuggestions(prev => ({ ...prev, [type]: data.features }));
+        setShowSuggestions(prev => ({ ...prev, [type]: true }));
       }
-    } catch (error) {
-      console.error('Error searching address:', error);
-      setSuggestions((prev) => ({ ...prev, [type]: [] }));
+    } catch {
+      setSuggestions(prev => ({ ...prev, [type]: [] }));
     }
   };
 
+  // ── Input change ───────────────────────────────────────────
   const handleInputChange = (value, type) => {
-    // Always ensure value is a string
-    const sanitizedValue = value || '';
-    
+    const v = value || '';
     if (type === 'pickup') {
-      setPickupAddress(sanitizedValue);
-      // Clear previous timer
-      if (pickupTimerRef.current) {
-        clearTimeout(pickupTimerRef.current);
-      }
-      // Set new timer with optimized debounce
-      pickupTimerRef.current = setTimeout(() => {
-        searchAddress(sanitizedValue, type);
-      }, 400);
+      setPickupAddress(v);
+      // Clear selection if user edits
+      if (pickup && v !== pickup.place_name) onLocationSelect('pickup', null);
+      clearTimeout(pickupTimerRef.current);
+      pickupTimerRef.current = setTimeout(() => searchAddress(v, type), 350);
     } else {
-      setDropoffAddress(sanitizedValue);
-      // Clear previous timer
-      if (dropoffTimerRef.current) {
-        clearTimeout(dropoffTimerRef.current);
-      }
-      // Set new timer
-      dropoffTimerRef.current = setTimeout(() => {
-        searchAddress(sanitizedValue, type);
-      }, 400);
+      setDropoffAddress(v);
+      if (dropoff && v !== dropoff.place_name) onLocationSelect('dropoff', null);
+      clearTimeout(dropoffTimerRef.current);
+      dropoffTimerRef.current = setTimeout(() => searchAddress(v, type), 350);
     }
   };
 
+  // ── Suggestion select ──────────────────────────────────────
   const handleSuggestionClick = (suggestion, type) => {
-    const locationData = {
+    const loc = {
       ...suggestion,
-      geometry: {
-        type: 'Point',
-        coordinates: suggestion.center,
-      },
-      properties: {
-        full_address: suggestion.place_name,
-        place_type: suggestion.place_type,
-      },
+      geometry: { type: 'Point', coordinates: suggestion.center },
       place_name: suggestion.place_name,
     };
-
-    onLocationSelect(type, locationData);
-
-    if (type === 'pickup') {
-      setPickupAddress(suggestion.place_name);
-    } else {
-      setDropoffAddress(suggestion.place_name);
-    }
-
-    setShowSuggestions((prev) => ({ ...prev, [type]: false }));
-    setSuggestions((prev) => ({ ...prev, [type]: [] }));
+    onLocationSelect(type, loc);
+    if (type === 'pickup') setPickupAddress(suggestion.place_name);
+    else                   setDropoffAddress(suggestion.place_name);
+    setShowSuggestions(prev => ({ ...prev, [type]: false }));
+    setSuggestions(prev => ({ ...prev, [type]: [] }));
+    setActiveField(null);
   };
 
+  // ── Clear field ────────────────────────────────────────────
+  const clearField = (type) => {
+    if (type === 'pickup') {
+      setPickupAddress('');
+      onLocationSelect('pickup', null);
+    } else {
+      setDropoffAddress('');
+      onLocationSelect('dropoff', null);
+    }
+    setSuggestions(prev => ({ ...prev, [type]: [] }));
+    setShowSuggestions(prev => ({ ...prev, [type]: false }));
+  };
+
+  // ── Use current location ───────────────────────────────────
   const useCurrentLocation = (type) => {
     setGettingLocation(true);
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { longitude, latitude } = position.coords;
-        
-        // Reverse geocode to get address
+      async ({ coords: { longitude, latitude } }) => {
         try {
-          const response = await fetch(
+          const res  = await fetch(
             `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?` +
             new URLSearchParams({
               access_token: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-              types: 'address,poi,place',
-              limit: '1',
+              types: 'address,poi,place', limit: '1',
             })
           );
-          
-          const data = await response.json();
-          
-          if (data.features && data.features[0]) {
-            const feature = data.features[0];
-            const locationData = {
-              ...feature,
-              geometry: {
-                type: 'Point',
-                coordinates: [longitude, latitude],
-              },
-              properties: {
-                full_address: feature.place_name,
-              },
-              place_name: feature.place_name,
-            };
-
-            onLocationSelect(type, locationData);
-            
-            if (type === 'pickup') {
-              setPickupAddress(feature.place_name);
-            } else {
-              setDropoffAddress(feature.place_name);
-            }
+          const data = await res.json();
+          if (data.features?.[0]) {
+            const f   = data.features[0];
+            const loc = { ...f, geometry: { type: 'Point', coordinates: [longitude, latitude] }, place_name: f.place_name };
+            onLocationSelect(type, loc);
+            if (type === 'pickup') setPickupAddress(f.place_name);
+            else                   setDropoffAddress(f.place_name);
           }
-        } catch (error) {
-          console.error('Error reverse geocoding:', error);
-        } finally {
-          setGettingLocation(false);
-        }
+        } catch { /* silent */ }
+        finally { setGettingLocation(false); }
       },
-      (error) => {
-        console.error('Error getting location:', error);
-        setGettingLocation(false);
-        alert('Could not access your location. Please ensure location permissions are enabled.');
-      }
+      () => { setGettingLocation(false); }
     );
   };
 
+  // ── Route calculation ──────────────────────────────────────
   const calculateRoute = async () => {
-    if (!pickup || !dropoff) return;
-
+    if (!pickup?.geometry?.coordinates || !dropoff?.geometry?.coordinates) return;
     setCalculatingRoute(true);
     try {
-      const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${pickup.geometry.coordinates[0]},${pickup.geometry.coordinates[1]};${dropoff.geometry.coordinates[0]},${dropoff.geometry.coordinates[1]}?` +
-          new URLSearchParams({
-            access_token: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-            geometries: 'geojson',
-            overview: 'full',
-            steps: 'true',
-            alternatives: 'false',
-          })
+      const [px, py] = pickup.geometry.coordinates;
+      const [dx, dy] = dropoff.geometry.coordinates;
+      const res  = await fetch(
+        `https://api.mapbox.com/directions/v5/mapbox/driving/${px},${py};${dx},${dy}?` +
+        new URLSearchParams({
+          access_token: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+          geometries: 'geojson', overview: 'full', steps: 'false',
+        })
       );
-
-      const data = await response.json();
-
-      if (data.routes && data.routes[0]) {
-        const route = data.routes[0];
-        const polyline = route.geometry.coordinates;
-
-        const distance = (route.distance / 1000).toFixed(1);
-        const duration = Math.round(route.duration / 60);
-        const baseFare = 150;
-        const perKm = 60;
-        const suggestedFare = Math.round(baseFare + distance * perKm);
-
-        const calculatedRouteInfo = {
-          distance,
-          duration,
-          estimatedFare: suggestedFare,
-          suggestedFare: suggestedFare,
-          polyline,
-        };
-
-        setRouteInfo(calculatedRouteInfo);
-        onRouteCalculated(calculatedRouteInfo);
+      const data = await res.json();
+      if (data.routes?.[0]) {
+        const r    = data.routes[0];
+        const dist = (r.distance / 1000).toFixed(1);
+        const dur  = Math.round(r.duration / 60);
+        const fare = Math.round(150 + dist * 60);
+        const info = { distance: dist, duration: dur, estimatedFare: fare, suggestedFare: fare, polyline: r.geometry.coordinates };
+        onRouteCalculated(info);
       }
-    } catch (error) {
-      console.error('Error calculating route:', error);
-      alert('Failed to calculate route. Please try different locations.');
-    } finally {
-      setCalculatingRoute(false);
-    }
+    } catch { /* silent */ }
+    finally { setCalculatingRoute(false); }
   };
 
-  useEffect(() => {
-    if (pickup && dropoff) {
-      calculateRoute();
-    }
-  }, [pickup, dropoff]);
-
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (pickupTimerRef.current) clearTimeout(pickupTimerRef.current);
-      if (dropoffTimerRef.current) clearTimeout(dropoffTimerRef.current);
-    };
-  }, []);
-
+  // ── SSR skeleton ───────────────────────────────────────────
   if (!isClient) {
     return (
-      <div className="space-y-6">
-        <div className="relative">
-          <label className="block text-sm font-medium text-white mb-2">
-            Pickup Location
-          </label>
-          <div 
-            className="flex items-center bg-white rounded-lg p-4 border-2"
-            style={{ borderColor: brandColors.primary }}
-          >
-            <div 
-              className="w-3 h-3 rounded-full mr-3"
-              style={{ backgroundColor: brandColors.primary }}
-            ></div>
-            <input
-              type="text"
-              placeholder="Enter pickup location"
-              value=""
-              className="flex-1 bg-transparent outline-none placeholder-gray-500 w-full"
-              style={{ color: brandColors.primary }}
-              disabled
-              readOnly
-            />
+      <div className="rounded-2xl border border-gray-200 p-5 space-y-3 bg-white">
+        {['Pickup Location', 'Dropoff Location'].map(label => (
+          <div key={label}>
+            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{label}</p>
+            <div className="h-11 bg-gray-100 rounded-lg animate-pulse" />
           </div>
-        </div>
-        <div className="text-center py-4">
-          <p className="text-white">Loading address search...</p>
-        </div>
+        ))}
       </div>
     );
   }
 
-  const renderLocationInput = (type, value, placeholder, iconColor) => (
-    <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {type === 'pickup' ? 'Pickup Location' : 'Dropoff Location'}
-      </label>
+  // ── Field renderer ─────────────────────────────────────────
+  const renderField = (type, value, placeholder) => {
+    const isActive  = activeField === type;
+    const isFilled  = type === 'pickup' ? !!pickup : !!dropoff;
+    const dotColor  = type === 'pickup' ? MAROON : ORANGE;
+    const hasSuggest = showSuggestions[type] && suggestions[type].length > 0;
+    const noResults  = showSuggestions[type] && suggestions[type].length === 0 && value?.length >= 3;
+
+    return (
       <div className="relative">
-        <MapPin 
-          className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5`}
-          style={{ color: iconColor }}
-        />
-        <input
-          type="text"
-          placeholder={placeholder}
-          value={value || ''}
-          onChange={(e) => handleInputChange(e.target.value, type)}
-          className="w-full pl-11 pr-24 py-3 border border-gray-300 rounded-lg outline-none transition-all text-gray-900 placeholder-gray-400"
+        <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+          {type === 'pickup' ? 'Pickup' : 'Dropoff'}
+        </label>
+
+        <div
+          className="flex items-center border rounded-xl transition-all overflow-hidden"
           style={{
-            focusBorderColor: brandColors.primary,
+            borderColor: isActive ? dotColor : isFilled ? `${dotColor}55` : '#e5e7eb',
+            boxShadow: isActive ? `0 0 0 3px ${dotColor}15` : 'none',
+            background: '#fff',
           }}
-          onFocus={(e) => {
-            e.target.style.borderColor = brandColors.primary;
-            e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = '#d1d5db';
-            e.target.style.boxShadow = 'none';
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => useCurrentLocation(type)}
-          disabled={gettingLocation}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
-          style={{ color: brandColors.primary }}
-          title="Use current location"
         >
-          {gettingLocation ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Navigation className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+          {/* Colour dot */}
+          <div className="pl-3 pr-2 flex-shrink-0">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: dotColor }} />
+          </div>
 
-      {/* Suggestions dropdown */}
-      {showSuggestions[type] && suggestions[type].length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-72 overflow-y-auto">
-          {suggestions[type].map((suggestion, index) => (
-            <div
-              key={`${suggestion.id}-${index}`}
-              onClick={() => handleSuggestionClick(suggestion, type)}
-              className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={value || ''}
+            onChange={e => handleInputChange(e.target.value, type)}
+            onFocus={() => {
+              setActiveField(type);
+              if (value?.length >= 3) setShowSuggestions(prev => ({ ...prev, [type]: true }));
+            }}
+            className="flex-1 py-3 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none min-w-0"
+          />
+
+          {/* Right action buttons */}
+          <div className="flex items-center pr-1 gap-0.5">
+            {/* Clear button — only when filled */}
+            {value ? (
+              <button
+                type="button"
+                onClick={() => clearField(type)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                style={{ color: '#9ca3af' }}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : null}
+
+            {/* GPS button */}
+            <button
+              type="button"
+              onClick={() => useCurrentLocation(type)}
+              disabled={gettingLocation}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40"
+              style={{ color: dotColor }}
+              title="Use current location"
             >
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 mt-1 text-gray-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 font-medium truncate">
-                    {suggestion.text}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {suggestion.place_name}
-                  </p>
-                  {/* Show place type badge */}
-                  {suggestion.place_type && suggestion.place_type.length > 0 && (
-                    <div className="flex gap-1 mt-1 flex-wrap">
-                      {suggestion.place_type.map((ptype, i) => (
-                        <span 
-                          key={i}
-                          className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
-                        >
-                          {ptype}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {/* Relevance indicator */}
-                {suggestion.relevance_display > 0 && (
-                  <span className="text-xs text-gray-400 flex-shrink-0">
-                    {suggestion.relevance_display}%
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+              {gettingLocation ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Navigation className="w-4 h-4" />
+              )}
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* No results message */}
-      {showSuggestions[type] && 
-       suggestions[type].length === 0 && 
-       value && 
-       value.length >= 3 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
-          <p className="text-sm text-gray-500 text-center">
-            No locations found. Try a different search term.
-          </p>
-        </div>
-      )}
-    </div>
-  );
+        {/* Suggestions dropdown */}
+        {hasSuggest && (
+          <div className="absolute z-50 w-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+            {suggestions[type].map((s, i) => (
+              <button
+                key={`${s.id}-${i}`}
+                type="button"
+                onClick={() => handleSuggestionClick(s, type)}
+                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 text-left"
+              >
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: dotColor }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{s.text}</p>
+                  <p className="text-xs text-gray-400 truncate mt-0.5">{s.place_name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* No results */}
+        {noResults && (
+          <div className="absolute z-50 w-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl px-4 py-4 text-center">
+            <p className="text-sm text-gray-400">No locations found. Try a different search.</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200 space-y-4">
-      {/* Pickup Input */}
-      {renderLocationInput(
-        'pickup',
-        pickupAddress,
-        'Enter pickup location',
-        brandColors.primary
-      )}
+    <div ref={containerRef} className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4 shadow-sm">
 
-      {/* Dropoff Input */}
-      {renderLocationInput(
-        'dropoff',
-        dropoffAddress,
-        'Enter dropoff location',
-        brandColors.accent
-      )}
+      {renderField('pickup',  pickupAddress,  'Enter pickup location')}
+      {renderField('dropoff', dropoffAddress, 'Enter dropoff location')}
 
-      {/* Route Calculation Loading */}
+      {/* Route calculating indicator — subtle, not a full spinner */}
       {calculatingRoute && (
-        <div className="text-center py-4">
-          <div 
-            className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-transparent"
-            style={{ borderColor: `${brandColors.primary}40`, borderTopColor: 'transparent' }}
-          ></div>
-          <p className="mt-2 text-gray-600 text-sm">Calculating optimal route...</p>
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: MAROON }} />
+          Calculating route…
         </div>
       )}
 
-
-      {/* Next Button */}
-      {showNextButton && pickup && dropoff && routeInfo && (
+      {/* Next button — only on /send when showNextButton=true */}
+      {showNextButton && pickup && dropoff && (
         <button
           onClick={onCalculate}
-          disabled={!pickup || !dropoff || calculatingRoute}
-          className="w-full py-4 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
-          style={{
-            background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
-          }}
+          disabled={calculatingRoute}
+          className="w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-all disabled:opacity-50 active:scale-[0.98]"
+          style={{ background: calculatingRoute ? '#9ca3af' : MAROON }}
         >
           {calculatingRoute ? (
             <span className="flex items-center justify-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Processing...
+              <Loader2 className="w-4 h-4 animate-spin" /> Calculating…
             </span>
           ) : (
-            'Next: Package Details'
+            'Next: Package Details →'
           )}
         </button>
       )}
