@@ -163,14 +163,7 @@ export default function Main() {
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-gray-400 text-right mb-0.5">
-                      Your offer
-                    </div>
-                    <div className="text-xl font-bold text-[#3A0A21]">
-                      ₦1,800
-                    </div>
-                  </div>
+                 
                 </div>
               </div>
             </div>

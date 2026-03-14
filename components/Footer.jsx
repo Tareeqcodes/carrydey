@@ -30,21 +30,7 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-b from-white to-gray-50 border-t border-gray-200/60">
       <div className="max-w-7xl mx-auto px-5 lg:px-8 py-12 lg:py-16">
-        <div className="flex flex-col text-center items-start md:text-left mb-12">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-[#3A0A21] to-[#5A1A41] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">C</span>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-[#3A0A21] to-[#5A1A41] bg-clip-text text-transparent">
-              Carrydey
-            </span>
-          </div>
-          
-          <p className="text-gray-600 max-w-md mt-3 text-sm text-start md:text-base leading-relaxed">
-            Making delivery seamless and efficient. Experience the future of transportation 
-            with our innovative solutions that connect people and places effortlessly.
-          </p>
-        </div>
+        
 
         <div className="border-t border-gray-200 pt-8">
           <div className="flex flex-col gap-8 md:flex-row md:justify-between items-start">
