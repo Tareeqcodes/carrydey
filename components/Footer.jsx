@@ -31,8 +31,6 @@ export default function Footer() {
     <footer className="bg-gradient-to-b from-white to-gray-50 border-t border-gray-200/60">
       <div className="max-w-7xl mx-auto px-5 lg:px-8 py-12 lg:py-16">
         
-
-        <div className="border-t border-gray-200 pt-8">
           <div className="flex flex-col gap-8 md:flex-row md:justify-between items-start">
             
             <div className="w-full md:w-auto">
@@ -69,7 +67,7 @@ export default function Footer() {
             </div>
 
           </div>
-        </div>
+      
 
         <div className="mt-8 pt-8 border-t border-gray-200">
           <p className="text-gray-600 text-sm text-center">
