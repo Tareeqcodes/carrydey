@@ -36,7 +36,7 @@ export default function Main() {
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 px-4 py-2 rounded-full text-sm font-semibold">
-              <span>⚡</span> Nigeria's logistics platform
+              Nigeria's delivery market
             </div>
 
             {/* Headline — directive, explains the differentiator */}
@@ -44,7 +44,7 @@ export default function Main() {
               <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
                 Send anything.
                 <br />
-                <span className="text-[#FF6B35]">You set the price.</span>
+                <span className="text-[#FF6B35]">On your budget.</span>
               </h1>
             </div>
 
@@ -163,7 +163,6 @@ export default function Main() {
                       </div>
                     </div>
                   </div>
-                 
                 </div>
               </div>
             </div>
