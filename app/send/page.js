@@ -20,10 +20,6 @@ export default function CreateDelivery() {
   const [initialPickup, setInitialPickup] = useState(null);
   const [initialDropoff, setInitialDropoff] = useState(null);
   const [initialRouteData, setInitialRouteData] = useState(null);
-
-  // ── Gate: don't render DeliveryBookingPage until session data is restored ──
-  // This prevents InputLocation from mounting with null props before we've had
-  // a chance to read sessionStorage — which caused the pre-fill race condition.
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -39,7 +35,6 @@ export default function CreateDelivery() {
     } catch (e) {
       console.error('Error restoring delivery data', e);
     } finally {
-      // Always mark as hydrated — even if nothing was in storage
       setHydrated(true);
     }
   }, []);
@@ -48,7 +43,7 @@ export default function CreateDelivery() {
     packageDetails,
     fareDetails,
     pickup,
-    dropoff,
+    dropoffs,
     routeData
   ) => {
     if (!user) {
@@ -56,40 +51,89 @@ export default function CreateDelivery() {
       return;
     }
 
+    const safeDropoffs = dropoffs?.length ? dropoffs : [];
+    const primary = safeDropoffs[0] ?? {};
+
     setLoading(true);
     try {
       const deliveryId = ID.unique();
+
       await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
         data: {
+          // ── Pickup ──────────────────────────────────────────────────────
           pickupAddress:
             pickup.place_name?.substring(0, 500) || 'Pickup location',
           pickupLat: pickup.geometry.coordinates[1],
           pickupLng: pickup.geometry.coordinates[0],
-          dropoffAddress:
-            dropoff.place_name?.substring(0, 500) || 'Dropoff location',
-          dropoffLat: dropoff.geometry.coordinates[1],
-          dropoffLng: dropoff.geometry.coordinates[0],
+          pickupContactName:
+            packageDetails?.pickupContact?.pickupContactName?.substring(
+              0,
+              100
+            ) ?? null,
+          pickupPhone:
+            packageDetails?.pickupContact?.pickupPhone?.substring(0, 20) ??
+            null,
+          pickupInstructions: null,
+          pickupTime:
+            packageDetails?.pickupTime?.substring(0, 500) || 'courier',
+
+          dropoffAddress: (
+            primary.location?.place_name ||
+            primary.address ||
+            ''
+          ).substring(0, 500),
+          dropoffLat: primary.location?.geometry?.coordinates[1] ?? null,
+          dropoffLng: primary.location?.geometry?.coordinates[0] ?? 0,
+          dropoffContactName:
+            (primary.recipientName || '').substring(0, 100) || null,
+          dropoffPhone: (primary.recipientPhone || '').substring(0, 20) || null,
+          dropoffInstructions:
+            (primary.packageLabel || '').substring(0, 1000) || null,
+          recipientPermission:
+            packageDetails?.dropoffContact?.recipientPermission ?? null,
           distance: parseFloat(routeData.distance),
           duration: parseInt(routeData.duration),
-          status: 'pending',
-          pickupContactName: packageDetails?.pickupContact?.pickupContactName,
-          pickupPhone: packageDetails?.pickupContact?.pickupPhone,
-          dropoffContactName: packageDetails?.dropoffContact?.dropoffContactName,
-          dropoffPhone: packageDetails?.dropoffContact?.dropoffPhone,
-          dropoffInstructions: packageDetails?.dropoffContact?.dropoffInstructions,
-          recipientPermission: packageDetails?.dropoffContact?.recipientPermission,
+          packageSize: packageDetails?.size?.substring(0, 50) ?? null,
+          packageDescription:
+            packageDetails?.description?.substring(0, 500) ?? null,
+          isFragile: packageDetails?.isFragile ?? false,
           offeredFare: parseInt(fareDetails.offeredFare || 0),
-          packageSize: packageDetails?.size,
-          packageDescription: packageDetails?.description,
-          isFragile: packageDetails?.isFragile || false,
-          pickupTime: packageDetails?.pickupTime || 'courier',
+          paymentMethod: fareDetails.paymentMethod ?? null,
+          isLongDistance: fareDetails.isLongDistance ?? false,
+          pricingProvidedAtBooking: true,
+          status: 'pending',
           userId: user.$id,
           assignedAgencyId: null,
-          paymentMethod: fareDetails.paymentMethod,
-          isLongDistance: fareDetails.isLongDistance || false,
+          assignedCourierId: null, 
+          pickupCode: null, 
+          dropoffOTP: null, 
+          driverName: null,
+          driverPhone: null,
+          driverId: null,
+          driverToken: null,
+          trackingToken: null,
+          isGuestBooking: false,
+          guestName: null,
+          guestEmail: null,
+          guestPhone: null,
+          mutipledropoff: JSON.stringify(
+            safeDropoffs.map((d, i) => ({
+              idx: i,
+              dropoffAddress: (
+                d.location?.place_name ||
+                d.address ||
+                ''
+              ).substring(0, 500),
+              // dropoffLat: d.location?.geometry?.coordinates[1] ?? null,
+              // dropoffLng: d.location?.geometry?.coordinates[0] ?? null,
+  
+              // dropoffCode: null, 
+              // status: 'pending',
+            }))
+          ),
         },
       });
 
@@ -103,8 +147,6 @@ export default function CreateDelivery() {
     }
   };
 
-  // ── Don't render until sessionStorage has been read ───────────────────────
-  // A minimal spinner so the page doesn't flash blank
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

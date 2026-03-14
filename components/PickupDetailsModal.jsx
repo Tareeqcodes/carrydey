@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import { useBrandColors } from '@/hooks/BrandColors';
 
@@ -12,20 +12,26 @@ export default function PickupDetailsModal({
   onSave,
 }) {
   const { brandColors } = useBrandColors();
-  
+
   const [formData, setFormData] = useState({
     pickupContactName:
       initialData?.pickupContactName || userData?.userName || '',
     pickupPhone: initialData?.pickupPhone || userData?.phone || '',
-    // pickupInstructions: initialData?.pickupInstructions || '',
   });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setFormData({
+      pickupContactName:
+        initialData?.pickupContactName || userData?.userName || '',
+      pickupPhone:
+        initialData?.pickupPhone || userData?.phone || '',
+    });
+  }, [isOpen, userData?.userName, userData?.phone]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -46,7 +52,7 @@ export default function PickupDetailsModal({
         <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
-              <h2 
+              <h2
                 className="text-xl font-bold"
                 style={{ color: brandColors.primary }}
               >
@@ -62,53 +68,51 @@ export default function PickupDetailsModal({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Contact Name
-                  </label>
-                  <input
-                    type="text"
-                    name="pickupContactName"
-                    value={formData.pickupContactName}
-                    onChange={handleInputChange}
-                    placeholder="Enter contact name"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = brandColors.primary;
-                      e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  />
-                </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contact Name
+                </label>
+                <input
+                  type="text"
+                  name="pickupContactName"
+                  value={formData.pickupContactName}
+                  onChange={handleInputChange}
+                  placeholder="Enter contact name"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = brandColors.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="pickupPhone"
-                    value={formData.pickupPhone}
-                    onChange={handleInputChange}
-                    placeholder="Enter phone number"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = brandColors.primary;
-                      e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#d1d5db';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="pickupPhone"
+                  value={formData.pickupPhone}
+                  onChange={handleInputChange}
+                  placeholder="Enter phone number"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = brandColors.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
               </div>
             </div>
 
@@ -132,32 +136,6 @@ export default function PickupDetailsModal({
               </div>
             </div>
 
-            {/* <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Helps the courier locate you faster (recommended)
-              </label>
-              <input
-                type="text"
-                name="pickupInstructions"
-                value={formData.pickupInstructions}
-                onChange={handleInputChange}
-                placeholder="E.g. Behind Shoprite, Plaza, Floor 2 Room 12"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
-                onFocus={(e) => {
-                  e.target.style.borderColor = brandColors.primary;
-                  e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#d1d5db';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Add nearby landmarks, building names, or specific location details
-              </p>
-            </div> */}
-
-            {/* SUBMIT BUTTON */}
             <div className="pt-4">
               <button
                 type="submit"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2,
@@ -24,6 +24,18 @@ import PickupOptions from '@/components/PackageAndFare/PickupOptions';
 import StickyConfirmBar from '@/components/PackageAndFare/StickyConfirmBar';
 import PaymentSection from '@/components/PackageAndFare/PaymentSection';
 import DeliverySummaryCard from '@/components/PackageAndFare/DeliverySummaryCard';
+
+// ── Helper: create a blank dropoff entry ──────────────────────────────────
+function makeDropoff(id) {
+  return {
+    id,
+    location: null,
+    address: '',
+    recipientName: '',
+    recipientPhone: '',
+    packageLabel: '',
+  };
+}
 
 function RouteInfoPill({ routeData }) {
   const { brandColors } = useBrandColors();
@@ -105,7 +117,6 @@ function AgencyPriceContactCard() {
   );
 }
 
-/* Agency branded header */
 function AgencyHeader({ agency, availability, brandColors }) {
   return (
     <motion.div
@@ -145,11 +156,7 @@ function AgencyHeader({ agency, availability, brandColors }) {
                 {agency.tagline || 'Book your delivery'}
               </p>
               <span
-                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                  availability.isOpen
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-red-100 text-red-600'
-                }`}
+                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${availability.isOpen ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}
               >
                 {availability.isOpen
                   ? `🟢 ${availability.message || 'Open'}`
@@ -163,7 +170,6 @@ function AgencyHeader({ agency, availability, brandColors }) {
   );
 }
 
-/* Guest info modal */
 function GuestInfoModal({
   show,
   agency,
@@ -192,7 +198,6 @@ function GuestInfoModal({
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
           >
-            {/* header */}
             <div
               className="p-6 sm:p-8 relative overflow-hidden"
               style={{
@@ -225,8 +230,6 @@ function GuestInfoModal({
                 </div>
               </div>
             </div>
-
-            {/* form */}
             <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-5">
               {[
                 {
@@ -302,7 +305,6 @@ function GuestInfoModal({
                   </div>
                 )
               )}
-
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <motion.button
                   whileHover={{ scale: 1.01 }}
@@ -335,7 +337,6 @@ function GuestInfoModal({
                 </motion.button>
               </div>
             </form>
-
             <div className="px-6 pb-6 flex items-center justify-center gap-2 text-xs text-gray-500">
               <Sparkles
                 className="w-3 h-3"
@@ -350,6 +351,7 @@ function GuestInfoModal({
   );
 }
 
+// ── Main export ───────────────────────────────────────────────────────────────
 export default function DeliveryBookingPage({
   isAgencyBooking = false,
   agency = null,
@@ -364,11 +366,29 @@ export default function DeliveryBookingPage({
 }) {
   const { brandColors } = useBrandColors();
   const [pickup, setPickup] = useState(initialPickup);
-  const [dropoff, setDropoff] = useState(initialDropoff);
   const [routeData, setRouteData] = useState(initialRouteData);
   const [routeReady, setRouteReady] = useState(
     !!(initialPickup && initialDropoff && initialRouteData)
   );
+
+  const [dropoffs, setDropoffs] = useState(() => {
+    if (initialDropoff) {
+      // Legacy prefill: wrap single dropoff into array
+      return [
+        {
+          id: 'd0',
+          location: initialDropoff,
+          address: initialDropoff.place_name || '',
+          recipientName: '',
+          recipientPhone: '',
+          packageLabel: '',
+        },
+      ];
+    }
+    return [makeDropoff('d0')];
+  });
+
+  const primaryDropoff = dropoffs[0]?.location || null;
 
   const [packageDetails, setPackageDetails] = useState({
     size: '',
@@ -388,7 +408,6 @@ export default function DeliveryBookingPage({
     offeredFare: 0,
     paymentMethod: '',
   });
-
   const [showGuestForm, setShowGuestForm] = useState(false);
   const [guestInfo, setGuestInfo] = useState({
     name: '',
@@ -399,10 +418,7 @@ export default function DeliveryBookingPage({
   const agencyFareResult = useAgencyFareCalculator(packageDetails, routeData);
   const platformFareResult = useFareCalculator(packageDetails, routeData);
   const fareResult = isAgencyBooking ? agencyFareResult : platformFareResult;
-
   const { fare: suggestedFare, isLongDistance, fareMode, minFare } = fareResult;
-
-  // fareFloor: 50% of suggestion for short trips, minFare for long trips
   const fareFloor = isLongDistance
     ? minFare
     : Math.round((suggestedFare ?? 0) * 0.5);
@@ -416,10 +432,8 @@ export default function DeliveryBookingPage({
     minFare
   );
 
-  // ── Sync suggested fare into input (short distance only) ───────────────
   useEffect(() => {
-    if (!showPricing || isLongDistance) return;
-    if (!suggestedFare) return;
+    if (!showPricing || isLongDistance || !suggestedFare) return;
     setFareDetails((prev) => ({
       ...prev,
       offeredFare:
@@ -429,7 +443,6 @@ export default function DeliveryBookingPage({
     }));
   }, [suggestedFare, showPricing, isLongDistance]);
 
-  // ── Pre-fill long distance input with minFare on route change ──────────
   useEffect(() => {
     if (!showPricing || !isLongDistance || !minFare) return;
     setFareDetails((prev) => ({
@@ -438,19 +451,20 @@ export default function DeliveryBookingPage({
     }));
   }, [isLongDistance, minFare, showPricing]);
 
-  // ── Reset fare when distance mode switches ─────────────────────────────
-  const prevFareModeRef = useState(fareMode);
+  const prevFareModeRef = useRef(fareMode);
   useEffect(() => {
-    if (prevFareModeRef[0] !== fareMode) {
-      prevFareModeRef[0] = fareMode;
+    if (prevFareModeRef.current !== fareMode) {
+      prevFareModeRef.current = fareMode;
       setFareDetails((prev) => ({ ...prev, offeredFare: 0 }));
     }
   }, [fareMode]);
 
-  /* handlers */
   const handleLocationSelect = (type, loc) => {
     if (type === 'pickup') setPickup(loc);
-    else setDropoff(loc);
+  };
+
+  const handleDropoffsChange = (updatedDropoffs) => {
+    setDropoffs(updatedDropoffs);
   };
 
   const handleRouteCalculated = (data) => {
@@ -458,8 +472,11 @@ export default function DeliveryBookingPage({
     setRouteReady(true);
   };
 
+  // isValid also requires at least one dropoff with location + recipient
+  const allDropoffsValid = dropoffs.every((d) => d.location);
+
   const handleConfirm = () => {
-    if (!isValid || !pickup || !dropoff || !routeData) return;
+    if (!isValid || !pickup || !primaryDropoff || !routeData) return;
     const fd = {
       suggestedFare: showPricing && !isLongDistance ? suggestedFare : null,
       offeredFare: showPricing ? fareDetails.offeredFare : null,
@@ -470,7 +487,8 @@ export default function DeliveryBookingPage({
     if (isAgencyBooking) {
       setShowGuestForm(true);
     } else {
-      onConfirmed(packageDetails, fd, pickup, dropoff, routeData);
+      // Pass dropoffs array as 6th argument
+      onConfirmed(packageDetails, fd, pickup, dropoffs, routeData);
     }
   };
 
@@ -484,12 +502,12 @@ export default function DeliveryBookingPage({
       isLongDistance,
       fareMode,
     };
-    onConfirmed(packageDetails, fd, pickup, dropoff, routeData, guestInfo);
+    onConfirmed(packageDetails, fd, pickup, dropoffs, routeData, guestInfo);
   };
 
   const deliverySnapshot = {
     pickup,
-    dropoff,
+    dropoffs,
     routeData,
     packageDetails,
     fareDetails: {
@@ -498,8 +516,6 @@ export default function DeliveryBookingPage({
       paymentMethod: fareDetails.paymentMethod,
     },
   };
-
-  const delivery = { pickup, dropoff, routeData };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -528,11 +544,13 @@ export default function DeliveryBookingPage({
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
               Where to &amp; from
             </p>
+            {/* ── Updated InputLocation: now takes dropoffs[] + onDropoffsChange ── */}
             <InputLocation
               onLocationSelect={handleLocationSelect}
+              onDropoffsChange={handleDropoffsChange}
               onRouteCalculated={handleRouteCalculated}
               pickup={pickup}
-              dropoff={dropoff}
+              dropoffs={dropoffs}
               onCalculate={() => {}}
               showNextButton={false}
             />
@@ -545,7 +563,7 @@ export default function DeliveryBookingPage({
 
           {!isAgencyBooking && routeReady && (
             <DeliverySummaryCard
-              delivery={delivery}
+              delivery={{ pickup, dropoff: primaryDropoff, routeData }}
               pickupContact={packageDetails.pickupContact}
               dropoffContact={packageDetails.dropoffContact}
               onPickupContactChange={(c) =>
@@ -578,8 +596,6 @@ export default function DeliveryBookingPage({
                     setPackageDetails((p) => ({ ...p, [k]: v }))
                   }
                 />
-
-                {/* ── Fare section: show pricing toggle → hybrid mode → hidden ── */}
                 {showPricing ? (
                   <FareSection
                     fareDetails={fareDetails}
@@ -595,7 +611,6 @@ export default function DeliveryBookingPage({
                 ) : (
                   <AgencyPriceContactCard />
                 )}
-
                 <PaymentSection
                   paymentMethod={fareDetails.paymentMethod}
                   onPaymentMethodChange={(method) =>
@@ -609,7 +624,7 @@ export default function DeliveryBookingPage({
         </div>
 
         <StickyConfirmBar
-          isValid={isValid && routeReady}
+          isValid={isValid && routeReady && allDropoffsValid}
           loading={loading}
           onConfirm={handleConfirm}
           fareDetails={fareDetails}
