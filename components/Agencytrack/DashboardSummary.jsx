@@ -24,16 +24,7 @@ const DashboardSummary = ({ activeDeliveries, drivers }) => {
       // change: '+5%',
       changePositive: true,
     },
-    // {
-    //   title: 'Total Drivers',
-    //   value: drivers.length.toString(),
-    //   icon: Package,
-    //   gradient: 'from-purple-500 to-pink-600',
-    //   bgGradient: 'from-purple-50 to-pink-50',
-    //   iconBg: 'bg-purple-500',
-    //   change: 'Stable',
-    //   changePositive: true,
-    // },
+    
   ];
 
   return (
