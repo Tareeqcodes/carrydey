@@ -47,7 +47,7 @@ const TrackCourierDelivery = () => {
       onAccepted: () => refresh(),
     });
 
-  // ── Location ping ────────────────────────────────────────────────────────
+  //  Location ping 
   useEffect(() => {
     if (!courier?.$id) return;
 
@@ -87,7 +87,7 @@ const TrackCourierDelivery = () => {
     };
   }, [courier?.$id]);
 
-  // ── Delivery action handlers ──────────────────────────────────────────────
+  // Delivery action handlers 
   const pendingDeliveries   = allDeliveries.filter((d) => d.status === 'pending');
   const activeDeliveries    = allDeliveries.filter((d) =>
     ['accepted', 'assigned', 'picked_up', 'in_transit'].includes(d.status)
