@@ -1,720 +1,311 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { tablesDB, ID } from '@/lib/config/Appwriteconfig';
-import { useAuth } from '@/hooks/Authcontext';
+import { motion } from 'framer-motion';
+import { tablesDB } from '@/lib/config/Appwriteconfig';
 import useChooseAvailable from '@/hooks/useChooseAvailable';
-import SelectAvailableModal from '@/components/SelectAvailableModal';
 import {
-  Star,
-  MapPin,
-  Clock,
-  Package,
-  Building2,
-  Bike,
   CheckCircle,
+  Package,
   Zap,
-  ChevronRight,
-  ArrowUpDown,
+  Loader2, 
   TrendingUp,
-  Loader2,
+  AlertCircle,
+  Radio,
+  RadioTower,
+  Award,
 } from 'lucide-react';
 
-const SORTS = [
-  { id: 'nearest', label: 'Nearest', icon: MapPin },
-  { id: 'rated', label: 'Top rated', icon: TrendingUp },
-];
+const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+const DELIVERIES = process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID;
 
-function sortList(list, sort) {
-  return [...list].sort((a, b) =>
-    sort === 'nearest'
-      ? parseFloat(a.distance) - parseFloat(b.distance)
-      : (b.rating || 0) - (a.rating || 0)
-  );
-}
-
-function FeaturedCard({ traveler, onBook, deliveryReady }) {
-  const isAgency = traveler.entityType === 'agency';
-  const accent = isAgency ? '#c084a0' : '#FF6B35';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 28 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative rounded-3xl overflow-hidden"
-      style={{
-        background:
-          'linear-gradient(150deg, #0e0608 0%, #1c0812 55%, #2e0d1e 100%)',
-        boxShadow:
-          '0 24px 64px rgba(58,10,33,0.5), 0 4px 16px rgba(0,0,0,0.25)',
-      }}
-    >
-      {/* Dot-grid texture */}
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, #ffffff 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
-      />
-
-      {/* Warm glow */}
-      <div
-        className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-20 pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, #FF6B35 0%, transparent 70%)',
-          transform: 'translate(30%, -30%)',
-        }}
-      />
-
-      {/* Best match badge */}
-      <div
-        className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-        style={{
-          background: '#FF6B35',
-          boxShadow: '0 4px 14px rgba(255,107,53,0.45)',
-        }}
-      >
-        <Zap className="w-3 h-3 text-white" fill="white" />
-        <span className="text-[10px] font-black text-white uppercase tracking-widest">
-          Best match
-        </span>
-      </div>
-
-      <div className="relative z-10 p-5">
-        {/* Identity */}
-        <div className="flex items-start gap-4 mb-5">
-          <div className="relative flex-shrink-0">
-            <div
-              className="w-13 h-13 rounded-xl overflow-hidden"
-              style={{ border: `2px solid ${accent}50` }}
-            >
-              <img
-                src={traveler.avatar}
-                alt={traveler.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {/* Online dot */}
-            <div
-              className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full border-2"
-              style={{ borderColor: '#0e0608' }}
-            />
-          </div>
-
-          <div className="flex-1 min-w-0 pt-0.5">
-            <div className="flex items-center gap-2 mb-1.5">
-              <h2
-                className="text-[14px] font-black text-white leading-tight truncate"
-                style={{ fontFamily: 'Fraunces, Georgia, serif' }}
-              >
-                {traveler.name}
-              </h2>
-              
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,255,255,0.1)', color: accent }}
-              >
-                {isAgency ? ' Agency' : ' Courier'}
-              </span>
-              <div className="flex items-center gap-1">
-                <Star
-                  className="w-3.5 h-3.5 text-amber-400"
-                  fill="currentColor"
-                />
-                <span className="text-[10px] font-black text-white">
-                  {traveler.rating}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats grid */}
-        <div className="grid grid-cols-3 gap-2.5 mb-5">
-          {[
-            {
-              icon: Clock,
-              value: `${traveler.pickupTime}m`,
-              label: 'Pickup ETA',
-            },
-            {
-              icon: MapPin,
-              value: `${traveler.distance} km`,
-              label: 'Distance',
-            },
-            {
-              icon: Package,
-              value: traveler.totalDeliveries,
-              label: 'Deliveries',
-            },
-          ].map(({ icon: Icon, value, label }) => (
-            <div
-              key={label}
-              className="rounded-2xl p-3 text-center"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                backdropFilter: 'blur(6px)',
-              }}
-            >
-              <Icon className="w-3.5 h-3.5 mx-auto mb-1.5 text-white/40" />
-              <p className="text-[13px] font-black text-white leading-none">
-                {value}
-              </p>
-              <p className="text-[9px] text-white/35 mt-1 uppercase tracking-wider">
-                {label}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Vehicle tags */}
-        {traveler.vehicleTypes?.length > 0 && (
-          <div className="flex gap-2 mb-5 flex-wrap">
-            {traveler.vehicleTypes.slice(0, 3).map((v) => (
-              <span
-                key={v}
-                className="text-[10px] px-2.5 py-1 rounded-full font-semibold capitalize"
-                style={{
-                  background: 'rgba(255,255,255,0.07)',
-                  color: 'rgba(255,255,255,0.5)',
-                }}
-              >
-                {v}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* CTA */}
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onBook(traveler)}
-          disabled={!deliveryReady}
-          className="w-full py-4 rounded-2xl font-black text-[14px] text-white flex items-center justify-center gap-2 disabled:opacity-40 transition-all"
-          style={{
-            background: deliveryReady
-              ? 'linear-gradient(135deg, #FF6B35 0%, #d94e1a 100%)'
-              : '#374151',
-            boxShadow: deliveryReady
-              ? '0 8px 28px rgba(255,107,53,0.4)'
-              : 'none',
-          }}
-        >
-          {deliveryReady ? (
-            <>
-              <span>Book {isAgency ? 'Agency' : 'Courier'}</span>
-              <ChevronRight className="w-4 h-4" />
-            </>
-          ) : (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Preparing…</span>
-            </>
-          )}
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-}
-
-function ListCard({ traveler, index, onBook, deliveryReady }) {
-  const isAgency = traveler.entityType === 'agency';
-  const accent = isAgency ? '#3A0A21' : '#FF6B35';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.32,
-        delay: index * 0.055,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className="bg-white rounded-2xl overflow-hidden"
-      style={{
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-        border: '1px solid rgba(0,0,0,0.05)',
-      }}
-    >
-      <div className="flex items-stretch">
-        {/* Left accent bar */}
-        <div className="w-1 flex-shrink-0" style={{ background: accent }} />
-
-        <div className="flex-1 px-4 py-3.5 flex items-center gap-3">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            <img
-              src={traveler.avatar}
-              alt={traveler.name}
-              className="w-11 h-11 rounded-xl object-cover bg-gray-100"
-            />
-            <div
-              className="absolute -bottom-1 -right-1 w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-white"
-              style={{ background: accent }}
-            >
-              {isAgency ? (
-                <Building2 size={8} className="text-white" />
-              ) : (
-                <Bike size={8} className="text-white" />
-              )}
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <p
-                className="text-[14px] font-black text-[#0e0608] truncate"
-                style={{ fontFamily: 'Fraunces, Georgia, serif' }}
-              >
-                {traveler.name}
-              </p>
-              {traveler.verified && (
-                <CheckCircle
-                  size={11}
-                  className="text-blue-500 flex-shrink-0"
-                  fill="currentColor"
-                />
-              )}
-            </div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <div className="flex items-center gap-1">
-                <Clock size={10} className="text-gray-400" />
-                <span className="text-[11px] text-gray-700 font-semibold">
-                  {traveler.pickupTime}m
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MapPin size={10} className="text-gray-400" />
-                <span className="text-[11px] text-gray-500">
-                  {traveler.distance} km
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Star
-                  size={10}
-                  className="text-amber-400"
-                  fill="currentColor"
-                />
-                <span className="text-[11px] font-black text-gray-700">
-                  {traveler.rating}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Package size={10} className="text-gray-400" />
-                <span className="text-[11px] text-gray-500">
-                  {traveler.totalDeliveries}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Book button */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onBook(traveler)}
-            disabled={!deliveryReady}
-            className="flex-shrink-0 px-4 py-2.5 rounded-xl text-[12px] font-black text-white disabled:opacity-40 transition-all"
-            style={{ background: accent }}
-          >
-            Book
-          </motion.button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function Skeleton() {
-  return (
-    <div className="space-y-4 animate-pulse">
-      <div className="h-72 bg-gray-200 rounded-3xl" />
-      <div className="h-5 w-32 bg-gray-200 rounded-full" />
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-[72px] bg-gray-100 rounded-2xl" />
-      ))}
-    </div>
-  );
-}
-
-const ChooseAvailable = () => {
-  const [travelers, setTravelers] = useState([]);
-  const [selectedTraveler, setSelectedTraveler] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [deliveryId, setDeliveryId] = useState(null);
-  const [restoring, setRestoring] = useState(false);
-  const [tab, setTab] = useState('all');
-  const [sort, setSort] = useState('nearest');
-
-  const { agencies, loading, error } = useChooseAvailable();
-  const { user } = useAuth();
+const AutoAssignDelivery = () => {
   const router = useRouter();
+  const [deliveryDetails, setDeliveryDetails] = useState(null);
+  const [assignedCourier, setAssignedCourier] = useState(null);
 
+  const deliveryId =
+    typeof window !== 'undefined'
+      ? sessionStorage.getItem('latestDeliveryId')
+      : null;
+
+  const {
+    status,
+    currentCourier,
+    countdown,
+    queueId,
+    failReason,
+    advanceDispatch,
+  } = useChooseAvailable(deliveryId);
+
+  // Load delivery details once on mount
   useEffect(() => {
-    const init = async () => {
-      const sessionId = sessionStorage.getItem('latestDeliveryId');
-      if (sessionId) {
-        setDeliveryId(sessionId);
-        return;
-      }
-
-      const raw = localStorage.getItem('pendingDelivery');
-      if (!raw || !user) return;
-
-      try {
-        setRestoring(true);
-        const pending = JSON.parse(raw);
-        const { pickup, dropoff, routeData, packageDetails, fareDetails } =
-          pending;
-
-        if (!pickup || !dropoff || !routeData) {
-          localStorage.removeItem('pendingDelivery');
-          localStorage.removeItem('postAuthRedirect');
-          router.push('/send');
-          return;
-        }
-
-        const newDeliveryId = ID.unique();
-        await tablesDB.createRow({
-          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-          tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-          rowId: newDeliveryId,
-          data: {
-            pickupAddress:
-              pickup.place_name?.substring(0, 500) || 'Pickup location',
-            pickupLat: pickup.geometry.coordinates[1],
-            pickupLng: pickup.geometry.coordinates[0],
-            dropoffAddress:
-              dropoff.place_name?.substring(0, 500) || 'Dropoff location',
-            dropoffLat: dropoff.geometry.coordinates[1],
-            dropoffLng: dropoff.geometry.coordinates[0],
-            distance: parseFloat(routeData.distance),
-            duration: parseInt(routeData.duration),
-            status: 'pending',
-            pickupContactName: packageDetails?.pickupContact?.pickupContactName,
-            pickupPhone: packageDetails?.pickupContact?.pickupPhone,
-            dropoffContactName:
-              packageDetails?.dropoffContact?.dropoffContactName,
-            dropoffPhone: packageDetails?.dropoffContact?.dropoffPhone,
-            dropoffInstructions:
-              packageDetails?.dropoffContact?.dropoffInstructions,
-            recipientPermission:
-              packageDetails?.dropoffContact?.recipientPermission,
-            offeredFare: parseInt(
-              fareDetails?.offeredFare || routeData.estimatedFare || 0
-            ),
-            packageSize: packageDetails?.size,
-            packageDescription: packageDetails?.description,
-            isFragile: packageDetails?.isFragile || false,
-            pickupTime: packageDetails?.pickupTime || 'courier',
-            userId: user.$id,
-            assignedAgencyId: null,
-            paymentMethod: fareDetails?.paymentMethod,
-          },
-        });
-
-        sessionStorage.setItem('latestDeliveryId', newDeliveryId);
-        setDeliveryId(newDeliveryId);
-        localStorage.removeItem('pendingDelivery');
-        localStorage.removeItem('postAuthRedirect');
-      } catch (err) {
-        console.error('Failed to restore pending delivery:', err);
-      } finally {
-        setRestoring(false);
-      }
-    };
-
-    init();
-  }, [user]);
-
-  useEffect(() => {
-    if (!agencies?.length) return;
-
-    const transformed = agencies
-      .filter((e) => e.isAvailable === true)
-      .map((entity) => {
-        const isAgency = entity.entityType === 'agency';
-        let serviceCities = [];
-        if (isAgency && entity.serviceCities) {
-          serviceCities = entity.serviceCities
-            .split(',')
-            .map((c) => c.trim())
-            .filter(Boolean);
-        }
-        const routeDisplay = isAgency
-          ? serviceCities.length === 0
-            ? 'Nigeria'
-            : serviceCities.length === 1
-              ? serviceCities[0]
-              : `${serviceCities[0]} + ${serviceCities.length - 1} more`
-          : entity.currentCity || entity.operatingArea || 'Kano';
-
-        return {
-          id: entity.$id,
-          entityType: entity.entityType,
-          name: isAgency
-            ? entity.name || entity.contactPerson || 'Agency'
-            : entity.userName || 'Courier',
-          avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${isAgency ? entity.name || entity.contactPerson : entity.userName}`,
-          rating: entity.rating || 4.5,
-          verified: entity.verified || false,
-          route: routeDisplay,
-          serviceCities,
-          distance: (Math.random() * 3 + 0.5).toFixed(1),
-          pickupTime: Math.floor(Math.random() * 20 + 10),
-          type: isAgency ? entity.type : 'Independent Courier',
-          phone: entity.phone || entity.phoneNumber,
-          services: isAgency
-            ? entity.services
-              ? JSON.parse(entity.services)
-              : []
-            : ['Package Delivery'],
-          vehicleTypes: isAgency
-            ? entity.vehicleTypes
-              ? JSON.parse(entity.vehicleTypes)
-              : []
-            : [entity.vehicleType || 'Motorcycle'],
-          totalDeliveries:
-            entity.totalDeliveries || Math.floor(Math.random() * 10 + 20),
-          isAvailable: entity.isAvailable || false,
-        };
-      });
-
-    setTravelers(transformed);
-  }, [agencies]);
-
-
-  const handleBookTraveler = useCallback(
-    (traveler) => {
-      if (!deliveryId) {
-        alert('Your delivery is still being prepared. Please wait a moment.');
-        return;
-      }
-      setSelectedTraveler(traveler);
-      setShowConfirmation(true);
-    },
-    [deliveryId]
-  );
-
-  const handleConfirmBooking = async () => {
-    if (!selectedTraveler?.id || !deliveryId) {
-      alert('Missing delivery or traveler information');
+    if (!deliveryId) {
+      router.push('/send');
       return;
     }
-    setBookingLoading(true);
-    try {
-      const isAgency = selectedTraveler.entityType === 'agency';
-      const updateData = { status: 'pending' };
-      if (isAgency) updateData.assignedAgencyId = selectedTraveler.id;
-      else updateData.assignedCourierId = selectedTraveler.id;
 
-      await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+    tablesDB
+      .getRow({
+        databaseId: DB,
+        tableId: DELIVERIES,
         rowId: deliveryId,
-        data: updateData,
-      });
+      })
+      .then(setDeliveryDetails)
+      .catch(() => router.push('/send'));
+  }, [deliveryId]);
 
-      sessionStorage.removeItem('latestDeliveryId');
-      if (isAgency) {
-        sessionStorage.setItem('agencyId', selectedTraveler.id);
-        sessionStorage.setItem('agencyName', selectedTraveler.name);
-      } else {
-        sessionStorage.setItem('courierId', selectedTraveler.id);
-        sessionStorage.setItem('courierName', selectedTraveler.name);
-      }
-
-      setShowConfirmation(false);
-      router.push('/track');
-    } catch (err) {
-      console.error('Error assigning delivery:', err);
-      alert('Failed to assign delivery. Please try again.');
-    } finally {
-      setBookingLoading(false);
+  // When assigned, lock in the courier and redirect
+  useEffect(() => {
+    if (status === 'assigned' && currentCourier && !assignedCourier) {
+      setAssignedCourier(currentCourier);
+      setTimeout(() => router.push('/track'), 3000);
     }
+  }, [status, currentCourier]);
+
+  const handleIncreaseOffer = async () => {
+    if (!deliveryDetails) return;
+    const newFare = Math.round(deliveryDetails.offeredFare * 1.2);
+
+    await tablesDB.updateRow({
+      databaseId: DB,
+      tableId: DELIVERIES,
+      rowId: deliveryId,
+      data: { offeredFare: newFare },
+    });
+
+    setDeliveryDetails((prev) => ({ ...prev, offeredFare: newFare }));
+
+    // Skip current courier and retry with higher fare
+    if (queueId) advanceDispatch(queueId, 'timeout');
   };
 
-  const byTab =
-    tab === 'all' ? travelers : travelers.filter((t) => t.entityType === tab);
-  const sorted = sortList(byTab, sort);
-  const topPick = sorted[0] || null;
-  const rest = sorted.slice(1);
-
-  const tabs = [
-    { id: 'all', label: 'All', count: travelers.length },
-    {
-      id: 'agency',
-      label: ' Agencies',
-      count: travelers.filter((t) => t.entityType === 'agency').length,
-    },
-    {
-      id: 'courier',
-      label: 'Couriers',
-      count: travelers.filter((t) => t.entityType === 'courier').length,
-    },
-  ];
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-red-600 p-4 rounded-2xl bg-red-50 max-w-md w-full text-sm">
-          Error loading couriers: {error}
+  const renderSearching = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center"
+    >
+      <div className="relative w-32 h-32 mx-auto mb-6">
+        <div className="absolute inset-0 rounded-full border-4 border-orange-200 animate-ping" />
+        <div className="absolute inset-2 rounded-full border-4 border-orange-300 animate-pulse" />
+        <div className="absolute inset-4 rounded-full bg-orange-500 flex items-center justify-center">
+          <RadioTower className="w-8 h-8 text-white animate-pulse" />
         </div>
       </div>
-    );
-  }
+      <h2 className="text-2xl font-black mb-2">Finding your courier</h2>
+      <p className="text-gray-500 mb-4">
+        Searching for the best match nearby...
+      </p>
+      <p className="text-sm text-gray-400">
+        Scanning couriers by distance, rating, and reliability
+      </p>
+    </motion.div>
+  );
+
+  const renderOffering = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-center"
+    >
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 mb-6">
+        <div className="relative w-24 h-24 mx-auto mb-4">
+          <img
+            src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${currentCourier?.name}`}
+            alt={currentCourier?.name}
+            className="w-full h-full rounded-full border-4 border-white shadow-lg"
+          />
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+        </div>
+
+        <h2 className="text-2xl font-black mb-1">{currentCourier?.name}</h2>
+        <p className="text-gray-500 mb-1">
+          {currentCourier?.entityType === 'agency'
+            ? 'Delivery Agency'
+            : 'Independent Courier'}
+        </p>
+        <p className="text-sm text-gray-400 mb-4">
+          {currentCourier?.distance}km away · ⭐{' '}
+          {currentCourier?.rating?.toFixed(1)}
+        </p>
+
+        <div className="bg-white/80 rounded-xl p-3 mb-4 flex items-center justify-center gap-2">
+          <Award className="w-4 h-4 text-orange-500" />
+          <span className="text-sm font-semibold text-gray-700">
+            Match Score: {currentCourier?.score}%
+          </span>
+        </div>
+
+        {/* Countdown ring */}
+        <div className="relative w-32 h-32 mx-auto mb-4">
+          <svg className="w-full h-full -rotate-90">
+            <circle
+              cx="64"
+              cy="64"
+              r="58"
+              stroke="#e5e7eb"
+              strokeWidth="6"
+              fill="none"
+            />
+            <circle
+              cx="64"
+              cy="64"
+              r="58"
+              stroke="#FF6B35"
+              strokeWidth="6"
+              fill="none"
+              strokeDasharray="364.5"
+              strokeDashoffset={364.5 * (1 - countdown / 20)}
+              strokeLinecap="round"
+              className="transition-all duration-1000"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-3xl font-black text-gray-800">
+              {countdown}s
+            </span>
+          </div>
+        </div>
+
+        <p className="text-gray-600 mb-1">
+          Waiting for {currentCourier?.name} to respond...
+        </p>
+        <p className="text-sm text-gray-400">
+          They have {countdown} seconds to accept
+        </p>
+      </div>
+
+      <div className="bg-gray-50 rounded-xl p-4">
+        <p className="text-sm text-gray-600 mb-3">
+          ⚡ Not getting responses? Increase your offer to get matched faster
+        </p>
+        <button
+          onClick={handleIncreaseOffer}
+          className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
+        >
+          <TrendingUp className="w-4 h-4" />
+          Increase offer by 20%
+        </button>
+      </div>
+    </motion.div>
+  );
+
+  const renderAssigned = () => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center"
+    >
+      <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-3xl p-8 mb-6 text-white">
+        <div className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
+          <CheckCircle className="w-10 h-10 text-green-500" />
+        </div>
+        <h2 className="text-2xl font-black mb-2">Courier Found!</h2>
+        <p className="text-white/90 mb-1">
+          {assignedCourier?.name} is on the way
+        </p>
+      </div>
+
+      <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3">
+        <img
+          src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${assignedCourier?.name}`}
+          alt={assignedCourier?.name}
+          className="w-12 h-12 rounded-full"
+        />
+        <div className="flex-1 text-left">
+          <p className="font-bold">{assignedCourier?.name}</p>
+          <p className="text-xs text-gray-500">
+            ⭐ {assignedCourier?.rating?.toFixed(1)} ·{' '}
+            {assignedCourier?.distance}km away
+          </p>
+        </div>
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500" />
+      </div>
+      <p className="text-sm text-gray-400 mt-4">Redirecting to tracking...</p>
+    </motion.div>
+  );
+
+  const failMessages = {
+    no_couriers: 'No riders are currently active in your area.',
+    all_rejected: 'Available riders are busy. Try increasing your fare.',
+    radius_exhausted: 'No riders found within 20km of your pickup.',
+  };
+
+  const renderFailed = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center"
+    >
+      <div className="bg-red-50 rounded-3xl p-8 mb-6">
+        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+        <h2 className="text-2xl font-black mb-2">No couriers available</h2>
+        <p className="text-gray-600 mb-4">
+          {failMessages[failReason] ?? 'Could not find a courier right now.'}
+        </p>
+      </div>
+      <div className="space-y-3">
+        <button
+          onClick={handleIncreaseOffer}
+          className="w-full bg-orange-500 text-white py-4 rounded-xl font-bold"
+        >
+          Increase offer & try again
+        </button>
+        <button
+          onClick={() => router.push('/send')}
+          className="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold"
+        >
+          Modify delivery
+        </button>
+      </div>
+    </motion.div>
+  );
 
   return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&family=DM+Sans:wght@400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=DM+Sans:wght@400;500;600;700&display=swap');`}</style>
+      <div className="min-h-screen bg-gradient-to-b from-white  py-7 to-gray-50">
+       
 
-      <div
-        className="min-h-screen bg-[#f5f3f4]"
-        style={{ fontFamily: 'DM Sans, sans-serif' }}
-      >
-        {/* ── Sticky header ── */}
-        <div
-          className="bg-white border-b border-gray-100 px-4 pt-5 pb-4 sticky top-0 z-30"
-          style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.05)' }}
-        >
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">
-                  Available now
-                </p>
-                <h1
-                  className="text-[22px] font-black text-[#0e0608] leading-tight"
-                  style={{ fontFamily: 'Fraunces, Georgia, serif' }}
-                >
-                  Choose a courier
-                </h1>
-              </div>
+        <div className="max-w-md mx-auto px-4 py-8">
+          {status === 'searching' && renderSearching()}
+          {status === 'offering' && renderOffering()}
+          {status === 'assigned' && renderAssigned()}
+          {status === 'failed' && renderFailed()}
+          {!['searching', 'offering', 'assigned', 'failed'].includes(
+            status
+          ) && (
+            <div className="text-center py-12">
+              <Loader2 className="w-12 h-12 animate-spin text-orange-500 mx-auto mb-4" />
+              <p>Preparing your delivery...</p>
             </div>
-
-            {/* Tab filter */}
-            <div className="flex gap-2">
-              {tabs.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-bold border transition-all ${
-                    tab === t.id
-                      ? 'bg-[#3A0A21] text-white border-[#3A0A21]'
-                      : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Content ── */}
-        <div className="max-w-2xl mx-auto px-4 pt-5 pb-32 space-y-4">
-          {loading || restoring ? (
-            <Skeleton />
-          ) : sorted.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20 text-center"
-            >
-              <div className="w-14 h-14 bg-white rounded-2xl border border-gray-100 flex items-center justify-center mb-3 text-2xl shadow-sm">
-                {tab === 'agency' ? '🏢' : tab === 'courier' ? '🏍️' : '📦'}
-              </div>
-              <p
-                className="text-[13px] font-semibold text-gray-500"
-                style={{ fontFamily: 'Fraunces, Georgia, serif' }}
-              >
-                No {tab === 'all' ? 'couriers' : tab + 's'} available right now
-              </p>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Try again in a few minutes
-              </p>
-            </motion.div>
-          ) : (
-            <>
-              {/* Featured top pick */}
-              {topPick && (
-                <FeaturedCard
-                  traveler={topPick}
-                  onBook={handleBookTraveler}
-                  deliveryReady={!!deliveryId}
-                />
-              )}
-
-              {/* Other options — sort + list */}
-              {rest.length > 0 && (
-                <>
-                  <div className="flex items-center justify-between pt-1">
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                      Other options
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                      {SORTS.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => setSort(s.id)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
-                            sort === s.id
-                              ? 'bg-[#0e0608] text-white border-[#0e0608]'
-                              : 'bg-white text-gray-500 border-gray-200'
-                          }`}
-                        >
-                          <s.icon className="w-3 h-3" />
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <AnimatePresence mode="popLayout">
-                      {rest.map((traveler, index) => (
-                        <motion.div
-                          key={traveler.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.97 }}
-                          transition={{ delay: index * 0.04, duration: 0.22 }}
-                        >
-                          <ListCard
-                            traveler={traveler}
-                            index={index}
-                            onBook={handleBookTraveler}
-                            deliveryReady={!!deliveryId}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </>
-              )}
-            </>
           )}
         </div>
-      </div>
 
-      {showConfirmation && (
-        <SelectAvailableModal
-          traveler={selectedTraveler}
-          onCancel={() => setShowConfirmation(false)}
-          onConfirm={handleConfirmBooking}
-          loading={bookingLoading}
-        />
-      )}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+          <div className="max-w-md mx-auto flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <Radio className="w-4 h-4 text-orange-500" />
+              <span className="text-gray-600">
+                {status === 'searching' && 'Scanning couriers...'}
+                {status === 'offering' && 'Waiting for response...'}
+                {status === 'assigned' && 'Courier assigned'}
+                {status === 'failed' && 'Assignment failed'}
+              </span>
+            </div>
+            {deliveryDetails && (
+              <span className="font-bold text-orange-500">
+                ₦{deliveryDetails.offeredFare?.toLocaleString()}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 };
 
-export default ChooseAvailable;
+export default AutoAssignDelivery;

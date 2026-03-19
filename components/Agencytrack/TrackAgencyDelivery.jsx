@@ -1,10 +1,12 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
 import { useDriverManagement } from '@/hooks/useDriverManagement';
 import { useDeliveryManagement } from '@/hooks/useDeliveryManagement';
+import { useDispatchOffer } from '@/hooks/Usedispatchoffer';
+import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import Sidebar from './Sidebar';
 import AssignmentModal from './AssignmentModal';
 import DashboardPage from './DashboardPage';
@@ -15,13 +17,39 @@ import TrackingPage from './TrackingPage';
 import AddDriverModal from '../AddDriverModal';
 import AgencySettingsPage from './AgencySettingsPage';
 import DeliveryHistory from './DeliveryHistory';
+import OfferBanner from '@/components/OfferBanner';
+
+const DB   = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+const ORGS = process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID;
+
+// ── Auto-assign: pick the best available driver for an accepted offer ────────
+// Mirrors the scoring in the Appwrite dispatch function so the agency
+// always gets a sensible assignment without needing to open a modal.
+function pickBestDriver(drivers) {
+  const available = drivers.filter((d) => d.status === 'available');
+  if (available.length === 0) return null;
+
+  // Simple score: prefer drivers with no active deliveries
+  // You can extend this with distance, rating etc. later
+  const scored = available.map((d) => {
+    const activeCount = (d.assignedDelivery || '')
+      .split(',')
+      .filter(Boolean).length;
+    return { driver: d, score: Math.max(0, 100 - activeCount * 25) };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].driver;
+}
 
 const TrackAgencyDelivery = () => {
-  const [activePage, setActivePage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activePage, setActivePage]       = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
   const [addDriverModalOpen, setAddDriverModalOpen] = useState(false);
-  const [driverToEdit, setDriverToEdit] = useState(null);
+  const [driverToEdit, setDriverToEdit]   = useState(null);
+
   const { user } = useAuth();
+  const locationIntervalRef = useRef(null);
 
   const {
     loading: requestsLoading,
@@ -29,6 +57,13 @@ const TrackAgencyDelivery = () => {
     agencyId,
     refreshRequests,
   } = useAgencyDeliveries(user?.$id);
+
+  const [assignmentModal, setAssignmentModal] = useState({
+    isOpen: false,
+    deliveryId: null,
+    selectedDriver: null,
+    deliveryDetails: null,
+  });
 
   const {
     drivers,
@@ -50,18 +85,130 @@ const TrackAgencyDelivery = () => {
     acceptRequest,
     assignDelivery,
     loading: deliveriesLoading,
-    // updateDeliveryStatus,
-    // confirmDelivery,
-    // refreshDeliveries,
   } = useDeliveryManagement(agencyId, freeDriverFromDelivery);
 
-  const [assignmentModal, setAssignmentModal] = useState({
-    isOpen: false,
-    deliveryId: null,
-    selectedDriver: null,
-    deliveryDetails: null,
-  });
+  // ── Auto-assign handler called when an offer is accepted via dispatch ──────
+  const handleDispatchAccepted = useCallback(async (deliveryId) => {
+    // 1. Pick the best available driver right now
+    const bestDriver = pickBestDriver(drivers);
 
+    if (!bestDriver) {
+      // No drivers available — fall back to manual AssignmentModal
+      // First, fetch the delivery details for the modal
+      try {
+        const delivery = await tablesDB.getRow({
+          databaseId: DB,
+          tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+          rowId: deliveryId,
+        });
+        setAssignmentModal({
+          isOpen: true,
+          deliveryId,
+          selectedDriver: null,
+          deliveryDetails: delivery,
+        });
+      } catch (e) {
+        console.error('Could not load delivery for manual assignment:', e);
+      }
+      return;
+    }
+
+    // 2. Assign automatically — same logic as handleCompleteAssignment
+    try {
+      await assignDelivery(
+        deliveryId,
+        bestDriver.$id,
+        bestDriver.name,
+        bestDriver.phone,
+      );
+      await assignDriverToDelivery(bestDriver.$id, deliveryId);
+
+      // 3. SMS for keypad drivers
+      if (bestDriver.phoneType === 'keypad') {
+        const endpoint  = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(/\/$/, '');
+        const functionId = process.env.NEXT_PUBLIC_APPWRITE_SMS_FUNCTION_ID;
+        const projectId  = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+
+        fetch(`${endpoint}/v1/functions/${functionId}/executions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': projectId,
+          },
+          body: JSON.stringify({
+            body: JSON.stringify({ deliveryId, driverId: bestDriver.$id }),
+            async: true,
+          }),
+        }).catch((err) =>
+          console.warn('SMS trigger failed (non-critical):', err.message)
+        );
+      }
+    } catch (e) {
+      console.error('Auto-assign failed, opening manual modal:', e);
+      // Graceful fallback: open the modal so the agency can still assign
+      try {
+        const delivery = await tablesDB.getRow({
+          databaseId: DB,
+          tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+          rowId: deliveryId,
+        });
+        setAssignmentModal({
+          isOpen: true,
+          deliveryId,
+          selectedDriver: null,
+          deliveryDetails: delivery,
+        });
+      } catch (_) {}
+    }
+  }, [drivers, assignDelivery, assignDriverToDelivery]);
+
+  // ── Dispatch offer hook (replaces all the duplicated offer logic) ──────────
+  const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
+    useDispatchOffer(agencyId, ORGS, {
+      onAccepted: handleDispatchAccepted,
+    });
+
+  // ── Location ping ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    const pingLocation = async () => {
+      if (!navigator.geolocation || !agencyId) return;
+
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+          await tablesDB.updateRow({
+            databaseId: DB,
+            tableId: ORGS,
+            rowId: agencyId,
+            data: {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              lastSeen: new Date().toISOString(),
+              isAvailable: true,
+            },
+          });
+        } catch (e) {
+          console.error('Agency location ping failed:', e);
+        }
+      });
+    };
+
+    if (!agencyId) return;
+
+    pingLocation();
+    locationIntervalRef.current = setInterval(pingLocation, 15_000);
+
+    return () => {
+      clearInterval(locationIntervalRef.current);
+      tablesDB.updateRow({
+        databaseId: DB,
+        tableId: ORGS,
+        rowId: agencyId,
+        data: { isOnline: false, isAvailable: false },
+      }).catch(() => {});
+    };
+  }, [agencyId]);
+
+  // ── Driver page refresh ───────────────────────────────────────────────────
   useEffect(() => {
     if (activePage === 'drivers' && agencyId) fetchDrivers();
   }, [activePage, agencyId]);
@@ -70,37 +217,7 @@ const TrackAgencyDelivery = () => {
     if (agencyId) fetchDrivers();
   }, [activeDeliveries.length, completedDeliveries.length]);
 
-  const handleAddDriverClick = () => {
-    setDriverToEdit(null);
-    setAddDriverModalOpen(true);
-  };
-
-  const handleEditDriverClick = (driver) => {
-    setDriverToEdit(driver);
-    setAddDriverModalOpen(true);
-  };
-
-  const handleCloseDriverModal = () => {
-    setAddDriverModalOpen(false);
-    setDriverToEdit(null);
-  };
-
-  const handleDriverModalSubmit = async (driverData) => {
-    if (driverToEdit) {
-      return await updateDriver(driverToEdit.$id, driverData);
-    }
-    return await addDriver(driverData);
-  };
-
-  // ← Delete handler passed down to AddDriverModal and DriversPage
-  const handleDeleteDriver = async (driverId) => {
-    const result = await deleteDriver(driverId);
-    if (result.success) {
-      handleCloseDriverModal();
-    }
-    return result;
-  };
-
+  // ── Manual assignment (from RequestsPage / ActiveDeliveriesPage) ──────────
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);
     if (result?.success) {
@@ -114,79 +231,65 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
+  const handleCompleteAssignment = async () => {
+    if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
 
-const handleCompleteAssignment = async () => {
-  if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
+    const selectedDriver = drivers.find(
+      (d) => d.$id === assignmentModal.selectedDriver || d.id === assignmentModal.selectedDriver
+    );
+    if (!selectedDriver) return;
 
-  const selectedDriver = drivers.find(
-    (d) =>
-      d.$id === assignmentModal.selectedDriver ||
-      d.id === assignmentModal.selectedDriver
-  );
+    await assignDelivery(
+      assignmentModal.deliveryId,
+      selectedDriver.$id,
+      selectedDriver.name,
+      selectedDriver.phone,
+    );
+    await assignDriverToDelivery(selectedDriver.$id, assignmentModal.deliveryId);
 
-  if (!selectedDriver) return;
+    if (selectedDriver.phoneType === 'keypad') {
+      try {
+        const endpoint   = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(/\/$/, '');
+        const functionId = process.env.NEXT_PUBLIC_APPWRITE_SMS_FUNCTION_ID;
+        const projectId  = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
 
-  // 1. Update delivery record + assign driver record
-  await assignDelivery(
-    assignmentModal.deliveryId,
-    selectedDriver.$id,
-    selectedDriver.name,
-    selectedDriver.phone
-  );
-  await assignDriverToDelivery(selectedDriver.$id, assignmentModal.deliveryId);
-
-  // 2. Fire SMS for keypad drivers only
-  if (selectedDriver.phoneType === 'keypad') {
-    try {
-      const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(/\/$/, '');
-      const functionId = process.env.NEXT_PUBLIC_APPWRITE_SMS_FUNCTION_ID;
-      const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
-
-      // The Appwrite Functions execution API expects `body` as a plain string
-      // — the function's req.body will receive this string directly.
-      const payload = JSON.stringify({
-        deliveryId: assignmentModal.deliveryId,
-        driverId: selectedDriver.$id,
-      });
-
-      await fetch(`${endpoint}/v1/functions/${functionId}/executions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Appwrite-Project': projectId,
-        },
-        body: JSON.stringify({
-          body: payload,   // ← plain JSON string, NOT double-stringified
-          async: true,
-        }),
-      });
-    } catch (smsErr) {
-      // Never block or roll back the assignment on SMS failure
-      console.warn('SMS trigger failed (non-critical):', smsErr.message);
+        await fetch(`${endpoint}/v1/functions/${functionId}/executions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': projectId,
+          },
+          body: JSON.stringify({
+            body: JSON.stringify({
+              deliveryId: assignmentModal.deliveryId,
+              driverId:   selectedDriver.$id,
+            }),
+            async: true,
+          }),
+        });
+      } catch (smsErr) {
+        console.warn('SMS trigger failed (non-critical):', smsErr.message);
+      }
     }
-  }
 
-  // 3. Close modal
-  setAssignmentModal({
-    isOpen: false,
-    deliveryId: null,
-    selectedDriver: null,
-    deliveryDetails: null,
-  });
-};
+    setAssignmentModal({ isOpen: false, deliveryId: null, selectedDriver: null, deliveryDetails: null });
+  };
 
-  // const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
-  //   const result = await updateDeliveryStatus(deliveryId, newStatus);
-  //   if (result?.success && (newStatus === 'delivered' || newStatus === 'cancelled')) {
-  //     await refreshDeliveries();
-  //   }
-  //   return result;
-  // };
+  // ── Driver modal helpers ──────────────────────────────────────────────────
+  const handleAddDriverClick    = () => { setDriverToEdit(null); setAddDriverModalOpen(true); };
+  const handleEditDriverClick   = (driver) => { setDriverToEdit(driver); setAddDriverModalOpen(true); };
+  const handleCloseDriverModal  = () => { setAddDriverModalOpen(false); setDriverToEdit(null); };
 
-  // const handleConfirmDelivery = async (deliveryId, otp) => {
-  //    freeDriverFromDelivery is called inside useDeliveryManagement now
-  //   return await confirmDelivery(deliveryId, otp);
-  // };
+  const handleDriverModalSubmit = async (driverData) => {
+    if (driverToEdit) return await updateDriver(driverToEdit.$id, driverData);
+    return await addDriver(driverData);
+  };
+
+  const handleDeleteDriver = async (driverId) => {
+    const result = await deleteDriver(driverId);
+    if (result.success) handleCloseDriverModal();
+    return result;
+  };
 
   const handleOpenAssignmentModal = (delivery, preSelectedDriverId = null) => {
     setAssignmentModal({
@@ -206,11 +309,11 @@ const handleCompleteAssignment = async () => {
       status: driver.status,
       assignedDelivery: driver.assignedDelivery || null,
       vehicle: driver.vehicleType
-        ? `${driver.vehicleType.charAt(0).toUpperCase() + driver.vehicleType.slice(1)}`
+        ? driver.vehicleType.charAt(0).toUpperCase() + driver.vehicleType.slice(1)
         : 'No vehicle',
-      
     }));
 
+  // ── Page renderer ─────────────────────────────────────────────────────────
   const renderPage = () => {
     const formattedDrivers = formatDriversForDisplay();
 
@@ -252,7 +355,7 @@ const handleCompleteAssignment = async () => {
             onClose={handleCloseDriverModal}
             onToggleStatus={toggleDriverStatus}
             onEditDriver={handleEditDriverClick}
-            onDeleteDriver={handleDeleteDriver} 
+            onDeleteDriver={handleDeleteDriver}
             onAssignDelivery={handleOpenAssignmentModal}
           />
         );
@@ -304,15 +407,22 @@ const handleCompleteAssignment = async () => {
         />
         <Sidebar
           activePage={activePage}
-          onPageChange={(page) => {
-            setActivePage(page);
-            setSidebarOpen(false);
-          }}
+          onPageChange={(page) => { setActivePage(page); setSidebarOpen(false); }}
           drivers={drivers}
           isOpen={sidebarOpen}
         />
         <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
       </div>
+
+      {/* ── Shared offer banner ── */}
+      {incomingOffer && (
+        <OfferBanner
+          offerCountdown={offerCountdown}
+          onAccept={acceptOffer}
+          onDecline={declineOffer}
+          label="A new delivery offer has been matched to your agency."
+        />
+      )}
 
       <AssignmentModal
         isOpen={assignmentModal.isOpen}
@@ -324,12 +434,7 @@ const handleCompleteAssignment = async () => {
         }
         onConfirm={handleCompleteAssignment}
         onCancel={() =>
-          setAssignmentModal({
-            isOpen: false,
-            deliveryId: null,
-            selectedDriver: null,
-            deliveryDetails: null,
-          })
+          setAssignmentModal({ isOpen: false, deliveryId: null, selectedDriver: null, deliveryDetails: null })
         }
         onAddDriver={handleAddDriverClick}
       />
@@ -338,7 +443,7 @@ const handleCompleteAssignment = async () => {
         isOpen={addDriverModalOpen}
         onClose={handleCloseDriverModal}
         onAddDriver={handleDriverModalSubmit}
-        onDeleteDriver={handleDeleteDriver} 
+        onDeleteDriver={handleDeleteDriver}
         agencyId={agencyId}
         loading={driversLoading}
         driverToEdit={driverToEdit}
