@@ -1,4 +1,4 @@
-import { Client, Databases, Query, ID } from 'node-appwrite';
+import { Client, TablesDB, Query, ID } from 'node-appwrite';
 
 function getDistance(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -34,37 +34,37 @@ export default async ({ req, res, log, error }) => {
     .setProject(process.env.APPWRITE_PROJECT_ID)
     .setKey(process.env.APPWRITE_API_KEY);
 
-  const db = new Databases(client);
+  const db = new TablesDB(client);
 
   const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
-  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID; 
-  const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID; 
+  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID;
+  const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── 1. Parse delivery ID from event payload ──────────────────────────────
-  // When triggered by a DB event, Appwrite sends the full document as the body
+  // ── 1. Parse delivery ID ──────────────────────────────────────────────────
   const deliveryId = req.body?.$id ?? req.body?.deliveryId;
-
   if (!deliveryId) {
     return res.json({ ok: false, reason: 'missing deliveryId' }, 400);
   }
-
   log(`Starting dispatch for delivery: ${deliveryId}`);
 
-  // ── 2. Load the delivery document ────────────────────────────────────────
+  // ── 2. Load delivery ──────────────────────────────────────────────────────
   let delivery;
   try {
-    delivery = await db.getDocument(DB, DELIVERIES, deliveryId);
+    delivery = await db.getRow({
+      databaseId: DB,
+      tableId: DELIVERIES,
+      rowId: deliveryId,
+    });
   } catch (e) {
     error(`Could not load delivery: ${e.message}`);
     return res.json({ ok: false, reason: 'delivery_not_found' }, 404);
   }
 
-  // Skip if delivery was already dispatched (handles duplicate event triggers)
   if (delivery.status !== 'pending') {
     log(
-      `Delivery ${deliveryId} already has status: ${delivery.status}, skipping`
+      `Delivery ${deliveryId} status is already: ${delivery.status}, skipping`
     );
     return res.json({ ok: false, reason: 'already_dispatched' });
   }
@@ -74,59 +74,69 @@ export default async ({ req, res, log, error }) => {
   const vehicleType = delivery.vehicleType ?? 'motorcycle';
 
   if (!pickupLat || !pickupLng) {
-    error('Delivery is missing pickup coordinates');
+    error('Delivery missing pickup coordinates');
     return res.json({ ok: false, reason: 'missing_coordinates' }, 400);
   }
 
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-  // ── 3. Query available couriers from USERS collection ────────────────────
-  // These are independent couriers / freelance riders
-  let couriersRes = { documents: [] };
+  // ── 3. Query freelance couriers (USERS) ───────────────────────────────────
+  // FIX: queries must be inside the options object, not a second argument
+  let couriersRes = { rows: [] };
   try {
-    couriersRes = await db.listDocuments(DB, USERS, [
-      Query.equal('role', 'courier'),
-      Query.equal('verified', true),
-      Query.equal('isOnline', true),
-      Query.equal('isAvailable', true),
-      Query.equal('status', 'available'),
-      Query.equal('vehicleType', vehicleType),
-      Query.greaterThan('lastSeen', fiveMinutesAgo),
-      Query.limit(50),
-    ]);
-    log(`Found ${couriersRes.documents.length} available couriers in users`);
+    couriersRes = await db.listRows({
+      databaseId: DB,
+      tableId: USERS,
+      queries: [
+        Query.equal('role', 'courier'),
+        Query.equal('verified', true),
+        Query.equal('isAvailable', true),
+        Query.equal('status', 'available'),
+        Query.equal('vehicleType', vehicleType),
+        Query.greaterThan('lastSeen', fiveMinutesAgo),
+        Query.limit(50),
+      ],
+    });
+    log(`Found ${couriersRes.rows.length} available couriers`);
   } catch (e) {
-    // Don't fail — agencies might still be available
-    error(`Users query failed: ${e.message}`);
+    error(`Couriers query failed: ${e.message}`);
   }
 
-  // ── 4. Query available agencies from ORGANISATIONS collection ─────────────
-  let agenciesRes = { documents: [] };
+  // ── 4. Query agencies (ORGS) ──────────────────────────────────────────────
+  let agenciesRes = { rows: [] };
   try {
-    agenciesRes = await db.listDocuments(DB, ORGS, [
-      Query.equal('verified', true),
-      Query.equal('isOnline', true),
-      Query.equal('isAvailable', true),
-      Query.equal('status', 'available'),
-      Query.greaterThan('lastSeen', fiveMinutesAgo),
-      Query.limit(50),
-    ]);
-    log(`Found ${agenciesRes.documents.length} available agencies`);
+    agenciesRes = await db.listRows({
+      databaseId: DB,
+      tableId: ORGS,
+      queries: [
+        Query.equal('verified', true),
+        Query.equal('isAvailable', true),
+        Query.equal('status', 'available'),
+        Query.greaterThan('lastSeen', fiveMinutesAgo),
+        Query.limit(50),
+      ],
+    });
+    log(`Found ${agenciesRes.rows.length} available agencies`);
   } catch (e) {
     error(`Agencies query failed: ${e.message}`);
   }
 
-  // ── 5. Merge both lists, tag entity type, filter by coordinates ──────────
+  // ── 5. Merge, tag entity type, filter to those with coords ───────────────
   const allCandidates = [
-    ...couriersRes.documents.map((c) => ({ ...c, entityType: 'courier' })),
-    ...agenciesRes.documents.map((a) => ({ ...a, entityType: 'agency' })),
-  ].filter((c) => c.lat != null && c.lng != null); // must have location
+    ...couriersRes.rows.map((c) => ({ ...c, entityType: 'courier' })),
+    ...agenciesRes.rows.map((a) => ({ ...a, entityType: 'agency' })),
+  ].filter((c) => c.lat != null && c.lng != null);
 
   if (allCandidates.length === 0) {
-    log('No candidates with location data found');
-    await db.updateDocument(DB, DELIVERIES, deliveryId, {
-      status: 'no_couriers',
-    });
+    log('No candidates with location data');
+    await db
+      .updateRow({
+        databaseId: DB,
+        tableId: DELIVERIES,
+        rowId: deliveryId,
+        data: { status: 'no_couriers' },
+      })
+      .catch(() => {});
     return res.json({ ok: false, reason: 'no_couriers' });
   }
 
@@ -142,9 +152,9 @@ export default async ({ req, res, log, error }) => {
       return {
         courierId: candidate.$id,
         name: candidate.name ?? candidate.userName,
-        entityType: candidate.entityType,
+        entityType: candidate.entityType, // preserved for advance-dispatch routing
         distance: parseFloat(distance.toFixed(2)),
-        score: scoreCourier({ ...candidate }, distance),
+        score: scoreCourier(candidate, distance),
         rating: candidate.rating ?? 4.0,
         phone: candidate.phone ?? null,
       };
@@ -152,55 +162,64 @@ export default async ({ req, res, log, error }) => {
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
+  const first = scored[0];
   log(
-    `Top candidate: ${scored[0].name} | score: ${scored[0].score} | distance: ${scored[0].distance}km`
+    `Top: ${first.name} (${first.entityType}) | score: ${first.score} | ${first.distance}km`
   );
 
-  // ── 7. Write dispatch_queue document ─────────────────────────────────────
+  // ── 7. Create dispatch_queue row ──────────────────────────────────────────
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
 
   let queueDoc;
   try {
-    queueDoc = await db.createDocument(DB, DISPATCH, ID.unique(), {
-      deliveryId,
-      currentCourierId: scored[0].courierId,
-      rankedCourierIds: scored.map((c) => c.courierId),
-      rankedCouriersJson: JSON.stringify(scored),
-      attemptIndex: 0,
-      status: 'pending',
-      expiresAt,
-      searchRadius: 10,
+    queueDoc = await db.createRow({
+      databaseId: DB,
+      tableId: DISPATCH,
+      rowId: ID.unique(),
+      data: {
+        deliveryId,
+        currentCourierId: first.courierId,
+        rankedCourierIds: scored.map((c) => c.courierId),
+        rankedCouriersJson: JSON.stringify(scored), // full objects incl. entityType
+        attemptIndex: 0,
+        status: 'pending',
+        expiresAt,
+        searchRadius: 10,
+      },
     });
   } catch (e) {
     error(`Failed to create dispatch_queue: ${e.message}`);
     return res.json({ ok: false, reason: 'queue_creation_failed' }, 500);
   }
 
-  // ── 8. Mark first candidate as 'offered' ─────────────────────────────────
-  // Determine which collection this courier/agency belongs to
-  const firstCandidate = scored[0];
-  const targetCollection =
-    firstCandidate.entityType === 'agency' ? ORGS : USERS;
+  // ── 8. Mark first candidate as offered ───────────────────────────────────
+  // FIX: route to correct collection based on entityType
+  const targetCollection = first.entityType === 'agency' ? ORGS : USERS;
 
   try {
-    await db.updateDocument(DB, targetCollection, firstCandidate.courierId, {
-      status: 'offered',
-      currentOfferId: deliveryId,
-      offerExpiresAt: expiresAt,
+    await db.updateRow({
+      databaseId: DB,
+      tableId: targetCollection,
+      rowId: first.courierId,
+      data: {
+        status: 'offered',
+        currentOfferId: deliveryId,
+        offerExpiresAt: expiresAt,
+      },
     });
   } catch (e) {
-    // Non-critical — the queue is already written, Realtime will still fire
-    log(`Could not mark courier as offered: ${e.message}`);
+    log(`Could not mark entity as offered: ${e.message}`);
   }
 
   log(
-    `Dispatch queue ${queueDoc.$id} created → offering to ${firstCandidate.name}`
+    `Queue ${queueDoc.$id} created → offering to ${first.entityType} ${first.name}`
   );
 
   return res.json({
     ok: true,
     queueId: queueDoc.$id,
-    offeredTo: firstCandidate.name,
+    offeredTo: first.name,
+    entityType: first.entityType,
     totalCandidates: scored.length,
   });
 };
