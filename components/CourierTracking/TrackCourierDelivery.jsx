@@ -63,7 +63,7 @@ const TrackCourierDelivery = () => {
               lat: pos.coords.latitude,
               lng: pos.coords.longitude,
               lastSeen: new Date().toISOString(),
-              isOnline: true,
+           
               isAvailable: true,
             },
           });
