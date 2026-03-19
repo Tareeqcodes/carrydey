@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/Authcontext';
 import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
 import { useDriverManagement } from '@/hooks/useDriverManagement';
 import { useDeliveryManagement } from '@/hooks/useDeliveryManagement';
-import { useDispatchOffer } from '@/hooks/Usedispatchoffer';
+import { useDispatchOffer } from '@/hooks/useDispatchOffer';
 import { tablesDB } from '@/lib/config/Appwriteconfig';
 import Sidebar from './Sidebar';
 import AssignmentModal from './AssignmentModal';

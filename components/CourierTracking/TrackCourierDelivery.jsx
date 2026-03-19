@@ -4,7 +4,7 @@ import { Menu, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { formatNairaSimple } from '@/hooks/currency';
 import { useCourierDelivery } from '@/hooks/useCourierDelivery';
-import { useDispatchOffer } from '@/hooks/Usedispatchoffer';
+import { useDispatchOffer } from '@/hooks/useDispatchOffer';
 import { tablesDB } from '@/lib/config/Appwriteconfig';
 import Profile from '../setting/Profile';
 import PickupCodeModal from '../Agencytrack/PickupCodeModal';
