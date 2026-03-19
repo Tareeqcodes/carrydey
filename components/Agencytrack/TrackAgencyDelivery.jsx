@@ -6,7 +6,7 @@ import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
 import { useDriverManagement } from '@/hooks/useDriverManagement';
 import { useDeliveryManagement } from '@/hooks/useDeliveryManagement';
 import { useDispatchOffer } from '@/hooks/Usedispatchoffer';
-import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
+import { tablesDB } from '@/lib/config/Appwriteconfig';
 import Sidebar from './Sidebar';
 import AssignmentModal from './AssignmentModal';
 import DashboardPage from './DashboardPage';
