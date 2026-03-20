@@ -2,11 +2,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { tablesDB, Query, client } from '@/lib/config/Appwriteconfig';
 
+const PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+const ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
 const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const DISPATCH = process.env.NEXT_PUBLIC_APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 const FN_ID = process.env.NEXT_PUBLIC_ADVANCE_DISPATCH_FUNCTION_ID;
-const PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
-const ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
 
 export default function useChooseAvailable(deliveryId) {
   const [status, setStatus] = useState('searching');
