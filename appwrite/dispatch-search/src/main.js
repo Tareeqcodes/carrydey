@@ -42,7 +42,6 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── 1. Parse body ──────────────────────────────────────────────────────────
   // Three cases:
   // A) Database event trigger  → req.body is a raw JSON string of the full doc
   // B) Direct HTTP from frontend → req.body is { body: '{"deliveryId":"..."}' }

@@ -53,7 +53,7 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'already_resolved' });
   }
 
-  // ── Parse ranked couriers JSON to know entity types ───────────────────────
+  // ── Parse ranked couriers JSON to know entity types
   // rankedCouriersJson is an array of { courierId, entityType, name, ... }
   // This is what dispatch-search wrote when it created the queue.
   let rankedCouriers = [];
