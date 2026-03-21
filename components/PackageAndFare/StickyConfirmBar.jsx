@@ -59,10 +59,10 @@ export default function StickyConfirmBar({
         }}
       >
         {loading
-          ? 'Creating…'
+          ? 'Finding...'
           : !user
           ? 'Login to Continue'   
-          : 'Confirm & continue'}
+          : 'find couriers'}
       </button>
 
       {/* Guest nudge — only show when form is valid and user is not logged in */}

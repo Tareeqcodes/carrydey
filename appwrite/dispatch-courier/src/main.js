@@ -42,14 +42,42 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── 1. Parse delivery ID ──────────────────────────────────────────────────
-  const deliveryId = req.body?.$id ?? req.body?.deliveryId;
-  if (!deliveryId) {
-    return res.json({ ok: false, reason: 'missing deliveryId' }, 400);
+  // ── 1. Parse body ──────────────────────────────────────────────────────────
+  // Three cases:
+  // A) Database event trigger  → req.body is a raw JSON string of the full doc
+  // B) Direct HTTP from frontend → req.body is { body: '{"deliveryId":"..."}' }
+  // C) Direct HTTP already parsed → req.body is { deliveryId: '...' }
+  let parsedBody = {};
+  try {
+    if (typeof req.body === 'string' && req.body.length > 0) {
+      parsedBody = JSON.parse(req.body);
+    } else if (req.body && typeof req.body === 'object') {
+      parsedBody = req.body;
+    }
+    // Case B: frontend double-wraps the body
+    if (typeof parsedBody.body === 'string') {
+      parsedBody = JSON.parse(parsedBody.body);
+    }
+  } catch (e) {
+    error('Body parse failed: ' + e.message);
+    return res.json({ ok: false, reason: 'invalid_body' }, 400);
   }
-  log(`Starting dispatch for delivery: ${deliveryId}`);
 
-  // ── 2. Load delivery ──────────────────────────────────────────────────────
+  // Case A gives us $id (the delivery document's own ID)
+  // Cases B/C give us deliveryId explicitly
+  const deliveryId = parsedBody.deliveryId ?? parsedBody.$id;
+
+  if (!deliveryId) {
+    error(
+      'Missing deliveryId. Body was: ' +
+        JSON.stringify(parsedBody).substring(0, 300)
+    );
+    return res.json({ ok: false, reason: 'missing_deliveryId' }, 400);
+  }
+
+  log('Starting dispatch for delivery: ' + deliveryId);
+
+  // ── 2. Load delivery ───────────────────────────────────────────────────────
   let delivery;
   try {
     delivery = await db.getRow({
@@ -58,30 +86,33 @@ export default async ({ req, res, log, error }) => {
       rowId: deliveryId,
     });
   } catch (e) {
-    error(`Could not load delivery: ${e.message}`);
+    error('Could not load delivery: ' + e.message);
     return res.json({ ok: false, reason: 'delivery_not_found' }, 404);
   }
 
   if (delivery.status !== 'pending') {
     log(
-      `Delivery ${deliveryId} status is already: ${delivery.status}, skipping`
+      'Delivery ' +
+        deliveryId +
+        ' is already: ' +
+        delivery.status +
+        ', skipping'
     );
     return res.json({ ok: false, reason: 'already_dispatched' });
   }
 
   const pickupLat = delivery.pickupLat;
   const pickupLng = delivery.pickupLng;
-  const vehicleType = delivery.vehicleType ?? 'motorcycle';
 
   if (!pickupLat || !pickupLng) {
     error('Delivery missing pickup coordinates');
     return res.json({ ok: false, reason: 'missing_coordinates' }, 400);
   }
 
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  // ── 3. lastSeen cutoff — active within last 15 minutes ────────────────────
+  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
-  // ── 3. Query freelance couriers (USERS) ───────────────────────────────────
-  // FIX: queries must be inside the options object, not a second argument
+  // ── 4. Query freelance couriers ────────────────────────────────────────────
   let couriersRes = { rows: [] };
   try {
     couriersRes = await db.listRows({
@@ -89,46 +120,43 @@ export default async ({ req, res, log, error }) => {
       tableId: USERS,
       queries: [
         Query.equal('role', 'courier'),
-        Query.equal('verified', true),
         Query.equal('isAvailable', true),
-        Query.equal('status', 'available'),
-        Query.equal('vehicleType', vehicleType),
-        Query.greaterThan('lastSeen', fiveMinutesAgo),
+        Query.greaterThan('lastSeen', fifteenMinutesAgo),
         Query.limit(50),
       ],
     });
-    log(`Found ${couriersRes.rows.length} available couriers`);
+    log('Found ' + couriersRes.rows.length + ' available couriers');
   } catch (e) {
-    error(`Couriers query failed: ${e.message}`);
+    error('Couriers query failed: ' + e.message);
   }
 
-  // ── 4. Query agencies (ORGS) ──────────────────────────────────────────────
+  // ── 5. Query agencies ──────────────────────────────────────────────────────
   let agenciesRes = { rows: [] };
   try {
     agenciesRes = await db.listRows({
       databaseId: DB,
       tableId: ORGS,
       queries: [
-        Query.equal('verified', true),
         Query.equal('isAvailable', true),
-        Query.equal('status', 'available'),
-        Query.greaterThan('lastSeen', fiveMinutesAgo),
+        Query.greaterThan('lastSeen', fifteenMinutesAgo),
         Query.limit(50),
       ],
     });
-    log(`Found ${agenciesRes.rows.length} available agencies`);
+    log('Found ' + agenciesRes.rows.length + ' available agencies');
   } catch (e) {
-    error(`Agencies query failed: ${e.message}`);
+    error('Agencies query failed: ' + e.message);
   }
 
-  // ── 5. Merge, tag entity type, filter to those with coords ───────────────
+  // ── 6. Merge and filter to candidates with coordinates ────────────────────
   const allCandidates = [
     ...couriersRes.rows.map((c) => ({ ...c, entityType: 'courier' })),
     ...agenciesRes.rows.map((a) => ({ ...a, entityType: 'agency' })),
   ].filter((c) => c.lat != null && c.lng != null);
 
+  log('Total candidates with location: ' + allCandidates.length);
+
   if (allCandidates.length === 0) {
-    log('No candidates with location data');
+    log('No candidates — marking delivery as no_couriers');
     await db
       .updateRow({
         databaseId: DB,
@@ -140,7 +168,7 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'no_couriers' });
   }
 
-  // ── 6. Score and rank ─────────────────────────────────────────────────────
+  // ── 7. Score, rank, take top 10 ───────────────────────────────────────────
   const scored = allCandidates
     .map((candidate) => {
       const distance = getDistance(
@@ -152,7 +180,7 @@ export default async ({ req, res, log, error }) => {
       return {
         courierId: candidate.$id,
         name: candidate.name ?? candidate.userName,
-        entityType: candidate.entityType, // preserved for advance-dispatch routing
+        entityType: candidate.entityType,
         distance: parseFloat(distance.toFixed(2)),
         score: scoreCourier(candidate, distance),
         rating: candidate.rating ?? 4.0,
@@ -164,10 +192,18 @@ export default async ({ req, res, log, error }) => {
 
   const first = scored[0];
   log(
-    `Top: ${first.name} (${first.entityType}) | score: ${first.score} | ${first.distance}km`
+    'Top: ' +
+      first.name +
+      ' (' +
+      first.entityType +
+      ') score:' +
+      first.score +
+      ' dist:' +
+      first.distance +
+      'km'
   );
 
-  // ── 7. Create dispatch_queue row ──────────────────────────────────────────
+  // ── 8. Create dispatch_queue row ───────────────────────────────────────────
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
 
   let queueDoc;
@@ -179,8 +215,8 @@ export default async ({ req, res, log, error }) => {
       data: {
         deliveryId,
         currentCourierId: first.courierId,
-        rankedCourierIds: scored.map((c) => c.courierId),
-        rankedCouriersJson: JSON.stringify(scored), // full objects incl. entityType
+        rankedCourierIds: scored.map((c) => c.courierId).join(','),
+        rankedCouriersJson: JSON.stringify(scored),
         attemptIndex: 0,
         status: 'pending',
         expiresAt,
@@ -188,14 +224,14 @@ export default async ({ req, res, log, error }) => {
       },
     });
   } catch (e) {
-    error(`Failed to create dispatch_queue: ${e.message}`);
+    error('Failed to create dispatch_queue: ' + e.message);
     return res.json({ ok: false, reason: 'queue_creation_failed' }, 500);
   }
 
-  // ── 8. Mark first candidate as offered ───────────────────────────────────
-  // FIX: route to correct collection based on entityType
-  const targetCollection = first.entityType === 'agency' ? ORGS : USERS;
+  log('Queue created: ' + queueDoc.$id);
 
+  // ── 9. Mark first candidate as offered ────────────────────────────────────
+  const targetCollection = first.entityType === 'agency' ? ORGS : USERS;
   try {
     await db.updateRow({
       databaseId: DB,
@@ -208,11 +244,16 @@ export default async ({ req, res, log, error }) => {
       },
     });
   } catch (e) {
-    log(`Could not mark entity as offered: ${e.message}`);
+    log('Could not mark entity as offered: ' + e.message);
   }
 
   log(
-    `Queue ${queueDoc.$id} created → offering to ${first.entityType} ${first.name}`
+    'Queue ' +
+      queueDoc.$id +
+      ' → offering to ' +
+      first.entityType +
+      ' ' +
+      first.name
   );
 
   return res.json({

@@ -136,9 +136,22 @@ export default function CreateDelivery() {
           ),
         },
       });
+sessionStorage.setItem('latestDeliveryId', deliveryId);
 
-      sessionStorage.setItem('latestDeliveryId', deliveryId);
-      router.push('/check');
+// Trigger dispatch-search
+await fetch(`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/v1/functions/${process.env.NEXT_PUBLIC_DISPATCH_SEARCH_FUNCTION_ID}/executions`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Appwrite-Project': process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
+  },
+  body: JSON.stringify({
+    body: JSON.stringify({ deliveryId }),
+    async: true, // fire and forget, don't block navigation
+  }),
+});
+
+router.push('/check');
     } catch (error) {
       console.error('Error saving delivery:', error);
       alert(`Error creating delivery: ${error.message}`);
