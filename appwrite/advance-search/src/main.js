@@ -1,4 +1,4 @@
-import { Client, TablesDB, Query, ID } from 'node-appwrite';
+import { Client, TablesDB } from 'node-appwrite';
 
 export default async ({ req, res, log, error }) => {
   const client = new Client()
@@ -8,19 +8,25 @@ export default async ({ req, res, log, error }) => {
 
   const db = new TablesDB(client);
 
-  const DB        = process.env.APPWRITE_DATABASE_ID;
+  const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
-  const USERS     = process.env.APPWRITE_USERS_COLLECTION_ID;         // freelance couriers
-  const ORGS      = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;  // agencies
-  const DISPATCH  = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
+  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID; // freelance couriers
+  const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID; // agencies
+  const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
   // ── Parse body ────────────────────────────────────────────────────────────
   let body = req.body;
   if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
+    try {
+      body = JSON.parse(body);
+    } catch {
+      body = {};
+    }
   }
   if (typeof body?.body === 'string') {
-    try { body = JSON.parse(body.body); } catch {}
+    try {
+      body = JSON.parse(body.body);
+    } catch {}
   }
 
   const { queueId, action } = body ?? {};
@@ -58,9 +64,9 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'invalid_queue_data' }, 500);
   }
 
-  const currentIndex     = queue.attemptIndex ?? 0;
+  const currentIndex = queue.attemptIndex ?? 0;
   const currentCourierId = queue.currentCourierId;
-  const currentEntry     = rankedCouriers[currentIndex];
+  const currentEntry = rankedCouriers[currentIndex];
 
   // ── Helper: resolve the right collection for an entity ────────────────────
   const collectionFor = (entry) =>
@@ -119,8 +125,14 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'accepted' },
       });
 
-      log(`Delivery ${queue.deliveryId} accepted by ${currentEntry?.entityType} ${currentCourierId}`);
-      return res.json({ ok: true, assigned: true, courierId: currentCourierId });
+      log(
+        `Delivery ${queue.deliveryId} accepted by ${currentEntry?.entityType} ${currentCourierId}`
+      );
+      return res.json({
+        ok: true,
+        assigned: true,
+        courierId: currentCourierId,
+      });
     } catch (e) {
       error(`Accept failed: ${e.message}`);
       return res.json({ ok: false, reason: 'accept_failed' }, 500);
@@ -132,53 +144,65 @@ export default async ({ req, res, log, error }) => {
 
   if (nextIndex >= rankedCouriers.length) {
     // All candidates exhausted
-    await db.updateRow({
-      databaseId: DB,
-      tableId: DISPATCH,
-      rowId: queueId,
-      data: { status: 'failed', failReason: 'all_rejected' },
-    }).catch(() => {});
+    await db
+      .updateRow({
+        databaseId: DB,
+        tableId: DISPATCH,
+        rowId: queueId,
+        data: { status: 'failed', failReason: 'all_rejected' },
+      })
+      .catch(() => {});
 
-    await db.updateRow({
-      databaseId: DB,
-      tableId: DELIVERIES,
-      rowId: queue.deliveryId,
-      data: { status: 'no_couriers' },
-    }).catch(() => {});
+    await db
+      .updateRow({
+        databaseId: DB,
+        tableId: DELIVERIES,
+        rowId: queue.deliveryId,
+        data: { status: 'no_couriers' },
+      })
+      .catch(() => {});
 
-    log(`All ${rankedCouriers.length} candidates rejected delivery ${queue.deliveryId}`);
+    log(
+      `All ${rankedCouriers.length} candidates rejected delivery ${queue.deliveryId}`
+    );
     return res.json({ ok: true, assigned: false, reason: 'all_rejected' });
   }
 
-  const nextEntry    = rankedCouriers[nextIndex];
+  const nextEntry = rankedCouriers[nextIndex];
   const nextCourierId = nextEntry.courierId;
-  const expiresAt    = new Date(Date.now() + 20 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
 
   // Update queue to point at next candidate
-  await db.updateRow({
-    databaseId: DB,
-    tableId: DISPATCH,
-    rowId: queueId,
-    data: {
-      currentCourierId: nextCourierId,
-      attemptIndex: nextIndex,
-      expiresAt,
-    },
-  }).catch((e) => error(`Queue advance failed: ${e.message}`));
+  await db
+    .updateRow({
+      databaseId: DB,
+      tableId: DISPATCH,
+      rowId: queueId,
+      data: {
+        currentCourierId: nextCourierId,
+        attemptIndex: nextIndex,
+        expiresAt,
+      },
+    })
+    .catch((e) => error(`Queue advance failed: ${e.message}`));
 
   // Offer the next candidate — route to correct collection
-  await db.updateRow({
-    databaseId: DB,
-    tableId: collectionFor(nextEntry),
-    rowId: nextCourierId,
-    data: {
-      status: 'offered',
-      currentOfferId: queue.deliveryId,
-      offerExpiresAt: expiresAt,
-    },
-  }).catch((e) => log(`Could not mark next entity as offered: ${e.message}`));
+  await db
+    .updateRow({
+      databaseId: DB,
+      tableId: collectionFor(nextEntry),
+      rowId: nextCourierId,
+      data: {
+        status: 'offered',
+        currentOfferId: queue.deliveryId,
+        offerExpiresAt: expiresAt,
+      },
+    })
+    .catch((e) => log(`Could not mark next entity as offered: ${e.message}`));
 
-  log(`Advance to ${nextEntry.entityType} ${nextIndex + 1}/${rankedCouriers.length}: ${nextCourierId}`);
+  log(
+    `Advance to ${nextEntry.entityType} ${nextIndex + 1}/${rankedCouriers.length}: ${nextCourierId}`
+  );
   return res.json({
     ok: true,
     assigned: false,
