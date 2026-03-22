@@ -10,11 +10,11 @@ export default async ({ req, res, log, error }) => {
 
   const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
-  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID; // freelance couriers
-  const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID; // agencies
+  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID;
+  const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Parse body ────────────────────────────────────────────────────────────
+  // ── Parse body ─────────────────────────────────────────────────────────────
   let body = req.body;
   if (typeof body === 'string') {
     try {
@@ -30,12 +30,11 @@ export default async ({ req, res, log, error }) => {
   }
 
   const { queueId, action } = body ?? {};
-
   if (!queueId || !action) {
     return res.json({ ok: false, reason: 'missing queueId or action' }, 400);
   }
 
-  // ── Load queue doc ────────────────────────────────────────────────────────
+  // ── Load queue ─────────────────────────────────────────────────────────────
   let queue;
   try {
     queue = await db.getRow({
@@ -44,18 +43,16 @@ export default async ({ req, res, log, error }) => {
       rowId: queueId,
     });
   } catch (e) {
-    error(`Queue not found: ${e.message}`);
+    error('Queue not found: ' + e.message);
     return res.json({ ok: false, reason: 'queue_not_found' }, 404);
   }
 
   if (queue.status !== 'pending') {
-    log(`Queue ${queueId} already resolved: ${queue.status}`);
+    log('Queue ' + queueId + ' already resolved: ' + queue.status);
     return res.json({ ok: false, reason: 'already_resolved' });
   }
 
-  // ── Parse ranked couriers JSON to know entity types
-  // rankedCouriersJson is an array of { courierId, entityType, name, ... }
-  // This is what dispatch-search wrote when it created the queue.
+  // ── Parse ranked couriers ──────────────────────────────────────────────────
   let rankedCouriers = [];
   try {
     rankedCouriers = JSON.parse(queue.rankedCouriersJson ?? '[]');
@@ -67,57 +64,66 @@ export default async ({ req, res, log, error }) => {
   const currentIndex = queue.attemptIndex ?? 0;
   const currentCourierId = queue.currentCourierId;
   const currentEntry = rankedCouriers[currentIndex];
+  const currentIsAgency = currentEntry?.entityType === 'agency';
 
-  // ── Helper: resolve the right collection for an entity ────────────────────
   const collectionFor = (entry) =>
     entry?.entityType === 'agency' ? ORGS : USERS;
 
-  // ── Reset current entity back to available ────────────────────────────────
-  // This must happen for ALL actions (accept, decline, timeout)
-  // before we do anything else.
+  // ── Reset current entity back to available ─────────────────────────────────
+  // agencies: status is boolean — use isAvailable to restore availability
+  // couriers: status is text — restore to 'available'
   try {
     await db.updateRow({
       databaseId: DB,
       tableId: collectionFor(currentEntry),
       rowId: currentCourierId,
-      data: {
-        status: 'available',
-        currentOfferId: null,
-        offerExpiresAt: null,
-      },
+      data: currentIsAgency
+        ? { isAvailable: true, currentOfferId: null, offerExpiresAt: null }
+        : { status: 'available', currentOfferId: null, offerExpiresAt: null },
     });
   } catch (e) {
-    // Non-critical: log but don't abort — the delivery must still be handled
-    log(`Could not reset entity ${currentCourierId}: ${e.message}`);
+    log('Could not reset entity ' + currentCourierId + ': ' + e.message);
   }
 
-  // ── ACCEPT ────────────────────────────────────────────────────────────────
+  // ── ACCEPT ─────────────────────────────────────────────────────────────────
   if (action === 'accept') {
     try {
-      // 1. Mark delivery as assigned
+      const isAgency = currentIsAgency;
+
+      // Route assignment to correct field based on entity type
+      const deliveryUpdate = isAgency
+        ? {
+            status: 'pending', // agency still assigns a driver
+            assignedAgencyId: currentCourierId,
+            assignedCourierId: null,
+            assignedAt: new Date().toISOString(),
+          }
+        : {
+            status: 'assigned', // courier handles directly
+            assignedCourierId: currentCourierId,
+            assignedAgencyId: null,
+            assignedAt: new Date().toISOString(),
+          };
+
       await db.updateRow({
         databaseId: DB,
         tableId: DELIVERIES,
         rowId: queue.deliveryId,
-        data: {
-          status: 'assigned',
-          assignedCourierId: currentCourierId,
-          assignedAt: new Date().toISOString(),
-        },
+        data: deliveryUpdate,
       });
 
-      // 2. Mark courier/agency as on_delivery
+      // Mark entity as on_delivery
+      // agencies: isAvailable stays false (already reset above), just clear offer fields
+      // couriers: set status to 'on_delivery'
       await db.updateRow({
         databaseId: DB,
         tableId: collectionFor(currentEntry),
         rowId: currentCourierId,
-        data: {
-          status: 'on_delivery',
-          currentOfferId: null,
-        },
+        data: isAgency
+          ? { isAvailable: false, currentOfferId: null }
+          : { status: 'on_delivery', currentOfferId: null },
       });
 
-      // 3. Close queue
       await db.updateRow({
         databaseId: DB,
         tableId: DISPATCH,
@@ -126,24 +132,29 @@ export default async ({ req, res, log, error }) => {
       });
 
       log(
-        `Delivery ${queue.deliveryId} accepted by ${currentEntry?.entityType} ${currentCourierId}`
+        'Delivery ' +
+          queue.deliveryId +
+          ' accepted by ' +
+          currentEntry?.entityType +
+          ' ' +
+          currentCourierId
       );
       return res.json({
         ok: true,
         assigned: true,
         courierId: currentCourierId,
+        entityType: currentEntry?.entityType,
       });
     } catch (e) {
-      error(`Accept failed: ${e.message}`);
+      error('Accept failed: ' + e.message);
       return res.json({ ok: false, reason: 'accept_failed' }, 500);
     }
   }
 
-  // ── DECLINE or TIMEOUT — try next candidate ───────────────────────────────
+  // ── DECLINE or TIMEOUT ─────────────────────────────────────────────────────
   const nextIndex = currentIndex + 1;
 
   if (nextIndex >= rankedCouriers.length) {
-    // All candidates exhausted
     await db
       .updateRow({
         databaseId: DB,
@@ -152,7 +163,6 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'failed', failReason: 'all_rejected' },
       })
       .catch(() => {});
-
     await db
       .updateRow({
         databaseId: DB,
@@ -161,18 +171,20 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'no_couriers' },
       })
       .catch(() => {});
-
     log(
-      `All ${rankedCouriers.length} candidates rejected delivery ${queue.deliveryId}`
+      'All ' +
+        rankedCouriers.length +
+        ' candidates rejected delivery ' +
+        queue.deliveryId
     );
     return res.json({ ok: true, assigned: false, reason: 'all_rejected' });
   }
 
   const nextEntry = rankedCouriers[nextIndex];
   const nextCourierId = nextEntry.courierId;
+  const nextIsAgency = nextEntry.entityType === 'agency';
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
 
-  // Update queue to point at next candidate
   await db
     .updateRow({
       databaseId: DB,
@@ -184,24 +196,37 @@ export default async ({ req, res, log, error }) => {
         expiresAt,
       },
     })
-    .catch((e) => error(`Queue advance failed: ${e.message}`));
+    .catch((e) => error('Queue advance failed: ' + e.message));
 
-  // Offer the next candidate — route to correct collection
+  // Mark next candidate as offered — respect the status field type per collection
   await db
     .updateRow({
       databaseId: DB,
       tableId: collectionFor(nextEntry),
       rowId: nextCourierId,
-      data: {
-        status: 'offered',
-        currentOfferId: queue.deliveryId,
-        offerExpiresAt: expiresAt,
-      },
+      data: nextIsAgency
+        ? {
+            isAvailable: false,
+            currentOfferId: queue.deliveryId,
+            offerExpiresAt: expiresAt,
+          }
+        : {
+            status: 'offered',
+            currentOfferId: queue.deliveryId,
+            offerExpiresAt: expiresAt,
+          },
     })
-    .catch((e) => log(`Could not mark next entity as offered: ${e.message}`));
+    .catch((e) => log('Could not mark next entity as offered: ' + e.message));
 
   log(
-    `Advance to ${nextEntry.entityType} ${nextIndex + 1}/${rankedCouriers.length}: ${nextCourierId}`
+    'Advanced to ' +
+      nextEntry.entityType +
+      ' ' +
+      (nextIndex + 1) +
+      '/' +
+      rankedCouriers.length +
+      ': ' +
+      nextCourierId
   );
   return res.json({
     ok: true,

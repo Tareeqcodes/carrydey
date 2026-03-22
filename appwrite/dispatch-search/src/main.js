@@ -18,7 +18,6 @@ function scoreCourier(courier, distance) {
   const acceptanceScore = (courier.acceptanceRate ?? 0.8) * 100;
   const activeScore = Math.max(0, 100 - (courier.activeDeliveries ?? 0) * 25);
   const priorityScore = courier.entityType === 'agency' ? 100 : 70;
-
   return Math.round(
     distanceScore * 0.35 +
       ratingScore * 0.25 +
@@ -42,11 +41,7 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── 1. Parse body ──────────────────────────────────────────────────────────
-  // Three cases:
-  // A) Database event trigger  → req.body is raw JSON string of the delivery doc
-  // B) Frontend HTTP call      → req.body is { body: '{"deliveryId":"..."}', async: true }
-  // C) Direct HTTP (parsed)    → req.body is { deliveryId: '...' }
+  // ── Parse body ─────────────────────────────────────────────────────────────
   let parsedBody = {};
   try {
     if (typeof req.body === 'string' && req.body.length > 0) {
@@ -54,7 +49,6 @@ export default async ({ req, res, log, error }) => {
     } else if (req.body && typeof req.body === 'object') {
       parsedBody = req.body;
     }
-    // Case B: frontend double-wraps with { body: '...' }
     if (typeof parsedBody.body === 'string') {
       parsedBody = JSON.parse(parsedBody.body);
     }
@@ -63,13 +57,10 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'invalid_body' }, 400);
   }
 
-  // Case A gives $id (the delivery doc's own ID from the event trigger)
-  // Cases B/C give deliveryId explicitly
   const deliveryId = parsedBody.deliveryId ?? parsedBody.$id;
-
   if (!deliveryId) {
     error(
-      'Missing deliveryId. Parsed body: ' +
+      'Missing deliveryId. Body: ' +
         JSON.stringify(parsedBody).substring(0, 200)
     );
     return res.json({ ok: false, reason: 'missing_deliveryId' }, 400);
@@ -77,7 +68,7 @@ export default async ({ req, res, log, error }) => {
 
   log('Starting dispatch for delivery: ' + deliveryId);
 
-  // ── 2. Load delivery ───────────────────────────────────────────────────────
+  // ── Load delivery ──────────────────────────────────────────────────────────
   let delivery;
   try {
     delivery = await db.getRow({
@@ -103,18 +94,13 @@ export default async ({ req, res, log, error }) => {
 
   const pickupLat = delivery.pickupLat;
   const pickupLng = delivery.pickupLng;
-
   if (!pickupLat || !pickupLng) {
     error('Delivery missing pickup coordinates');
     return res.json({ ok: false, reason: 'missing_coordinates' }, 400);
   }
 
-  // ── 3. lastSeen cutoff — active within last 15 minutes ────────────────────
   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
-  // ── 4. Query freelance couriers ────────────────────────────────────────────
-  // Only filter on isAvailable + lastSeen — do NOT filter on verified or status
-  // because those fields may be null on valid courier accounts
   let couriersRes = { rows: [] };
   try {
     couriersRes = await db.listRows({
@@ -132,8 +118,6 @@ export default async ({ req, res, log, error }) => {
     error('Couriers query failed: ' + e.message);
   }
 
-  // ── 5. Query agencies ──────────────────────────────────────────────────────
-  // Same — only filter on isAvailable + lastSeen
   let agenciesRes = { rows: [] };
   try {
     agenciesRes = await db.listRows({
@@ -150,7 +134,7 @@ export default async ({ req, res, log, error }) => {
     error('Agencies query failed: ' + e.message);
   }
 
-  // ── 6. Merge, tag entity type, filter to those with coordinates ───────────
+  // ── Merge + filter to those with coordinates ───────────────────────────────
   const allCandidates = [
     ...couriersRes.rows.map((c) => ({ ...c, entityType: 'courier' })),
     ...agenciesRes.rows.map((a) => ({ ...a, entityType: 'agency' })),
@@ -171,23 +155,18 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'no_couriers' });
   }
 
-  // ── 7. Score, rank, take top 10 ───────────────────────────────────────────
+  // ── Score + rank ───────────────────────────────────────────────────────────
   const scored = allCandidates
-    .map((candidate) => {
-      const distance = getDistance(
-        pickupLat,
-        pickupLng,
-        candidate.lat,
-        candidate.lng
-      );
+    .map((c) => {
+      const distance = getDistance(pickupLat, pickupLng, c.lat, c.lng);
       return {
-        courierId: candidate.$id,
-        name: candidate.name ?? candidate.userName,
-        entityType: candidate.entityType,
+        courierId: c.$id,
+        name: c.name ?? c.userName,
+        entityType: c.entityType,
         distance: parseFloat(distance.toFixed(2)),
-        score: scoreCourier(candidate, distance),
-        rating: candidate.rating ?? 4.0,
-        phone: candidate.phone ?? null,
+        score: scoreCourier(c, distance),
+        rating: c.rating ?? 4.0,
+        phone: c.phone ?? null,
       };
     })
     .sort((a, b) => b.score - a.score)
@@ -206,9 +185,8 @@ export default async ({ req, res, log, error }) => {
       'km'
   );
 
-  // ── 8. Create dispatch_queue row ───────────────────────────────────────────
+  // ── Create dispatch_queue row ──────────────────────────────────────────────
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
-
   let queueDoc;
   try {
     queueDoc = await db.createRow({
@@ -218,8 +196,6 @@ export default async ({ req, res, log, error }) => {
       data: {
         deliveryId,
         currentCourierId: first.courierId,
-        // ── rankedCourierIds must be a comma-separated string (text column) ──
-        // NOT an array — passing an array to a text field causes a write error
         rankedCourierIds: scored.map((c) => c.courierId).join(','),
         rankedCouriersJson: JSON.stringify(scored),
         attemptIndex: 0,
@@ -235,18 +211,25 @@ export default async ({ req, res, log, error }) => {
 
   log('Queue created: ' + queueDoc.$id);
 
-  // ── 9. Mark first candidate as offered ────────────────────────────────────
-  const targetCollection = first.entityType === 'agency' ? ORGS : USERS;
+  const isFirstAgency = first.entityType === 'agency';
   try {
     await db.updateRow({
       databaseId: DB,
-      tableId: targetCollection,
+      tableId: isFirstAgency ? ORGS : USERS,
       rowId: first.courierId,
-      data: {
-        status: 'offered',
-        currentOfferId: deliveryId,
-        offerExpiresAt: expiresAt,
-      },
+      data: isFirstAgency
+        ? {
+            // agency: boolean status field — use isAvailable to mark busy
+            isAvailable: false,
+            currentOfferId: deliveryId,
+            offerExpiresAt: expiresAt,
+          }
+        : {
+            // courier: text status field — can write 'offered'
+            status: 'offered',
+            currentOfferId: deliveryId,
+            offerExpiresAt: expiresAt,
+          },
     });
   } catch (e) {
     log('Could not mark entity as offered: ' + e.message);
