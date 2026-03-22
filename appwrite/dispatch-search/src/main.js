@@ -64,12 +64,11 @@ export default async ({ req, res, log, error }) => {
   const currentIndex = queue.attemptIndex ?? 0;
   const currentCourierId = queue.currentCourierId;
   const currentEntry = rankedCouriers[currentIndex];
-  const isAgency = currentEntry?.entityType === 'agency';
 
   const collectionFor = (entry) =>
     entry?.entityType === 'agency' ? ORGS : USERS;
 
-  // ── Reset current entity to available (all actions) ───────────────────────
+  // ── Reset current entity to available (always, for all actions) ───────────
   try {
     await db.updateRow({
       databaseId: DB,
@@ -81,17 +80,23 @@ export default async ({ req, res, log, error }) => {
     log('Could not reset entity ' + currentCourierId + ': ' + e.message);
   }
 
+  // ── ACCEPT ─────────────────────────────────────────────────────────────────
   if (action === 'accept') {
     try {
-      const deliveryUpdate = isAgency
+      const isAgency = currentEntry?.entityType === 'agency';
+
+      // ── Key fix: set the correct assigned field based on entity type ────────
+      // Agencies need assignedAgencyId set so useAgencyDeliveries can find the delivery.
+      // Couriers need assignedCourierId set so useCourierDelivery can find it.
+      const assignmentData = isAgency
         ? {
-            status: 'pending', // agency assigns driver next
+            status: 'pending', // agency will assign a driver — don't jump to 'assigned'
             assignedAgencyId: currentCourierId,
             assignedCourierId: null,
             assignedAt: new Date().toISOString(),
           }
         : {
-            status: 'assigned', // courier takes it directly
+            status: 'assigned',
             assignedCourierId: currentCourierId,
             assignedAgencyId: null,
             assignedAt: new Date().toISOString(),
@@ -101,10 +106,10 @@ export default async ({ req, res, log, error }) => {
         databaseId: DB,
         tableId: DELIVERIES,
         rowId: queue.deliveryId,
-        data: deliveryUpdate,
+        data: assignmentData,
       });
 
-      // Mark the accepting entity as on_delivery
+      // Mark courier/agency as on_delivery
       await db.updateRow({
         databaseId: DB,
         tableId: collectionFor(currentEntry),
@@ -112,7 +117,7 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'on_delivery', currentOfferId: null },
       });
 
-      // Close the queue
+      // Close queue
       await db.updateRow({
         databaseId: DB,
         tableId: DISPATCH,
@@ -126,11 +131,8 @@ export default async ({ req, res, log, error }) => {
           ' accepted by ' +
           currentEntry?.entityType +
           ' ' +
-          currentCourierId +
-          ' → set ' +
-          (isAgency ? 'assignedAgencyId' : 'assignedCourierId')
+          currentCourierId
       );
-
       return res.json({
         ok: true,
         assigned: true,
@@ -143,7 +145,7 @@ export default async ({ req, res, log, error }) => {
     }
   }
 
-  // ── DECLINE or TIMEOUT — advance to next candidate ────────────────────────
+  // ── DECLINE or TIMEOUT ─────────────────────────────────────────────────────
   const nextIndex = currentIndex + 1;
 
   if (nextIndex >= rankedCouriers.length) {
@@ -178,7 +180,6 @@ export default async ({ req, res, log, error }) => {
   const nextCourierId = nextEntry.courierId;
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
 
-  // Advance queue to next candidate
   await db
     .updateRow({
       databaseId: DB,
@@ -192,7 +193,6 @@ export default async ({ req, res, log, error }) => {
     })
     .catch((e) => error('Queue advance failed: ' + e.message));
 
-  // Offer the next candidate in the correct collection
   await db
     .updateRow({
       databaseId: DB,
@@ -216,7 +216,6 @@ export default async ({ req, res, log, error }) => {
       ': ' +
       nextCourierId
   );
-
   return res.json({
     ok: true,
     assigned: false,
