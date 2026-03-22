@@ -6,8 +6,6 @@ const PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
 const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const DISPATCH = process.env.NEXT_PUBLIC_APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 const FN_ID = process.env.NEXT_PUBLIC_ADVANCE_DISPATCH_FUNCTION_ID;
-
-// Strip trailing /v1 so we don't build /v1/v1/functions/...
 const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
   /\/v1\/?$/,
   ''
@@ -22,11 +20,13 @@ export default function useChooseAvailable(deliveryId) {
   const [queueId, setQueueId] = useState(null);
   const [failReason, setFailReason] = useState('');
 
+  // All mutable runtime state in refs — closures never go stale
   const countdownRef = useRef(null);
   const expiresAtRef = useRef(null);
   const queueIdRef = useRef(null);
   const unsubRef = useRef(null);
   const subTimerRef = useRef(null);
+  const timedOutRef = useRef(false); // prevents double timeout firing
 
   const stopCountdown = useCallback(() => {
     if (countdownRef.current) {
@@ -53,9 +53,16 @@ export default function useChooseAvailable(deliveryId) {
     }
   }, []);
 
+  // startCountdown reads from refs so it never captures stale values
   const startCountdown = useCallback(
     (expiresAt) => {
-      stopCountdown();
+      // Clear any running interval first
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+
+      timedOutRef.current = false;
       expiresAtRef.current = expiresAt;
 
       countdownRef.current = setInterval(() => {
@@ -65,30 +72,34 @@ export default function useChooseAvailable(deliveryId) {
         );
         setCountdown(remaining);
 
-        if (remaining <= 0) {
-          stopCountdown();
+        if (remaining <= 0 && !timedOutRef.current) {
+          timedOutRef.current = true;
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
+          // queueIdRef always has the latest — no stale closure issue
           if (queueIdRef.current) {
             advanceDispatch(queueIdRef.current, 'timeout');
           }
         }
       }, 1000);
     },
-    [stopCountdown, advanceDispatch]
+    [advanceDispatch]
   );
 
   const applyQueueDoc = useCallback(
     (doc) => {
-      const ranked = (() => {
-        try {
-          return JSON.parse(doc.rankedCouriersJson ?? '[]');
-        } catch {
-          return [];
-        }
-      })();
+      let ranked = [];
+      try {
+        ranked = JSON.parse(doc.rankedCouriersJson ?? '[]');
+      } catch {
+        ranked = [];
+      }
 
       const current = ranked[doc.attemptIndex] ?? null;
 
+      // Update ref immediately so startCountdown/advanceDispatch always see latest
       queueIdRef.current = doc.$id;
+
       setQueueId(doc.$id);
       setRankedCouriers(ranked);
       setAttemptIndex(doc.attemptIndex ?? 0);
@@ -96,6 +107,8 @@ export default function useChooseAvailable(deliveryId) {
 
       if (doc.status === 'pending') {
         setStatus('offering');
+        // Restart countdown with the new expiresAt every time —
+        // this handles both the FIRST offer and every subsequent advance
         startCountdown(doc.expiresAt);
       } else if (doc.status === 'accepted') {
         stopCountdown();
@@ -112,8 +125,7 @@ export default function useChooseAvailable(deliveryId) {
   useEffect(() => {
     if (!deliveryId) return;
 
-    // ── 1. Poll for existing queue doc immediately (handles page refresh) ───
-    // This runs right away — no delay needed since it's a REST call not WS
+    // 1. Immediate REST poll — handles page refresh where WS hasn't connected
     tablesDB
       .listRows({
         databaseId: DB,
@@ -129,25 +141,18 @@ export default function useChooseAvailable(deliveryId) {
       })
       .catch(() => {});
 
-    // ── 2. Delay the WebSocket subscription slightly ─────────────────────────
-    // The Appwrite SDK throws InvalidStateError if you call subscribe()
-    // while the WebSocket is still in CONNECTING state (readyState === 0).
-    // A small delay lets the handshake complete before we subscribe.
+    // 2. Subscribe after 300ms to let WS handshake complete
     subTimerRef.current = setTimeout(() => {
       const channel = `databases.${DB}.collections.${DISPATCH}.documents`;
-
       try {
         unsubRef.current = client.subscribe(channel, (event) => {
           const doc = event.payload;
-          // Filter to only events for this delivery's queue doc
           if (doc?.deliveryId !== deliveryId) return;
           applyQueueDoc(doc);
         });
       } catch (e) {
-        console.error('WebSocket subscribe error:', e);
-
-        // Fallback: if subscribe fails, poll every 3 seconds
-        const pollInterval = setInterval(() => {
+        console.error('WS subscribe failed, falling back to polling:', e);
+        const poll = setInterval(() => {
           tablesDB
             .listRows({
               databaseId: DB,
@@ -161,26 +166,21 @@ export default function useChooseAvailable(deliveryId) {
             .then((res) => {
               if (res.rows?.length > 0) {
                 const doc = res.rows[0];
-                // Stop polling once resolved
-                if (doc.status !== 'pending') clearInterval(pollInterval);
+                if (doc.status !== 'pending') clearInterval(poll);
                 applyQueueDoc(doc);
               }
             })
             .catch(() => {});
         }, 3000);
-
-        // Store pollInterval in unsubRef so cleanup can clear it
-        unsubRef.current = () => clearInterval(pollInterval);
+        unsubRef.current = () => clearInterval(poll);
       }
-    }, 300); // 300ms is enough for the WS handshake to complete
+    }, 300);
 
     return () => {
-      // Clear the subscription delay timer
       if (subTimerRef.current) {
         clearTimeout(subTimerRef.current);
         subTimerRef.current = null;
       }
-      // Unsubscribe from realtime (or clear poll fallback)
       if (unsubRef.current) {
         try {
           unsubRef.current();

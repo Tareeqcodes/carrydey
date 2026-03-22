@@ -5,8 +5,9 @@ import { generateOTP, generatePickupCode } from '@/hooks/otpGenerator';
 
 const generateDriverToken = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from({ length: 32 }, () =>
-    chars[Math.floor(Math.random() * chars.length)]
+  return Array.from(
+    { length: 32 },
+    () => chars[Math.floor(Math.random() * chars.length)]
   ).join('');
 };
 
@@ -46,7 +47,13 @@ export const useDeliveryManagement = (agencyId, freeDriverFromDelivery) => {
 
       const pending = response.rows.filter((r) => r.status === 'pending');
       const active = response.rows.filter((r) =>
-        ['accepted', 'pending_assignment', 'assigned', 'picked_up', 'in_transit'].includes(r.status)
+        [
+          'accepted',
+          'pending_assignment',
+          'assigned',
+          'picked_up',
+          'in_transit',
+        ].includes(r.status)
       );
       const completed = response.rows.filter((r) =>
         ['delivered', 'cancelled'].includes(r.status)
@@ -89,7 +96,12 @@ export const useDeliveryManagement = (agencyId, freeDriverFromDelivery) => {
     }
   };
 
-  const assignDelivery = async (deliveryId, driverId, driverName, driverPhone) => {
+  const assignDelivery = async (
+    deliveryId,
+    driverId,
+    driverName,
+    driverPhone
+  ) => {
     try {
       const driverToken = generateDriverToken();
 
@@ -97,7 +109,13 @@ export const useDeliveryManagement = (agencyId, freeDriverFromDelivery) => {
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: deliveryId,
-        data: { status: 'assigned', driverId, driverName, driverPhone, driverToken },
+        data: {
+          status: 'assigned',
+          driverId,
+          driverName,
+          driverPhone,
+          driverToken,
+        },
       });
 
       setActiveDeliveries((prev) =>
@@ -155,8 +173,6 @@ export const useDeliveryManagement = (agencyId, freeDriverFromDelivery) => {
         rowId: deliveryId,
         data: { status: 'delivered' },
       });
-
-      // ← Use the injected callback to update driver state immediately
       if (delivery?.driverId && freeDriverFromDelivery) {
         await freeDriverFromDelivery(delivery.driverId, deliveryId);
       }

@@ -363,7 +363,7 @@ const AddDriverModal = ({
               )}
               {isOnDelivery && (
                 <p className="text-xs text-amber-600 mt-2 text-center">
-                  Cannot delete — driver has an active delivery
+                  Cannot delete driver has an active delivery
                 </p>
               )}
             </div>

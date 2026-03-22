@@ -12,30 +12,30 @@ const DEFAULT_BRAND = {
   accent: '#8B2E5A',
 };
 
-// ── Strip trailing /v1 from endpoint so we don't get /v1/v1/functions/... ──
-// NEXT_PUBLIC_APPWRITE_ENDPOINT = https://fra.cloud.appwrite.io/v1
-// We need the base:             = https://fra.cloud.appwrite.io
-const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(/\/v1\/?$/, '');
-const PROJECT_ID    = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
-const DISPATCH_FN   = process.env.NEXT_PUBLIC_DISPATCH_SEARCH_FUNCTION_ID;
+const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
+  /\/v1\/?$/,
+  ''
+);
+const PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+const DISPATCH_FN = process.env.NEXT_PUBLIC_DISPATCH_SEARCH_FUNCTION_ID;
 
 export default function CreateDelivery() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const [initialPickup,    setInitialPickup]    = useState(null);
-  const [initialDropoff,   setInitialDropoff]   = useState(null);
+  const [initialPickup, setInitialPickup] = useState(null);
+  const [initialDropoff, setInitialDropoff] = useState(null);
   const [initialRouteData, setInitialRouteData] = useState(null);
-  const [hydrated,         setHydrated]         = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem('deliveryData');
       if (stored) {
         const { pickup, dropoff, routeData } = JSON.parse(stored);
-        if (pickup)    setInitialPickup(pickup);
-        if (dropoff)   setInitialDropoff(dropoff);
+        if (pickup) setInitialPickup(pickup);
+        if (dropoff) setInitialDropoff(dropoff);
         if (routeData) setInitialRouteData(routeData);
         sessionStorage.removeItem('deliveryData');
       }
@@ -67,74 +67,63 @@ export default function CreateDelivery() {
 
       await tablesDB.createRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId:      deliveryId,
+        tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+        rowId: deliveryId,
         data: {
-          // ── Pickup ────────────────────────────────────────────────────
           pickupAddress:
             pickup.place_name?.substring(0, 500) || 'Pickup location',
           pickupLat: pickup.geometry.coordinates[1],
           pickupLng: pickup.geometry.coordinates[0],
           pickupContactName:
-            packageDetails?.pickupContact?.pickupContactName?.substring(0, 100) ?? null,
+            packageDetails?.pickupContact?.pickupContactName?.substring(
+              0,
+              100
+            ) ?? null,
           pickupPhone:
-            packageDetails?.pickupContact?.pickupPhone?.substring(0, 20) ?? null,
+            packageDetails?.pickupContact?.pickupPhone?.substring(0, 20) ??
+            null,
           pickupInstructions: null,
           pickupTime:
             packageDetails?.pickupTime?.substring(0, 500) || 'courier',
-
-          // ── Dropoff ───────────────────────────────────────────────────
           dropoffAddress: (
             primary.location?.place_name ||
             primary.address ||
             ''
           ).substring(0, 500),
-          dropoffLat:  primary.location?.geometry?.coordinates[1] ?? null,
-          dropoffLng:  primary.location?.geometry?.coordinates[0] ?? 0,
+          dropoffLat: primary.location?.geometry?.coordinates[1] ?? null,
+          dropoffLng: primary.location?.geometry?.coordinates[0] ?? 0,
           dropoffContactName:
             (primary.recipientName || '').substring(0, 100) || null,
-          dropoffPhone:
-            (primary.recipientPhone || '').substring(0, 20) || null,
+          dropoffPhone: (primary.recipientPhone || '').substring(0, 20) || null,
           dropoffInstructions:
             (primary.packageLabel || '').substring(0, 1000) || null,
           recipientPermission:
             packageDetails?.dropoffContact?.recipientPermission ?? null,
-
-          // ── Route ─────────────────────────────────────────────────────
           distance: parseFloat(routeData.distance),
           duration: parseInt(routeData.duration),
-
-          // ── Package ───────────────────────────────────────────────────
-          packageSize:
-            packageDetails?.size?.substring(0, 50) ?? null,
+          packageSize: packageDetails?.size?.substring(0, 50) ?? null,
           packageDescription:
             packageDetails?.description?.substring(0, 500) ?? null,
           isFragile: packageDetails?.isFragile ?? false,
-
-          // ── Fare ──────────────────────────────────────────────────────
-          offeredFare:    parseInt(fareDetails.offeredFare || 0),
-          paymentMethod:  fareDetails.paymentMethod ?? null,
+          offeredFare: parseInt(fareDetails.offeredFare || 0),
+          paymentMethod: fareDetails.paymentMethod ?? null,
           isLongDistance: fareDetails.isLongDistance ?? false,
           pricingProvidedAtBooking: true,
-
-          // ── Status & assignment ───────────────────────────────────────
-          status:            'pending',
-          userId:            user.$id,
-          assignedAgencyId:  null,
+          status: 'pending',
+          userId: user.$id,
+          assignedAgencyId: null,
           assignedCourierId: null,
-          pickupCode:        null,
-          dropoffOTP:        null,
-          driverName:        null,
-          driverPhone:       null,
-          driverId:          null,
-          driverToken:       null,
-          trackingToken:     null,
-          isGuestBooking:    false,
-          guestName:         null,
-          guestEmail:        null,
-          guestPhone:        null,
-
-          // ── Multiple dropoffs ─────────────────────────────────────────
+          pickupCode: null,
+          dropoffOTP: null,
+          driverName: null,
+          driverPhone: null,
+          driverId: null,
+          driverToken: null,
+          trackingToken: null,
+          isGuestBooking: false,
+          guestName: null,
+          guestEmail: null,
+          guestPhone: null,
           mutipledropoff: JSON.stringify(
             safeDropoffs.map((d, i) => ({
               idx: i,
@@ -147,28 +136,20 @@ export default function CreateDelivery() {
           ),
         },
       });
-
-      // ── Save for /check page ─────────────────────────────────────────────
       sessionStorage.setItem('latestDeliveryId', deliveryId);
 
-      // ── Trigger dispatch-search (fire and forget — don't await) ──────────
-      // APPWRITE_BASE strips the /v1 suffix to avoid /v1/v1/functions/...
-      fetch(
-        `${APPWRITE_BASE}/v1/functions/${DISPATCH_FN}/executions`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Appwrite-Project': PROJECT_ID,
-          },
-          body: JSON.stringify({
-            body:  JSON.stringify({ deliveryId }),
-            async: true,
-          }),
-        }
-      ).catch((e) => console.error('dispatch-search trigger failed:', e));
-
-      // Navigate immediately — don't wait for the function to finish
+      // ── Trigger dispatch-search (fire and forget — don't await) 
+      fetch(`${APPWRITE_BASE}/v1/functions/${DISPATCH_FN}/executions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': PROJECT_ID,
+        },
+        body: JSON.stringify({
+          body: JSON.stringify({ deliveryId }),
+          async: true,
+        }),
+      }).catch((e) => console.error('dispatch-search trigger failed:', e));
       router.push('/check');
     } catch (error) {
       console.error('Error saving delivery:', error);

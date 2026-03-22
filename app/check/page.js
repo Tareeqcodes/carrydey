@@ -93,13 +93,11 @@ const AutoAssignDelivery = () => {
           <RadioTower className="w-8 h-8 text-white animate-pulse" />
         </div>
       </div>
-      <h2 className="text-2xl font-black mb-2">Finding your courier</h2>
-      <p className="text-gray-500 mb-4">
+      <h2 className="text-xl font-black mb-2">Finding your courier</h2>
+      <p className="text-sm text-gray-400 mb-4">
         Searching for the best match nearby...
       </p>
-      <p className="text-sm text-gray-400">
-        Scanning couriers by distance, rating, and reliability
-      </p>
+      
     </motion.div>
   );
 
@@ -131,13 +129,6 @@ const AutoAssignDelivery = () => {
           {currentCourier?.distance}km away · ⭐{' '}
           {currentCourier?.rating?.toFixed(1)}
         </p>
-
-        <div className="bg-white/80 rounded-xl p-3 mb-4 flex items-center justify-center gap-2">
-          <Award className="w-4 h-4 text-orange-500" />
-          <span className="text-sm font-semibold text-gray-700">
-            Match Score: {currentCourier?.score}%
-          </span>
-        </div>
 
         {/* Countdown ring */}
         <div className="relative w-32 h-32 mx-auto mb-4">
@@ -180,7 +171,7 @@ const AutoAssignDelivery = () => {
 
       <div className="bg-gray-50 rounded-xl p-4">
         <p className="text-sm text-gray-600 mb-3">
-          ⚡ Not getting responses? Increase your offer to get matched faster
+         Increase your offer to get matched faster
         </p>
         <button
           onClick={handleIncreaseOffer}
@@ -266,7 +257,7 @@ const AutoAssignDelivery = () => {
 
   return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=DM+Sans:wght@400;500;600;700&display=swap');`}</style>
+      
       <div className="min-h-screen bg-gradient-to-b from-white  py-7 to-gray-50">
        
 
