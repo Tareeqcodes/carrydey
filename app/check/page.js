@@ -24,7 +24,6 @@ const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
 const PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
 const DISPATCH_FN = process.env.NEXT_PUBLIC_DISPATCH_SEARCH_FUNCTION_ID;
 
-// Radius steps the system will try in order before giving up
 const RADIUS_STEPS = [10, 20, 30, 50];
 const MAX_RADIUS = RADIUS_STEPS[RADIUS_STEPS.length - 1];
 
@@ -65,7 +64,7 @@ function ExpandingRings({ radiusKm, prevRadiusKm }) {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="text-2xl font-black text-gray-900"
+          className="text-xl font-black text-gray-900"
         >
           {radiusKm}km
         </motion.p>
@@ -113,14 +112,11 @@ function ExpandingRings({ radiusKm, prevRadiusKm }) {
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
 const AutoAssignDelivery = () => {
   const router = useRouter();
 
   const [deliveryDetails, setDeliveryDetails] = useState(null);
   const [assignedCourier, setAssignedCourier] = useState(null);
-
-  // stage: 'hook' | 'expanding' | 'exhausted'
   const [stage, setStage] = useState('hook');
   const [searchRadius, setSearchRadius] = useState(RADIUS_STEPS[0]);
   const [prevRadius, setPrevRadius] = useState(null);
@@ -141,7 +137,6 @@ const AutoAssignDelivery = () => {
     advanceDispatch,
   } = useChooseAvailable(deliveryId);
 
-  // ── Load delivery details ─────────────────────────────────────────────────
   useEffect(() => {
     if (!deliveryId) {
       router.push('/send');
@@ -153,7 +148,7 @@ const AutoAssignDelivery = () => {
       .catch(() => router.push('/send'));
   }, [deliveryId]);
 
-  // ── On assign → redirect ──────────────────────────────────────────────────
+  // On assign → redirect 
   useEffect(() => {
     if (status === 'assigned' && currentCourier && !assignedCourier) {
       setAssignedCourier(currentCourier);
@@ -162,7 +157,7 @@ const AutoAssignDelivery = () => {
     }
   }, [status, currentCourier]);
 
-  // ── When new queue arrives after expansion → return to offering ───────────
+  // ── When new queue arrives after expansion → return to offering 
   useEffect(() => {
     if (status === 'offering' && stage === 'expanding') {
       expandingRef.current = false;
@@ -170,7 +165,7 @@ const AutoAssignDelivery = () => {
     }
   }, [status, stage]);
 
-  // ── When all couriers rejected → auto-expand radius ───────────────────────
+  // ── When all couriers rejected → auto-expand radius 
   useEffect(() => {
     if (status !== 'failed' || expandingRef.current) return;
 
@@ -187,7 +182,7 @@ const AutoAssignDelivery = () => {
     setSearchRadius(nextRadius);
     setStage('expanding');
     setExpandMsg(
-      `No couriers within ${searchRadius}km — widening to ${nextRadius}km`
+      `No couriers within ${searchRadius}km Expanding search to ${nextRadius}km`
     );
 
     fetch(`${APPWRITE_BASE}/v1/functions/${DISPATCH_FN}/executions`, {
@@ -203,7 +198,7 @@ const AutoAssignDelivery = () => {
     }).catch(console.error);
   }, [status]); // only re-run when status changes
 
-  // ── Increase offer ────────────────────────────────────────────────────────
+  // ── Increase offer 
   const handleIncreaseOffer = async () => {
     if (!deliveryDetails) return;
     const newFare = Math.round(deliveryDetails.offeredFare * 1.2);
@@ -217,7 +212,7 @@ const AutoAssignDelivery = () => {
     if (queueId) advanceDispatch(queueId, 'timeout');
   };
 
-  // ── Retry from scratch ────────────────────────────────────────────────────
+  // ── Retry from scratch 
   const handleRetryFull = () => {
     expandingRef.current = false;
     setStage('hook');
@@ -236,7 +231,7 @@ const AutoAssignDelivery = () => {
     }).catch(console.error);
   };
 
-  // ── Renders ───────────────────────────────────────────────────────────────
+  // ── Renders 
   const renderSearching = () => (
     <motion.div
       key="searching"
@@ -403,40 +398,17 @@ const AutoAssignDelivery = () => {
         <p className="text-xl font-black text-gray-900 mb-1">
           Widening your search
         </p>
-        <motion.p
-          key={expandMsg}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed"
-        >
-          {expandMsg}
-        </motion.p>
       </div>
 
       <ExpandingRings radiusKm={searchRadius} prevRadiusKm={prevRadius} />
-
-      <p className="text-xs text-gray-400 text-center">
-        Scanning for couriers — this may take a moment
-      </p>
-
-      <div className="w-full bg-gray-50 rounded-2xl p-4 border border-gray-100">
-        <p className="text-sm text-gray-500 mb-3 text-center">
-          Raise your offer to attract couriers faster
-        </p>
-        <button
-          onClick={handleIncreaseOffer}
-          className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-sm"
-        >
-          <TrendingUp className="w-4 h-4" />
-          Increase offer by 20%
-          {deliveryDetails?.offeredFare && (
-            <span className="opacity-50 font-normal">
-              → ₦
-              {Math.round(deliveryDetails.offeredFare * 1.2).toLocaleString()}
-            </span>
-          )}
-        </button>
-      </div>
+      <motion.p
+        key={expandMsg}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-[13px] text-gray-400 max-w-xs mx-auto leading-relaxed"
+      >
+        {expandMsg}
+      </motion.p>
     </motion.div>
   );
 
@@ -507,7 +479,7 @@ const AutoAssignDelivery = () => {
     );
   };
 
-  // ── Bottom bar label ──────────────────────────────────────────────────────
+  // ── Bottom bar label 
   const barLabel =
     stage === 'expanding'
       ? `Expanding to ${searchRadius}km...`
@@ -537,13 +509,7 @@ const AutoAssignDelivery = () => {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=DM+Sans:wght@400;500;600;700&display=swap');
-      `}</style>
-      <div
-        className="min-h-screen bg-gradient-to-b from-white to-gray-50"
-        style={{ fontFamily: "'DM Sans', sans-serif" }}
-      >
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-md mx-auto px-4 py-8 pb-28">
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
         </div>
