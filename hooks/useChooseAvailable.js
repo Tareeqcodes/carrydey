@@ -19,8 +19,6 @@ export default function useChooseAvailable(deliveryId) {
   const [countdown, setCountdown] = useState(20);
   const [queueId, setQueueId] = useState(null);
   const [failReason, setFailReason] = useState('');
-
-  // All mutable runtime state in refs — closures never go stale
   const countdownRef = useRef(null);
   const expiresAtRef = useRef(null);
   const queueIdRef = useRef(null);
@@ -126,8 +124,7 @@ export default function useChooseAvailable(deliveryId) {
     if (!deliveryId) return;
 
     // 1. Immediate REST poll — handles page refresh where WS hasn't connected
-    tablesDB
-      .listRows({
+    tablesDB.listRows({
         databaseId: DB,
         tableId: DISPATCH,
         queries: [

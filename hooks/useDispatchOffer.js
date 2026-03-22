@@ -6,39 +6,25 @@ const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const DISPATCH = process.env.NEXT_PUBLIC_APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 const FN_ID = process.env.NEXT_PUBLIC_ADVANCE_DISPATCH_FUNCTION_ID;
 const PROJECT = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
-const ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
+const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
+  /\/v1\/?$/,
+  ''
+);
 
 const OFFER_DURATION_S = 20;
 
-/**
- * useDispatchOffer
- *
- * Shared hook for both courier and agency dashboards.
- * Subscribes to Realtime updates on the entity's own document,
- * manages the incoming offer state + countdown, and calls the
- * advance-dispatch function on accept / decline.
- *
- * @param {string} entityId         - The $id of the courier or agency document
- * @param {string} entityCollection - The Appwrite collection ID for the entity
- *                                    (USERS collection for couriers, ORGS for agencies)
- * @param {object} [options]
- * @param {(deliveryId: string, queueId: string) => Promise<void>} [options.onAccepted]
- *   Optional callback fired AFTER the advance-dispatch accept call succeeds.
- *   Receives the deliveryId and queueId so the parent can open a modal,
- *   refresh data, etc.
- */
 export function useDispatchOffer(
   entityId,
   entityCollection,
   { onAccepted } = {}
 ) {
-  // { deliveryId, expiresAt, queueId } | null
   const [incomingOffer, setIncomingOffer] = useState(null);
   const [offerCountdown, setOfferCountdown] = useState(OFFER_DURATION_S);
 
   const offerTimerRef = useRef(null);
-
-  // ── helpers ──────────────────────────────────────────────────────────────
+  // Keep latest queueId accessible inside the timer without stale closure
+  const queueIdRef = useRef(null);
+  const timedOutRef = useRef(false);
   const clearTimer = useCallback(() => {
     if (offerTimerRef.current) {
       clearInterval(offerTimerRef.current);
@@ -46,9 +32,35 @@ export function useDispatchOffer(
     }
   }, []);
 
+  const callAdvanceDispatch = useCallback(async (queueId, action) => {
+    if (!queueId) return;
+    try {
+      await fetch(`${APPWRITE_BASE}/v1/functions/${FN_ID}/executions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': PROJECT,
+        },
+        body: JSON.stringify({
+          body: JSON.stringify({ queueId, action }),
+        }),
+      });
+    } catch (e) {
+      console.error('[useDispatchOffer] callAdvanceDispatch error:', e);
+    }
+  }, []);
+
+  // ── startCountdown 
+  // When the countdown expires on the courier/agency side, we call
+  // advance-dispatch with 'timeout' so the server moves to the next candidate.
+  // Without this, the sender's useChooseAvailable fires the timeout but the
+  // courier/agency side never clears its banner.
   const startCountdown = useCallback(
-    (expiresAt) => {
+    (expiresAt, queueId) => {
       clearTimer();
+      timedOutRef.current = false;
+      queueIdRef.current = queueId;
+
       const expires = new Date(expiresAt);
 
       offerTimerRef.current = setInterval(() => {
@@ -58,7 +70,8 @@ export function useDispatchOffer(
         );
         setOfferCountdown(remaining);
 
-        if (remaining <= 0) {
+        if (remaining <= 0 && !timedOutRef.current) {
+          timedOutRef.current = true;
           clearTimer();
           setIncomingOffer(null);
         }
@@ -67,20 +80,6 @@ export function useDispatchOffer(
     [clearTimer]
   );
 
-  const callAdvanceDispatch = useCallback(async (queueId, action) => {
-    await fetch(`${ENDPOINT}/v1/functions/${FN_ID}/executions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Appwrite-Project': PROJECT,
-      },
-      body: JSON.stringify({
-        body: JSON.stringify({ queueId, action }),
-      }),
-    });
-  }, []);
-
-  // ── Realtime subscription ─────────────────────────────────────────────────
   useEffect(() => {
     if (!entityId || !entityCollection) return;
 
@@ -103,19 +102,20 @@ export function useDispatchOffer(
           });
 
           const queueDoc = res.rows?.[0];
+          const queueId = queueDoc?.$id ?? null;
 
           setIncomingOffer({
             deliveryId: doc.currentOfferId,
             expiresAt: doc.offerExpiresAt,
-            queueId: queueDoc?.$id ?? null,
+            queueId,
           });
 
-          startCountdown(doc.offerExpiresAt);
+          startCountdown(doc.offerExpiresAt, queueId);
         } catch (e) {
           console.error('[useDispatchOffer] Failed to fetch queue doc:', e);
         }
       } else if (doc.status === 'available' || !doc.currentOfferId) {
-        // Offer was withdrawn (timeout handled server-side, or already actioned)
+        // Offer withdrawn server-side (timeout or advance) — clear banner
         clearTimer();
         setIncomingOffer(null);
       }
@@ -127,19 +127,15 @@ export function useDispatchOffer(
     };
   }, [entityId, entityCollection, startCountdown, clearTimer]);
 
-  // ── public actions ────────────────────────────────────────────────────────
   const acceptOffer = useCallback(async () => {
     if (!incomingOffer?.queueId) return;
 
     const { queueId, deliveryId } = incomingOffer;
-
-    // Optimistically clear the banner so the UI feels instant
     clearTimer();
     setIncomingOffer(null);
 
     try {
       await callAdvanceDispatch(queueId, 'accept');
-      // Let the parent know — it can open AssignmentModal, refresh, etc.
       onAccepted?.(deliveryId, queueId);
     } catch (e) {
       console.error('[useDispatchOffer] Accept failed:', e);
@@ -162,8 +158,8 @@ export function useDispatchOffer(
   }, [incomingOffer, clearTimer, callAdvanceDispatch]);
 
   return {
-    incomingOffer, // null when no offer, object when pending
-    offerCountdown, // seconds remaining (0-20)
+    incomingOffer,
+    offerCountdown,
     acceptOffer,
     declineOffer,
   };

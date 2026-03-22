@@ -1,4 +1,32 @@
-import { Client, TablesDB } from 'node-appwrite';
+import { Client, TablesDB, Query, ID } from 'node-appwrite';
+
+function getDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function scoreCourier(courier, distance) {
+  const distanceScore = Math.max(0, 100 - distance * 10);
+  const ratingScore = (courier.rating ?? 4.0) * 20;
+  const acceptanceScore = (courier.acceptanceRate ?? 0.8) * 100;
+  const activeScore = Math.max(0, 100 - (courier.activeDeliveries ?? 0) * 25);
+  const priorityScore = courier.entityType === 'agency' ? 100 : 70;
+
+  return Math.round(
+    distanceScore * 0.35 +
+      ratingScore * 0.25 +
+      acceptanceScore * 0.15 +
+      activeScore * 0.15 +
+      priorityScore * 0.1
+  );
+}
 
 export default async ({ req, res, log, error }) => {
   const client = new Client()
@@ -14,213 +42,230 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Parse body ─────────────────────────────────────────────────────────────
-  let body = req.body;
-  if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      body = {};
-    }
-  }
-  if (typeof body?.body === 'string') {
-    try {
-      body = JSON.parse(body.body);
-    } catch {}
-  }
-
-  const { queueId, action } = body ?? {};
-  if (!queueId || !action) {
-    return res.json({ ok: false, reason: 'missing queueId or action' }, 400);
-  }
-
-  // ── Load queue doc ─────────────────────────────────────────────────────────
-  let queue;
+  // ── 1. Parse body ──────────────────────────────────────────────────────────
+  // Three cases:
+  // A) Database event trigger  → req.body is raw JSON string of the delivery doc
+  // B) Frontend HTTP call      → req.body is { body: '{"deliveryId":"..."}', async: true }
+  // C) Direct HTTP (parsed)    → req.body is { deliveryId: '...' }
+  let parsedBody = {};
   try {
-    queue = await db.getRow({
+    if (typeof req.body === 'string' && req.body.length > 0) {
+      parsedBody = JSON.parse(req.body);
+    } else if (req.body && typeof req.body === 'object') {
+      parsedBody = req.body;
+    }
+    // Case B: frontend double-wraps with { body: '...' }
+    if (typeof parsedBody.body === 'string') {
+      parsedBody = JSON.parse(parsedBody.body);
+    }
+  } catch (e) {
+    error('Body parse failed: ' + e.message);
+    return res.json({ ok: false, reason: 'invalid_body' }, 400);
+  }
+
+  // Case A gives $id (the delivery doc's own ID from the event trigger)
+  // Cases B/C give deliveryId explicitly
+  const deliveryId = parsedBody.deliveryId ?? parsedBody.$id;
+
+  if (!deliveryId) {
+    error(
+      'Missing deliveryId. Parsed body: ' +
+        JSON.stringify(parsedBody).substring(0, 200)
+    );
+    return res.json({ ok: false, reason: 'missing_deliveryId' }, 400);
+  }
+
+  log('Starting dispatch for delivery: ' + deliveryId);
+
+  // ── 2. Load delivery ───────────────────────────────────────────────────────
+  let delivery;
+  try {
+    delivery = await db.getRow({
       databaseId: DB,
-      tableId: DISPATCH,
-      rowId: queueId,
+      tableId: DELIVERIES,
+      rowId: deliveryId,
     });
   } catch (e) {
-    error('Queue not found: ' + e.message);
-    return res.json({ ok: false, reason: 'queue_not_found' }, 404);
+    error('Could not load delivery: ' + e.message);
+    return res.json({ ok: false, reason: 'delivery_not_found' }, 404);
   }
 
-  if (queue.status !== 'pending') {
-    log('Queue ' + queueId + ' already resolved: ' + queue.status);
-    return res.json({ ok: false, reason: 'already_resolved' });
+  if (delivery.status !== 'pending') {
+    log(
+      'Delivery ' +
+        deliveryId +
+        ' is already: ' +
+        delivery.status +
+        ', skipping'
+    );
+    return res.json({ ok: false, reason: 'already_dispatched' });
   }
 
-  // ── Parse ranked couriers ──────────────────────────────────────────────────
-  let rankedCouriers = [];
+  const pickupLat = delivery.pickupLat;
+  const pickupLng = delivery.pickupLng;
+
+  if (!pickupLat || !pickupLng) {
+    error('Delivery missing pickup coordinates');
+    return res.json({ ok: false, reason: 'missing_coordinates' }, 400);
+  }
+
+  // ── 3. lastSeen cutoff — active within last 15 minutes ────────────────────
+  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+  // ── 4. Query freelance couriers ────────────────────────────────────────────
+  // Only filter on isAvailable + lastSeen — do NOT filter on verified or status
+  // because those fields may be null on valid courier accounts
+  let couriersRes = { rows: [] };
   try {
-    rankedCouriers = JSON.parse(queue.rankedCouriersJson ?? '[]');
-  } catch {
-    error('Could not parse rankedCouriersJson');
-    return res.json({ ok: false, reason: 'invalid_queue_data' }, 500);
-  }
-
-  const currentIndex = queue.attemptIndex ?? 0;
-  const currentCourierId = queue.currentCourierId;
-  const currentEntry = rankedCouriers[currentIndex];
-
-  const collectionFor = (entry) =>
-    entry?.entityType === 'agency' ? ORGS : USERS;
-
-  // ── Reset current entity to available (always, for all actions) ───────────
-  try {
-    await db.updateRow({
+    couriersRes = await db.listRows({
       databaseId: DB,
-      tableId: collectionFor(currentEntry),
-      rowId: currentCourierId,
-      data: { status: 'available', currentOfferId: null, offerExpiresAt: null },
+      tableId: USERS,
+      queries: [
+        Query.equal('role', 'courier'),
+        Query.equal('isAvailable', true),
+        Query.greaterThan('lastSeen', fifteenMinutesAgo),
+        Query.limit(50),
+      ],
     });
+    log('Found ' + couriersRes.rows.length + ' available couriers');
   } catch (e) {
-    log('Could not reset entity ' + currentCourierId + ': ' + e.message);
+    error('Couriers query failed: ' + e.message);
   }
 
-  // ── ACCEPT ─────────────────────────────────────────────────────────────────
-  if (action === 'accept') {
-    try {
-      const isAgency = currentEntry?.entityType === 'agency';
-
-      // ── Key fix: set the correct assigned field based on entity type ────────
-      // Agencies need assignedAgencyId set so useAgencyDeliveries can find the delivery.
-      // Couriers need assignedCourierId set so useCourierDelivery can find it.
-      const assignmentData = isAgency
-        ? {
-            status: 'pending', // agency will assign a driver — don't jump to 'assigned'
-            assignedAgencyId: currentCourierId,
-            assignedCourierId: null,
-            assignedAt: new Date().toISOString(),
-          }
-        : {
-            status: 'assigned',
-            assignedCourierId: currentCourierId,
-            assignedAgencyId: null,
-            assignedAt: new Date().toISOString(),
-          };
-
-      await db.updateRow({
-        databaseId: DB,
-        tableId: DELIVERIES,
-        rowId: queue.deliveryId,
-        data: assignmentData,
-      });
-
-      // Mark courier/agency as on_delivery
-      await db.updateRow({
-        databaseId: DB,
-        tableId: collectionFor(currentEntry),
-        rowId: currentCourierId,
-        data: { status: 'on_delivery', currentOfferId: null },
-      });
-
-      // Close queue
-      await db.updateRow({
-        databaseId: DB,
-        tableId: DISPATCH,
-        rowId: queueId,
-        data: { status: 'accepted' },
-      });
-
-      log(
-        'Delivery ' +
-          queue.deliveryId +
-          ' accepted by ' +
-          currentEntry?.entityType +
-          ' ' +
-          currentCourierId
-      );
-      return res.json({
-        ok: true,
-        assigned: true,
-        courierId: currentCourierId,
-        entityType: currentEntry?.entityType,
-      });
-    } catch (e) {
-      error('Accept failed: ' + e.message);
-      return res.json({ ok: false, reason: 'accept_failed' }, 500);
-    }
+  // ── 5. Query agencies ──────────────────────────────────────────────────────
+  // Same — only filter on isAvailable + lastSeen
+  let agenciesRes = { rows: [] };
+  try {
+    agenciesRes = await db.listRows({
+      databaseId: DB,
+      tableId: ORGS,
+      queries: [
+        Query.equal('isAvailable', true),
+        Query.greaterThan('lastSeen', fifteenMinutesAgo),
+        Query.limit(50),
+      ],
+    });
+    log('Found ' + agenciesRes.rows.length + ' available agencies');
+  } catch (e) {
+    error('Agencies query failed: ' + e.message);
   }
 
-  // ── DECLINE or TIMEOUT ─────────────────────────────────────────────────────
-  const nextIndex = currentIndex + 1;
+  // ── 6. Merge, tag entity type, filter to those with coordinates ───────────
+  const allCandidates = [
+    ...couriersRes.rows.map((c) => ({ ...c, entityType: 'courier' })),
+    ...agenciesRes.rows.map((a) => ({ ...a, entityType: 'agency' })),
+  ].filter((c) => c.lat != null && c.lng != null);
 
-  if (nextIndex >= rankedCouriers.length) {
-    await db
-      .updateRow({
-        databaseId: DB,
-        tableId: DISPATCH,
-        rowId: queueId,
-        data: { status: 'failed', failReason: 'all_rejected' },
-      })
-      .catch(() => {});
+  log('Total candidates with location: ' + allCandidates.length);
 
+  if (allCandidates.length === 0) {
+    log('No candidates — marking delivery as no_couriers');
     await db
       .updateRow({
         databaseId: DB,
         tableId: DELIVERIES,
-        rowId: queue.deliveryId,
+        rowId: deliveryId,
         data: { status: 'no_couriers' },
       })
       .catch(() => {});
-
-    log(
-      'All ' +
-        rankedCouriers.length +
-        ' candidates rejected delivery ' +
-        queue.deliveryId
-    );
-    return res.json({ ok: true, assigned: false, reason: 'all_rejected' });
+    return res.json({ ok: false, reason: 'no_couriers' });
   }
 
-  const nextEntry = rankedCouriers[nextIndex];
-  const nextCourierId = nextEntry.courierId;
+  // ── 7. Score, rank, take top 10 ───────────────────────────────────────────
+  const scored = allCandidates
+    .map((candidate) => {
+      const distance = getDistance(
+        pickupLat,
+        pickupLng,
+        candidate.lat,
+        candidate.lng
+      );
+      return {
+        courierId: candidate.$id,
+        name: candidate.name ?? candidate.userName,
+        entityType: candidate.entityType,
+        distance: parseFloat(distance.toFixed(2)),
+        score: scoreCourier(candidate, distance),
+        rating: candidate.rating ?? 4.0,
+        phone: candidate.phone ?? null,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+
+  const first = scored[0];
+  log(
+    'Top: ' +
+      first.name +
+      ' (' +
+      first.entityType +
+      ') score:' +
+      first.score +
+      ' dist:' +
+      first.distance +
+      'km'
+  );
+
+  // ── 8. Create dispatch_queue row ───────────────────────────────────────────
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
 
-  await db
-    .updateRow({
+  let queueDoc;
+  try {
+    queueDoc = await db.createRow({
       databaseId: DB,
       tableId: DISPATCH,
-      rowId: queueId,
+      rowId: ID.unique(),
       data: {
-        currentCourierId: nextCourierId,
-        attemptIndex: nextIndex,
+        deliveryId,
+        currentCourierId: first.courierId,
+        // ── rankedCourierIds must be a comma-separated string (text column) ──
+        // NOT an array — passing an array to a text field causes a write error
+        rankedCourierIds: scored.map((c) => c.courierId).join(','),
+        rankedCouriersJson: JSON.stringify(scored),
+        attemptIndex: 0,
+        status: 'pending',
         expiresAt,
+        searchRadius: 10,
       },
-    })
-    .catch((e) => error('Queue advance failed: ' + e.message));
+    });
+  } catch (e) {
+    error('Failed to create dispatch_queue: ' + e.message);
+    return res.json({ ok: false, reason: 'queue_creation_failed' }, 500);
+  }
 
-  await db
-    .updateRow({
+  log('Queue created: ' + queueDoc.$id);
+
+  // ── 9. Mark first candidate as offered ────────────────────────────────────
+  const targetCollection = first.entityType === 'agency' ? ORGS : USERS;
+  try {
+    await db.updateRow({
       databaseId: DB,
-      tableId: collectionFor(nextEntry),
-      rowId: nextCourierId,
+      tableId: targetCollection,
+      rowId: first.courierId,
       data: {
         status: 'offered',
-        currentOfferId: queue.deliveryId,
+        currentOfferId: deliveryId,
         offerExpiresAt: expiresAt,
       },
-    })
-    .catch((e) => log('Could not mark next entity as offered: ' + e.message));
+    });
+  } catch (e) {
+    log('Could not mark entity as offered: ' + e.message);
+  }
 
   log(
-    'Advanced to ' +
-      nextEntry.entityType +
+    'Queue ' +
+      queueDoc.$id +
+      ' → offering to ' +
+      first.entityType +
       ' ' +
-      (nextIndex + 1) +
-      '/' +
-      rankedCouriers.length +
-      ': ' +
-      nextCourierId
+      first.name
   );
+
   return res.json({
     ok: true,
-    assigned: false,
-    nextCourierId,
-    nextEntityType: nextEntry.entityType,
-    attemptIndex: nextIndex,
+    queueId: queueDoc.$id,
+    offeredTo: first.name,
+    entityType: first.entityType,
+    totalCandidates: scored.length,
   });
 };

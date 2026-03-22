@@ -6,14 +6,12 @@ import { tablesDB } from '@/lib/config/Appwriteconfig';
 import useChooseAvailable from '@/hooks/useChooseAvailable';
 import {
   CheckCircle,
-  Package,
   Zap,
   Loader2, 
   TrendingUp,
   AlertCircle,
   Radio,
   RadioTower,
-  Award,
 } from 'lucide-react';
 
 const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
@@ -59,7 +57,7 @@ const AutoAssignDelivery = () => {
   useEffect(() => {
     if (status === 'assigned' && currentCourier && !assignedCourier) {
       setAssignedCourier(currentCourier);
-      setTimeout(() => router.push('/track'), 3000);
+      setTimeout(() => router.push('/track'), 2000);
     }
   }, [status, currentCourier]);
 
