@@ -19,12 +19,13 @@ export default function useChooseAvailable(deliveryId) {
   const [countdown, setCountdown] = useState(20);
   const [queueId, setQueueId] = useState(null);
   const [failReason, setFailReason] = useState('');
+
   const countdownRef = useRef(null);
   const expiresAtRef = useRef(null);
   const queueIdRef = useRef(null);
   const unsubRef = useRef(null);
   const subTimerRef = useRef(null);
-  const timedOutRef = useRef(false); // prevents double timeout firing
+  const timedOutRef = useRef(false);
 
   const stopCountdown = useCallback(() => {
     if (countdownRef.current) {
@@ -51,7 +52,6 @@ export default function useChooseAvailable(deliveryId) {
     }
   }, []);
 
-  // startCountdown reads from refs so it never captures stale values
   const startCountdown = useCallback(
     (expiresAt) => {
       // Clear any running interval first
@@ -74,7 +74,6 @@ export default function useChooseAvailable(deliveryId) {
           timedOutRef.current = true;
           clearInterval(countdownRef.current);
           countdownRef.current = null;
-          // queueIdRef always has the latest — no stale closure issue
           if (queueIdRef.current) {
             advanceDispatch(queueIdRef.current, 'timeout');
           }
@@ -95,7 +94,7 @@ export default function useChooseAvailable(deliveryId) {
 
       const current = ranked[doc.attemptIndex] ?? null;
 
-      // Update ref immediately so startCountdown/advanceDispatch always see latest
+      // Update ref immediately so countdown/advanceDispatch never go stale
       queueIdRef.current = doc.$id;
 
       setQueueId(doc.$id);
@@ -105,8 +104,12 @@ export default function useChooseAvailable(deliveryId) {
 
       if (doc.status === 'pending') {
         setStatus('offering');
-        // Restart countdown with the new expiresAt every time —
-        // this handles both the FIRST offer and every subsequent advance
+        // ── Reset failReason whenever a new offer arrives ──────────────────────
+        // This prevents a stale error message bleeding through after radius
+        // expansion creates a new queue doc
+        setFailReason('');
+        // Always restart countdown with the new expiresAt —
+        // handles both first offer and every subsequent advance
         startCountdown(doc.expiresAt);
       } else if (doc.status === 'accepted') {
         stopCountdown();
@@ -123,8 +126,9 @@ export default function useChooseAvailable(deliveryId) {
   useEffect(() => {
     if (!deliveryId) return;
 
-    // 1. Immediate REST poll — handles page refresh where WS hasn't connected
-    tablesDB.listRows({
+    // 1. Immediate REST poll — handles page refresh before WS connects
+    tablesDB
+      .listRows({
         databaseId: DB,
         tableId: DISPATCH,
         queries: [
@@ -138,7 +142,7 @@ export default function useChooseAvailable(deliveryId) {
       })
       .catch(() => {});
 
-    // 2. Subscribe after 300ms to let WS handshake complete
+    // 2. Subscribe after 300ms — lets WS handshake complete first
     subTimerRef.current = setTimeout(() => {
       const channel = `databases.${DB}.collections.${DISPATCH}.documents`;
       try {

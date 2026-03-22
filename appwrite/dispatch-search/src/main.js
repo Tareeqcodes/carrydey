@@ -49,6 +49,7 @@ export default async ({ req, res, log, error }) => {
     } else if (req.body && typeof req.body === 'object') {
       parsedBody = req.body;
     }
+    // Frontend double-wraps: { body: '{"deliveryId":"...","radiusKm":20}' }
     if (typeof parsedBody.body === 'string') {
       parsedBody = JSON.parse(parsedBody.body);
     }
@@ -57,7 +58,12 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'invalid_body' }, 400);
   }
 
+  // deliveryId: from direct call or event trigger ($id)
   const deliveryId = parsedBody.deliveryId ?? parsedBody.$id;
+  // radiusKm: from frontend call, default 10km
+  const radiusKm =
+    typeof parsedBody.radiusKm === 'number' ? parsedBody.radiusKm : 10;
+
   if (!deliveryId) {
     error(
       'Missing deliveryId. Body: ' +
@@ -66,7 +72,13 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'missing_deliveryId' }, 400);
   }
 
-  log('Starting dispatch for delivery: ' + deliveryId);
+  log(
+    'Starting dispatch for delivery: ' +
+      deliveryId +
+      ' radius: ' +
+      radiusKm +
+      'km'
+  );
 
   // ── Load delivery ──────────────────────────────────────────────────────────
   let delivery;
@@ -81,7 +93,16 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'delivery_not_found' }, 404);
   }
 
-  if (delivery.status !== 'pending') {
+  // Allow re-dispatch on 'no_couriers' status (from a previous failed attempt)
+  // Only block if already assigned/accepted
+  const blockedStatuses = [
+    'assigned',
+    'accepted',
+    'picked_up',
+    'in_transit',
+    'delivered',
+  ];
+  if (blockedStatuses.includes(delivery.status)) {
     log(
       'Delivery ' +
         deliveryId +
@@ -90,6 +111,18 @@ export default async ({ req, res, log, error }) => {
         ', skipping'
     );
     return res.json({ ok: false, reason: 'already_dispatched' });
+  }
+
+  // Reset delivery back to pending if it was no_couriers
+  if (delivery.status === 'no_couriers') {
+    await db
+      .updateRow({
+        databaseId: DB,
+        tableId: DELIVERIES,
+        rowId: deliveryId,
+        data: { status: 'pending' },
+      })
+      .catch(() => {});
   }
 
   const pickupLat = delivery.pickupLat;
@@ -101,6 +134,7 @@ export default async ({ req, res, log, error }) => {
 
   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
+  // ── Query couriers ─────────────────────────────────────────────────────────
   let couriersRes = { rows: [] };
   try {
     couriersRes = await db.listRows({
@@ -110,10 +144,10 @@ export default async ({ req, res, log, error }) => {
         Query.equal('role', 'courier'),
         Query.equal('isAvailable', true),
         Query.greaterThan('lastSeen', fifteenMinutesAgo),
-        Query.limit(50),
+        Query.limit(100),
       ],
     });
-    log('Found ' + couriersRes.rows.length + ' available couriers');
+    log('Found ' + couriersRes.rows.length + ' couriers before radius filter');
   } catch (e) {
     error('Couriers query failed: ' + e.message);
   }
@@ -126,24 +160,47 @@ export default async ({ req, res, log, error }) => {
       queries: [
         Query.equal('isAvailable', true),
         Query.greaterThan('lastSeen', fifteenMinutesAgo),
-        Query.limit(50),
+        Query.limit(100),
       ],
     });
-    log('Found ' + agenciesRes.rows.length + ' available agencies');
+    log('Found ' + agenciesRes.rows.length + ' agencies before radius filter');
   } catch (e) {
     error('Agencies query failed: ' + e.message);
   }
 
-  // ── Merge + filter to those with coordinates ───────────────────────────────
+  // ── Merge, score, filter by radiusKm ──────────────────────────────────────
   const allCandidates = [
     ...couriersRes.rows.map((c) => ({ ...c, entityType: 'courier' })),
     ...agenciesRes.rows.map((a) => ({ ...a, entityType: 'agency' })),
   ].filter((c) => c.lat != null && c.lng != null);
 
-  log('Total candidates with location: ' + allCandidates.length);
+  log('Candidates with location: ' + allCandidates.length);
 
-  if (allCandidates.length === 0) {
-    log('No candidates — marking delivery as no_couriers');
+  // Score first, then apply radius filter
+  // This lets us log how many were filtered out vs actually nearby
+  const scoredAll = allCandidates.map((c) => {
+    const distance = getDistance(pickupLat, pickupLng, c.lat, c.lng);
+    return {
+      courierId: c.$id,
+      name: c.name ?? c.userName,
+      entityType: c.entityType,
+      distance: parseFloat(distance.toFixed(2)),
+      score: scoreCourier(c, distance),
+      rating: c.rating ?? 4.0,
+      phone: c.phone ?? null,
+    };
+  });
+
+  // Apply radius filter AFTER scoring
+  const withinRadius = scoredAll
+    .filter((c) => c.distance <= radiusKm)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+
+  log('Within ' + radiusKm + 'km: ' + withinRadius.length + ' candidates');
+
+  if (withinRadius.length === 0) {
+    log('No candidates within ' + radiusKm + 'km — marking as no_couriers');
     await db
       .updateRow({
         databaseId: DB,
@@ -152,27 +209,10 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'no_couriers' },
       })
       .catch(() => {});
-    return res.json({ ok: false, reason: 'no_couriers' });
+    return res.json({ ok: false, reason: 'no_couriers', radiusKm });
   }
 
-  // ── Score + rank ───────────────────────────────────────────────────────────
-  const scored = allCandidates
-    .map((c) => {
-      const distance = getDistance(pickupLat, pickupLng, c.lat, c.lng);
-      return {
-        courierId: c.$id,
-        name: c.name ?? c.userName,
-        entityType: c.entityType,
-        distance: parseFloat(distance.toFixed(2)),
-        score: scoreCourier(c, distance),
-        rating: c.rating ?? 4.0,
-        phone: c.phone ?? null,
-      };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
-
-  const first = scored[0];
+  const first = withinRadius[0];
   log(
     'Top: ' +
       first.name +
@@ -196,12 +236,12 @@ export default async ({ req, res, log, error }) => {
       data: {
         deliveryId,
         currentCourierId: first.courierId,
-        rankedCourierIds: scored.map((c) => c.courierId).join(','),
-        rankedCouriersJson: JSON.stringify(scored),
+        rankedCourierIds: withinRadius.map((c) => c.courierId).join(','),
+        rankedCouriersJson: JSON.stringify(withinRadius),
         attemptIndex: 0,
         status: 'pending',
         expiresAt,
-        searchRadius: 10,
+        searchRadius: radiusKm,
       },
     });
   } catch (e) {
@@ -211,6 +251,9 @@ export default async ({ req, res, log, error }) => {
 
   log('Queue created: ' + queueDoc.$id);
 
+  // ── Mark first candidate as offered ───────────────────────────────────────
+  // agencies: status is boolean — use isAvailable, not status string
+  // couriers: status is text — can write 'offered'
   const isFirstAgency = first.entityType === 'agency';
   try {
     await db.updateRow({
@@ -219,13 +262,11 @@ export default async ({ req, res, log, error }) => {
       rowId: first.courierId,
       data: isFirstAgency
         ? {
-            // agency: boolean status field — use isAvailable to mark busy
             isAvailable: false,
             currentOfferId: deliveryId,
             offerExpiresAt: expiresAt,
           }
         : {
-            // courier: text status field — can write 'offered'
             status: 'offered',
             currentOfferId: deliveryId,
             offerExpiresAt: expiresAt,
@@ -249,6 +290,7 @@ export default async ({ req, res, log, error }) => {
     queueId: queueDoc.$id,
     offeredTo: first.name,
     entityType: first.entityType,
-    totalCandidates: scored.length,
+    totalCandidates: withinRadius.length,
+    radiusKm,
   });
 };
