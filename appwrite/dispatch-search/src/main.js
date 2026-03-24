@@ -41,7 +41,7 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Parse body ─────────────────────────────────────────────────────────────
+  // ── Parse body 
   let parsedBody = {};
   try {
     if (typeof req.body === 'string' && req.body.length > 0) {
