@@ -1,5 +1,17 @@
 import { Client, TablesDB } from 'node-appwrite';
 
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
+const generatePickupCode = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
+
 export default async ({ req, res, log, error }) => {
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_ENDPOINT)
@@ -70,8 +82,6 @@ export default async ({ req, res, log, error }) => {
     entry?.entityType === 'agency' ? ORGS : USERS;
 
   // ── Reset current entity back to available ─────────────────────────────────
-  // agencies: status is boolean — use isAvailable to restore availability
-  // couriers: status is text — restore to 'available'
   try {
     await db.updateRow({
       databaseId: DB,
@@ -88,21 +98,45 @@ export default async ({ req, res, log, error }) => {
   // ── ACCEPT ─────────────────────────────────────────────────────────────────
   if (action === 'accept') {
     try {
-      const isAgency = currentIsAgency;
+      // Generate codes for everyone — courier or agency
+      const pickupCode = generatePickupCode();
+      const dropoffOTP = generateOTP();
 
-      // Route assignment to correct field based on entity type
-      const deliveryUpdate = isAgency
+      // Load entity profile to get name/phone
+      let driverName = null;
+      let driverPhone = null;
+      try {
+        const profile = await db.getRow({
+          databaseId: DB,
+          tableId: collectionFor(currentEntry),
+          rowId: currentCourierId,
+        });
+        driverName = profile.userName ?? profile.name ?? null;
+        driverPhone = profile.phone ?? null;
+      } catch (e) {
+        log('Could not load entity profile: ' + e.message);
+      }
+
+      const deliveryUpdate = currentIsAgency
         ? {
-            status: 'pending', // agency still assigns a driver
+            status: 'pending', // agency still needs to assign a driver
             assignedAgencyId: currentCourierId,
             assignedCourierId: null,
             assignedAt: new Date().toISOString(),
+            pickupCode,
+            dropoffOTP,
+            driverName,
+            driverPhone,
           }
         : {
-            status: 'assigned', // courier handles directly
+            status: 'assigned',
             assignedCourierId: currentCourierId,
             assignedAgencyId: null,
             assignedAt: new Date().toISOString(),
+            pickupCode,
+            dropoffOTP,
+            driverName,
+            driverPhone,
           };
 
       await db.updateRow({
@@ -113,13 +147,11 @@ export default async ({ req, res, log, error }) => {
       });
 
       // Mark entity as on_delivery
-      // agencies: isAvailable stays false (already reset above), just clear offer fields
-      // couriers: set status to 'on_delivery'
       await db.updateRow({
         databaseId: DB,
         tableId: collectionFor(currentEntry),
         rowId: currentCourierId,
-        data: isAgency
+        data: currentIsAgency
           ? { isAvailable: false, currentOfferId: null }
           : { status: 'on_delivery', currentOfferId: null },
       });
@@ -137,13 +169,18 @@ export default async ({ req, res, log, error }) => {
           ' accepted by ' +
           currentEntry?.entityType +
           ' ' +
-          currentCourierId
+          currentCourierId +
+          ' | pickupCode: ' +
+          pickupCode
       );
+
       return res.json({
         ok: true,
         assigned: true,
         courierId: currentCourierId,
         entityType: currentEntry?.entityType,
+        pickupCode,
+        dropoffOTP,
       });
     } catch (e) {
       error('Accept failed: ' + e.message);
@@ -163,6 +200,7 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'failed', failReason: 'all_rejected' },
       })
       .catch(() => {});
+
     await db
       .updateRow({
         databaseId: DB,
@@ -171,6 +209,7 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'no_couriers' },
       })
       .catch(() => {});
+
     log(
       'All ' +
         rankedCouriers.length +
@@ -198,7 +237,6 @@ export default async ({ req, res, log, error }) => {
     })
     .catch((e) => error('Queue advance failed: ' + e.message));
 
-  // Mark next candidate as offered — respect the status field type per collection
   await db
     .updateRow({
       databaseId: DB,
@@ -228,6 +266,7 @@ export default async ({ req, res, log, error }) => {
       ': ' +
       nextCourierId
   );
+
   return res.json({
     ok: true,
     assigned: false,

@@ -351,7 +351,6 @@ function GuestInfoModal({
   );
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
 export default function DeliveryBookingPage({
   isAgencyBooking = false,
   agency = null,
@@ -362,7 +361,7 @@ export default function DeliveryBookingPage({
   initialPickup = null,
   initialDropoff = null,
   initialRouteData = null,
-  onBack,
+  // onBack,
 }) {
   const { brandColors } = useBrandColors();
   const [pickup, setPickup] = useState(initialPickup);

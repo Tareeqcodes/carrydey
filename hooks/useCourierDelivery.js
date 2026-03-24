@@ -1,7 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
-import { generateOTP, generatePickupCode } from '@/hooks/otpGenerator';
+
+const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+const DELIVERIES = process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID;
+const USERS = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
 
 export const useCourierDelivery = (userId) => {
   const [courier, setCourier] = useState(null);
@@ -9,35 +12,33 @@ export const useCourierDelivery = (userId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Stable ref — refresh() always has the latest courier ID regardless of
+  // when it is called relative to React's render cycle
+  const courierRef = useRef(null);
+
   const fetchCourier = async () => {
     if (!userId) return null;
-
     const res = await tablesDB.listRows({
-      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-      tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-      queries: [
-        Query.equal('userId', userId),
-        Query.equal('role', 'courier'),
-      ],
+      databaseId: DB,
+      tableId: USERS,
+      queries: [Query.equal('userId', userId), Query.equal('role', 'courier')],
     });
-
     return res.rows?.[0] || null;
   };
 
-  const fetchCourierDeliveries = async (courierId) => {
-    console.log('Fetching for courierId:', courierId); 
-  const assignedRes = await tablesDB.listRows({
-    databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-    tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-    queries: [
-      Query.equal('assignedCourierId', courierId),
-      Query.orderDesc('$createdAt'),
-      Query.limit(100),
-    ],
-  });
-
-  setDeliveries(assignedRes.rows || []);
-};
+  const fetchCourierDeliveries = useCallback(async (courierId) => {
+    if (!courierId) return;
+    const res = await tablesDB.listRows({
+      databaseId: DB,
+      tableId: DELIVERIES,
+      queries: [
+        Query.equal('assignedCourierId', courierId),
+        Query.orderDesc('$createdAt'),
+        Query.limit(100),
+      ],
+    });
+    setDeliveries(res.rows || []);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -46,6 +47,7 @@ export const useCourierDelivery = (userId) => {
         setError(null);
 
         const courierProfile = await fetchCourier();
+        courierRef.current = courierProfile;
         setCourier(courierProfile);
 
         if (courierProfile) {
@@ -62,42 +64,14 @@ export const useCourierDelivery = (userId) => {
     load();
   }, [userId]);
 
-  const acceptRequest = async (requestId) => {
-    try {
-      const request = deliveries.find((r) => r.$id === requestId);
-      if (!request)  return { success: false, error: 'Request not found' };
-      if (!courier)  return { success: false, error: 'Courier profile not found' };
+  // Always reads from ref — safe to call from any async callback
+  const refresh = useCallback(async () => {
+    const id = courierRef.current?.$id;
+    if (!id) return;
+    await fetchCourierDeliveries(id);
+  }, [fetchCourierDeliveries]);
 
-      const pickupCode = generatePickupCode();
-      const dropoffOTP = generateOTP();
-
-      const response = await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId:      requestId,
-        data: {
-          status:            'accepted',
-          assignedCourierId: courier.$id,
-          pickupCode,
-          dropoffOTP,
-          driverName:  courier.userName,
-          driverPhone: courier.phone ?? null,
-        },
-      });
-
-      setDeliveries((prev) =>
-        prev.map((delivery) =>
-          delivery.$id === requestId ? { ...delivery, ...response } : delivery
-        )
-      );
-
-      return { success: true, data: response, pickupCode, dropoffOTP };
-    } catch (err) {
-      console.error('Error accepting request:', err);
-      return { success: false, error: err.message };
-    }
-  };
-
+  // ── confirmPickup ────────────────────────────────────────────────────────
   const confirmPickup = async (deliveryId, enteredCode) => {
     try {
       const delivery = deliveries.find((d) => d.$id === deliveryId);
@@ -108,9 +82,9 @@ export const useCourierDelivery = (userId) => {
       }
 
       const response = await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId:      deliveryId,
+        databaseId: DB,
+        tableId: DELIVERIES,
+        rowId: deliveryId,
         data: { status: 'picked_up' },
       });
 
@@ -125,6 +99,7 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
+  // ── confirmDelivery ──────────────────────────────────────────────────────
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
       const delivery = deliveries.find((d) => d.$id === deliveryId);
@@ -135,12 +110,12 @@ export const useCourierDelivery = (userId) => {
       }
 
       const response = await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId:      deliveryId,
+        databaseId: DB,
+        tableId: DELIVERIES,
+        rowId: deliveryId,
         data: {
-          status:      'delivered',
-          driverName:  null,
+          status: 'delivered',
+          driverName: null,
           driverPhone: null,
         },
       });
@@ -156,21 +131,18 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
+  // ── updateDeliveryStatus ─────────────────────────────────────────────────
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
     try {
       const response = await tablesDB.updateRow({
-        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        tableId:    process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-        rowId:      deliveryId,
+        databaseId: DB,
+        tableId: DELIVERIES,
+        rowId: deliveryId,
         data: { status: newStatus },
       });
 
       setDeliveries((prev) =>
-        prev.map((delivery) =>
-          delivery.$id === deliveryId
-            ? { ...delivery, ...response }
-            : delivery
-        )
+        prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
 
       return { success: true, data: response };
@@ -180,17 +152,11 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
-  const refresh = async () => {
-    if (!courier) return;
-    await fetchCourierDeliveries(courier.$id);
-  };
-
   return {
     courier,
     deliveries,
     loading,
     error,
-    acceptRequest,
     confirmPickup,
     confirmDelivery,
     updateDeliveryStatus,

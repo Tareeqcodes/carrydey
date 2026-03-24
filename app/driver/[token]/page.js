@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, useCallback, use, useRef } from 'react';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import { freeDriverFromDelivery } from '@/utils/Driverutils';
+import { BrandColorsProvider, useBrandColors } from '@/hooks/BrandColors';
 import {
   Package,
   MapPin,
@@ -26,6 +27,8 @@ const STATUS_FLOW = {
 const formatAddress = (addr) => addr || '—';
 
 const StepBar = ({ status }) => {
+  const { brandColors } = useBrandColors();
+
   const steps = [
     { key: 'assigned', label: 'Assigned' },
     { key: 'picked_up', label: 'Picked Up' },
@@ -49,14 +52,24 @@ const StepBar = ({ status }) => {
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all"
                 style={{
-                  background: done ? '#3A0A21' : active ? '#F9F0F3' : '#F3F4F6',
-                  color: done ? '#fff' : active ? '#3A0A21' : '#9CA3AF',
+                  background: done
+                    ? brandColors.primary
+                    : active
+                      ? `${brandColors.primary}15`
+                      : '#F3F4F6',
+                  color: done
+                    ? '#fff'
+                    : active
+                      ? brandColors.primary
+                      : '#9CA3AF',
                   border: active
-                    ? '2px solid #3A0A21'
+                    ? `2px solid ${brandColors.primary}`
                     : done
                       ? 'none'
                       : '2px solid #E5E7EB',
-                  boxShadow: active ? '0 0 0 3px rgba(58,10,33,0.15)' : 'none',
+                  boxShadow: active
+                    ? `0 0 0 3px ${brandColors.primary}25`
+                    : 'none',
                 }}
               >
                 {done && !active ? (
@@ -67,7 +80,7 @@ const StepBar = ({ status }) => {
               </div>
               <span
                 className="text-[9px] font-bold whitespace-nowrap"
-                style={{ color: done ? '#3A0A21' : '#9CA3AF' }}
+                style={{ color: done ? brandColors.primary : '#9CA3AF' }}
               >
                 {step.label}
               </span>
@@ -76,7 +89,8 @@ const StepBar = ({ status }) => {
               <div
                 className="flex-1 h-0.5 mx-1 mb-4 transition-all"
                 style={{
-                  background: currentStep > i + 1 ? '#3A0A21' : '#E5E7EB',
+                  background:
+                    currentStep > i + 1 ? brandColors.primary : '#E5E7EB',
                 }}
               />
             )}
@@ -88,6 +102,7 @@ const StepBar = ({ status }) => {
 };
 
 const CodeInput = ({ label, length = 6, onSubmit, loading, hint, error }) => {
+  const { brandColors } = useBrandColors();
   const [values, setValues] = useState(Array(length).fill(''));
   const [showCode, setShowCode] = useState(false);
 
@@ -151,9 +166,13 @@ const CodeInput = ({ label, length = 6, onSubmit, loading, hint, error }) => {
             onPaste={handlePaste}
             className="w-10 h-12 text-center text-sm font-black rounded-xl border-2 outline-none transition-all"
             style={{
-              borderColor: val ? '#3A0A21' : error ? '#EF4444' : '#E5E7EB',
-              background: val ? '#F9F0F3' : '#FAFAFA',
-              color: '#3A0A21',
+              borderColor: val
+                ? brandColors.primary
+                : error
+                  ? '#EF4444'
+                  : '#E5E7EB',
+              background: val ? `${brandColors.primary}10` : '#FAFAFA',
+              color: brandColors.primary,
             }}
           />
         ))}
@@ -180,9 +199,12 @@ const CodeInput = ({ label, length = 6, onSubmit, loading, hint, error }) => {
         onClick={() => onSubmit(code)}
         className="w-full py-3 rounded-xl text-sm font-black text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         style={{
-          background: isComplete && !loading ? '#3A0A21' : '#9CA3AF',
+          background:
+            isComplete && !loading ? brandColors.primary : '#9CA3AF',
           boxShadow:
-            isComplete && !loading ? '0 4px 16px rgba(58,10,33,0.3)' : 'none',
+            isComplete && !loading
+              ? `0 4px 16px ${brandColors.primary}50`
+              : 'none',
         }}
       >
         {loading ? (
@@ -196,20 +218,25 @@ const CodeInput = ({ label, length = 6, onSubmit, loading, hint, error }) => {
   );
 };
 
-export default function DriverPortalPage({ params }) {
-  const { token } = use(params);
+function DriverPortalInner({ token }) {
+  const { brandColors } = useBrandColors();
 
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [actionLoading, _setActionLoading] = useState(false);
+  const actionLoadingRef = useRef(false);
   const [error, setError] = useState(null);
   const [codeError, setCodeError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const setActionLoading = (val) => {
+    actionLoadingRef.current = val;
+    _setActionLoading(val);
+  };
 
   const fetchDelivery = useCallback(async () => {
     if (!token) return;
+    if (actionLoadingRef.current) return;
     try {
-      setLoading(true);
       const response = await tablesDB.listRows({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
@@ -219,9 +246,10 @@ export default function DriverPortalPage({ params }) {
         setError('This link is invalid or has expired.');
         return;
       }
-      setDelivery(response.rows[0]);
+      setDelivery((prev) =>
+        prev ? { ...prev, ...response.rows[0] } : response.rows[0]
+      );
     } catch {
-      setError('Could not load delivery details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -284,26 +312,18 @@ export default function DriverPortalPage({ params }) {
         setCodeError('Wrong OTP — ask the recipient for the correct code');
         return;
       }
-
-      // 1. Mark delivery as delivered
       await tablesDB.updateRow({
         databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
         rowId: delivery.$id,
         data: { status: 'delivered' },
       });
-
-      // 2. Free the driver — uses shared util, same as agency dashboard
-      //    NOT in a silent catch — we want to know if this fails
       if (delivery.driverId) {
         await freeDriverFromDelivery(delivery.driverId, delivery.$id);
       }
-
       setDelivery((prev) => ({ ...prev, status: 'delivered' }));
       setSuccess('Delivery complete! Great work.');
     } catch (err) {
-      // If driver cleanup fails, delivery is still marked delivered
-      // but log clearly so it can be investigated
       console.error('Delivery confirmed but driver cleanup failed:', err);
       setDelivery((prev) => ({ ...prev, status: 'delivered' }));
       setSuccess('Delivery complete! Great work.');
@@ -318,7 +338,7 @@ export default function DriverPortalPage({ params }) {
         <div className="flex flex-col items-center gap-3">
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{ background: '#3A0A21' }}
+            style={{ background: brandColors.primary }}
           >
             <Truck className="w-6 h-6 text-white animate-pulse" />
           </div>
@@ -377,8 +397,9 @@ export default function DriverPortalPage({ params }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div style={{ background: '#3A0A21' }} className="px-4 pt-10 pb-6">
-        <div className="max-w-md mx-auto">
+      {/* Header */}
+     
+        <div className="max-w-md mx-auto style={{ background: brandColors.primary }}">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
               <Truck className="w-5 h-5 text-white" />
@@ -396,7 +417,7 @@ export default function DriverPortalPage({ params }) {
             <StepBar status={delivery?.status} />
           </div>
         </div>
-      </div>
+      
 
       <div className="max-w-md mx-auto px-4 py-5 space-y-4">
         {success && (
@@ -414,6 +435,7 @@ export default function DriverPortalPage({ params }) {
             </p>
           </div>
           <div className="p-4 space-y-3">
+            {/* Pickup */}
             <div className="flex gap-3">
               <div className="flex flex-col items-center gap-0.5 pt-0.5">
                 <div className="w-3 h-3 rounded-full border-2 border-green-500 bg-green-100 flex-shrink-0" />
@@ -428,7 +450,8 @@ export default function DriverPortalPage({ params }) {
                 </p>
                 {(delivery?.guestName || delivery?.pickupContactName) && (
                   <p className="text-[10px] text-gray-500 mt-0.5">
-                    Contact: {delivery.guestName || delivery.pickupContactName}
+                    Contact:{' '}
+                    {delivery.guestName || delivery.pickupContactName}
                   </p>
                 )}
                 {(delivery?.guestPhone || delivery?.pickupPhone) && (
@@ -441,6 +464,7 @@ export default function DriverPortalPage({ params }) {
                 )}
               </div>
             </div>
+            {/* Dropoff */}
             <div className="flex gap-3">
               <div className="pt-0.5 flex-shrink-0">
                 <div className="w-3 h-3 rounded-full border-2 border-red-400 bg-red-100" />
@@ -460,9 +484,9 @@ export default function DriverPortalPage({ params }) {
                     </p>
                   </div>
                 )}
-                {(delivery?.dropoffPhone) && (
+                {delivery?.dropoffPhone && (
                   <a
-                    href={`tel:${ delivery.dropoffPhone}`}
+                    href={`tel:${delivery.dropoffPhone}`}
                     className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-50 border border-red-200 mt-2 flex-shrink-0"
                   >
                     <Phone className="w-3.5 h-3.5 text-red-600" />
@@ -499,9 +523,12 @@ export default function DriverPortalPage({ params }) {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: '#F9F0F3' }}
+              style={{ background: `${brandColors.primary}12` }}
             >
-              <Package className="w-5 h-5" style={{ color: '#3A0A21' }} />
+              <Package
+                className="w-5 h-5"
+                style={{ color: brandColors.primary }}
+              />
             </div>
             <div>
               <p className="text-sm font-bold text-gray-900 capitalize">
@@ -518,7 +545,10 @@ export default function DriverPortalPage({ params }) {
 
         {/* ASSIGNED → confirm pickup */}
         {delivery?.status === 'assigned' && (
-          <div className="bg-white rounded-2xl border border-blue-200 shadow-sm p-4">
+          <div
+            className="bg-white rounded-2xl shadow-sm p-4"
+            style={{ border: `1px solid ${brandColors.primary}30` }}
+          >
             <CodeInput
               label="Pickup Code"
               length={6}
@@ -573,5 +603,62 @@ export default function DriverPortalPage({ params }) {
         </p>
       </div>
     </div>
+  );
+}
+
+// ── Outer shell — fetches agency colors then provides them ────────────────
+export default function DriverPortalPage({ params }) {
+  const { token } = use(params);
+
+  const [agencyBrandColors, setAgencyBrandColors] = useState({
+    primary: '#3A0A21',
+    secondary: '#5A1A41',
+    accent: '#8B2E5A',
+  });
+
+  // Fetch delivery once just to get assignedAgencyId, then fetch agency colors.
+  // DriverPortalInner has its own full fetch+poll cycle — this is a one-shot
+  // lightweight pre-fetch purely for brand colors.
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await tablesDB.listRows({
+          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+          tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+          queries: [Query.equal('driverToken', token), Query.limit(1)],
+        });
+        const delivery = res.rows?.[0];
+        if (!delivery?.assignedAgencyId || cancelled) return;
+
+        const agencyRes = await tablesDB.listRows({
+          databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+          tableId:
+            process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID,
+          queries: [
+            Query.equal('$id', delivery.assignedAgencyId),
+            Query.limit(1),
+          ],
+        });
+        const agencyData = agencyRes.rows?.[0];
+        if (!agencyData?.brandColors || cancelled) return;
+
+        setAgencyBrandColors(JSON.parse(agencyData.brandColors));
+      } catch {
+        // Falls back to default Carrydey maroon — no visible error needed
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  return (
+    <BrandColorsProvider initialColors={agencyBrandColors}>
+      <DriverPortalInner token={token} />
+    </BrandColorsProvider>
   );
 }

@@ -1,41 +1,44 @@
+
 'use client';
-import { X, Zap } from 'lucide-react';
+import { X, Zap, CheckCircle, Loader2 } from 'lucide-react';
 
 const OFFER_DURATION_S = 20;
 
-/**
- * OfferBanner
- *
- * Bottom-sheet offer notification shared between courier and agency dashboards.
- * Rendered by the parent only when `incomingOffer` is not null.
- *
- * Props:
- *   offerCountdown  number   seconds remaining
- *   onAccept        () => void
- *   onDecline       () => void
- *   label           string   optional descriptor shown under the countdown
- *                            e.g. "A delivery has been matched to you."
- */
 const OfferBanner = ({
   offerCountdown,
   onAccept,
   onDecline,
   label = 'A delivery has been matched to you. Accept before time runs out.',
+  accepting = false,   // ← new prop
 }) => {
-  const circumference = 2 * Math.PI * 36; // r=36
+  const circumference = 2 * Math.PI * 36;
   const dashOffset = circumference * (1 - offerCountdown / OFFER_DURATION_S);
+
+  if (accepting) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        <div className="relative w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl">
+          <div className="flex flex-col items-center gap-3 py-4">
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-green-500" />
+            </div>
+            <p className="font-black text-lg text-gray-900">Offer Accepted!</p>
+            <p className="text-sm text-gray-500">Loading your delivery...</p>
+            <Loader2 className="w-5 h-5 animate-spin text-orange-500 mt-1" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onDecline}
       />
-
-      {/* Sheet */}
       <div className="relative w-full max-w-md bg-white rounded-t-3xl p-6 shadow-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
@@ -48,25 +51,13 @@ const OfferBanner = ({
           </button>
         </div>
 
-        {/* Countdown ring */}
         <div className="flex justify-center mb-4">
           <div className="relative w-20 h-20">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="36" stroke="#e5e7eb" strokeWidth="5" fill="none" />
               <circle
-                cx="40"
-                cy="40"
-                r="36"
-                stroke="#e5e7eb"
-                strokeWidth="5"
-                fill="none"
-              />
-              <circle
-                cx="40"
-                cy="40"
-                r="36"
-                stroke="#FF6B35"
-                strokeWidth="5"
-                fill="none"
+                cx="40" cy="40" r="36"
+                stroke="#FF6B35" strokeWidth="5" fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={dashOffset}
                 strokeLinecap="round"
@@ -81,7 +72,6 @@ const OfferBanner = ({
 
         <p className="text-center text-sm text-gray-500 mb-6">{label}</p>
 
-        {/* Actions */}
         <div className="flex gap-3">
           <button
             onClick={onDecline}

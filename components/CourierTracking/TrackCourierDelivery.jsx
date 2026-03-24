@@ -11,19 +11,20 @@ import PickupCodeModal from '../Agencytrack/PickupCodeModal';
 import DropoffOTPModal from '../Agencytrack/DropoffOTPModal';
 import Couriersidebar from './Couriersidebar';
 import Courierpendingdelivery from './Courierpendingdelivery';
-import CourierActiveDelivery from './Courieractivedelivery';
+import CourierActiveDelivery from './CourierActiveDelivery';
 import CourierHistory from './CourierHistory';
 import OfferBanner from '@/components/OfferBanner';
 
 const DB    = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const USERS = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
 
-const TrackCourierDelivery = () => {
+const TrackCourierDelivery = () => { 
   const { user } = useAuth();
   const locationIntervalRef = useRef(null);
 
   const [activePage, setActivePage]     = useState('deliveries');
   const [isAccepting, setIsAccepting]   = useState(false);
+  const [accepting, setAccepting]       = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [copiedCode, setCopiedCode]     = useState(null);
   const [selectedDeliveryForPickup, setSelectedDeliveryForPickup]   = useState(null);
@@ -40,12 +41,21 @@ const TrackCourierDelivery = () => {
     refresh,
   } = useCourierDelivery(user?.$id);
 
-  // ── Dispatch offer (replaces all the duplicated offer state/timer/sub) ───
   const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
     useDispatchOffer(courier?.$id, USERS, {
-      // After accepting via the dispatch queue, refresh the delivery list
       onAccepted: () => refresh(),
     });
+
+  // ── Wrap acceptOffer to show confirmation state before closing ──
+  const handleAcceptOffer = async () => {
+    setAccepting(true);
+    await acceptOffer();
+    // Keep confirmation screen visible while refresh() loads the new delivery
+    setTimeout(() => {
+      setAccepting(false);
+      setActivePage('active'); // auto-switch to active tab so courier sees it
+    }, 2000);
+  };
 
   //  Location ping 
   useEffect(() => {
@@ -63,7 +73,6 @@ const TrackCourierDelivery = () => {
               lat: pos.coords.latitude,
               lng: pos.coords.longitude,
               lastSeen: new Date().toISOString(),
-           
               isAvailable: true,
             },
           });
@@ -87,7 +96,6 @@ const TrackCourierDelivery = () => {
     };
   }, [courier?.$id]);
 
-  // Delivery action handlers 
   const pendingDeliveries   = allDeliveries.filter((d) => d.status === 'pending');
   const activeDeliveries    = allDeliveries.filter((d) =>
     ['accepted', 'assigned', 'picked_up', 'in_transit'].includes(d.status)
@@ -133,7 +141,6 @@ const TrackCourierDelivery = () => {
     else alert(result.error || 'Failed to update status');
   };
 
-  // ── Page renderer ─────────────────────────────────────────────────────────
   const renderPage = () => {
     switch (activePage) {
       case 'deliveries':
@@ -260,12 +267,13 @@ const TrackCourierDelivery = () => {
         </main>
       </div>
 
-      {/* ── Shared offer banner ── */}
-      {incomingOffer && (
+      {/* ── Shared offer banner — stays mounted during accepting state ── */}
+      {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}
-          onAccept={acceptOffer}
+          onAccept={handleAcceptOffer}
           onDecline={declineOffer}
+          accepting={accepting}
         />
       )}
 

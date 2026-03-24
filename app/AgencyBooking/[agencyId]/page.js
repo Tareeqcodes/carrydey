@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { AlertCircle,  } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { BrandColorsProvider } from '@/hooks/BrandColors';
@@ -59,7 +59,6 @@ function checkAvailability(agencyData) {
   return { isOpen: true, message: `Open until ${day.to}` };
 }
 
-/* ─── page ────────────────────────────────────────────────── */
 export default function AgencyBookingPage() {
   const params = useParams();
   const router = useRouter();
@@ -116,19 +115,18 @@ export default function AgencyBookingPage() {
     }
   };
 
-  /**
-   * Called by DeliveryBookingPage after guest info is submitted.
-   * guestInfo = { name, phone, dropoffPhone }
-   */
   const handleConfirmed = async (
     packageDetails,
     fareDetails,
     pickup,
-    dropoff,
+    dropoffs,
     routeData,
     guestInfo
   ) => {
-    if (!pickup || !dropoff || !routeData) return;
+    if (!pickup || !dropoffs?.length || !routeData) return;
+
+    const primary = dropoffs[0];
+
     setLoading(true);
     try {
       const deliveryId = ID.unique();
@@ -143,14 +141,17 @@ export default function AgencyBookingPage() {
           pickupLat: pickup.geometry.coordinates[1],
           pickupLng: pickup.geometry.coordinates[0],
           dropoffAddress:
-            dropoff.place_name?.substring(0, 500) || 'Dropoff location',
-          dropoffLat: dropoff.geometry.coordinates[1],
-          dropoffLng: dropoff.geometry.coordinates[0],
+            (primary.location?.place_name || primary.address || '').substring(
+              0,
+              500
+            ) || 'Dropoff location',
+          dropoffLat: primary.location?.geometry?.coordinates[1] ?? null,
+          dropoffLng: primary.location?.geometry?.coordinates[0] ?? null,
           distance: parseFloat(routeData.distance),
           duration: parseInt(routeData.duration),
           status: 'pending',
           dropoffPhone:
-            guestInfo.dropoffPhone ||
+            guestInfo?.dropoffPhone ||
             packageDetails?.dropoffContact?.dropoffPhone,
           dropoffInstructions:
             packageDetails?.dropoffContact?.dropoffInstructions,
@@ -163,9 +164,9 @@ export default function AgencyBookingPage() {
           packageDescription: packageDetails?.description,
           isFragile: packageDetails?.isFragile || false,
           pickupTime: packageDetails?.pickupTime || 'courier',
-          guestName: guestInfo.name,
+          guestName: guestInfo?.name,
           isGuestBooking: true,
-          guestPhone: guestInfo.phone,
+          guestPhone: guestInfo?.phone,
           assignedAgencyId: agencyId,
           userId: null,
           trackingToken,
@@ -180,7 +181,6 @@ export default function AgencyBookingPage() {
     }
   };
 
-  /* ── loading state ── */
   if (loadingAgency) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">

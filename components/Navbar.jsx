@@ -124,9 +124,7 @@ const Navbar = () => {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-[#3A0A21] rounded-lg flex items-center justify-center group-hover:bg-[#5C1438] transition-colors">
-            <span className="text-white font-bold text-sm">C</span>
-          </div>
+          
           <span className="text-lg font-bold text-[#3A0A21] tracking-tight">
             Carrydey
           </span>
@@ -181,9 +179,7 @@ const Navbar = () => {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-[#3A0A21] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xs">C</span>
-          </div>
+          
           <span className="text-base font-bold text-[#3A0A21] tracking-tight">
             Carrydey
           </span>
