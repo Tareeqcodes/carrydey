@@ -134,7 +134,7 @@ const CourierActiveDelivery = ({
 
             {isDeliveryPhase && delivery.dropoffOTP && (
               <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <p className="text-xs font-semibold text-gray-600 mb-2">DELIVERY OTP</p>
+                <p className="text-xs font-semibold text-gray-600 mb-2">DROPOFF OTP</p>
                 <div className="flex items-center justify-between">
                   <p className="text-2xl font-mono font-bold text-gray-900 tracking-widest">
                     {delivery.dropoffOTP}
