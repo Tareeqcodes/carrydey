@@ -8,10 +8,15 @@ const Couriersidebar = ({
   setSidebarOpen,
 }) => {
   const navItems = [
+    // {
+    //   id: 'deliveries',
+    //   label: 'Pending Requests',
+    //   icon: Package,
+    // },
     {
-      id: 'deliveries',
-      label: 'Pending Requests',
-      icon: Package,
+      id: 'earnings',
+      label: 'Earnings',
+      icon: DollarSign,
     },
     {
       id: 'active',
@@ -23,11 +28,7 @@ const Couriersidebar = ({
       label: 'History',
       icon: History,
     },
-    {
-      id: 'earnings',
-      label: 'Earnings',
-      icon: DollarSign,
-    },
+    
     {
       id: 'profile',
       label: 'Profile',

@@ -22,7 +22,7 @@ const TrackCourierDelivery = () => {
   const { user } = useAuth();
   const locationIntervalRef = useRef(null);
 
-  const [activePage, setActivePage]     = useState('deliveries');
+  const [activePage, setActivePage]     = useState('earnings');
   const [isAccepting, setIsAccepting]   = useState(false);
   const [accepting, setAccepting]       = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
@@ -143,16 +143,16 @@ const TrackCourierDelivery = () => {
 
   const renderPage = () => {
     switch (activePage) {
-      case 'deliveries':
-        return (
-          <Courierpendingdelivery
-            deliveries={pendingDeliveries}
-            allDeliveries={allDeliveries}
-            loading={loading}
-            isAccepting={isAccepting}
-            onAcceptDelivery={handleAcceptDelivery}
-          />
-        );
+      // case 'deliveries':
+      //   return (
+      //     <Courierpendingdelivery
+      //       deliveries={pendingDeliveries}
+      //       allDeliveries={allDeliveries}
+      //       loading={loading}
+      //       isAccepting={isAccepting}
+      //       onAcceptDelivery={handleAcceptDelivery}
+      //     />
+      //   );
       case 'active':
         return (
           <CourierActiveDelivery

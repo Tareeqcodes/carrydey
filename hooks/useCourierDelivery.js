@@ -12,8 +12,6 @@ export const useCourierDelivery = (userId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Stable ref — refresh() always has the latest courier ID regardless of
-  // when it is called relative to React's render cycle
   const courierRef = useRef(null);
 
   const fetchCourier = async () => {

@@ -13,7 +13,7 @@ import { formatNairaSimple } from '@/hooks/currency';
 
 const CourierActiveDelivery = ({
   deliveries,
-  allDeliveries,
+  // allDeliveries,
   loading,
   copiedCode,
   onCopyCode,
@@ -328,16 +328,7 @@ const CourierActiveDelivery = ({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-3xl p-6 border border-blue-200/50">
-          <div className="flex items-center justify-between mb-3">
-            
-            <div className="text-right">
-              <p className="text-3xl font-bold text-blue-900">{deliveries.length}</p>
-            </div>
-          </div>
-          <p className="text-sm font-semibold text-blue-900">Active</p>
-          <p className="text-xs text-blue-700 mt-1">In progress</p>
-        </div> */}
+        
 
         <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-3xl p-6 border border-purple-200/50">
           <div className="flex items-center justify-between mb-3">
