@@ -122,7 +122,6 @@ export default async ({ req, res, log, error }) => {
             status: 'pending', // agency still needs to assign a driver
             assignedAgencyId: currentCourierId,
             assignedCourierId: null,
-            assignedAt: new Date().toISOString(),
             pickupCode,
             dropoffOTP,
             driverName,
@@ -132,7 +131,6 @@ export default async ({ req, res, log, error }) => {
             status: 'assigned',
             assignedCourierId: currentCourierId,
             assignedAgencyId: null,
-            assignedAt: new Date().toISOString(),
             pickupCode,
             dropoffOTP,
             driverName,
@@ -188,7 +186,7 @@ export default async ({ req, res, log, error }) => {
     }
   }
 
-  // ── DECLINE or TIMEOUT ─────────────────────────────────────────────────────
+  // ── DECLINE or TIMEOUT 
   const nextIndex = currentIndex + 1;
 
   if (nextIndex >= rankedCouriers.length) {
