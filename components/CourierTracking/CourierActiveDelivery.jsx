@@ -60,46 +60,50 @@ const CourierActiveDelivery = ({
           className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
         >
           <div className="flex flex-col gap-3">
-            {/* Status Row */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getStatusDot(delivery.status)}`} />
-                <span className="text-sm font-medium text-gray-700 flex-shrink-0">{getStatusLabel(delivery.status)}</span>
-                <span className="text-xs font-medium text-gray-400 flex-shrink-0">
+            {/* Top Row - Status and Info Card */}
+            <div className="flex items-start justify-between gap-3">
+              {/* Left: Status and Date */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getStatusDot(delivery.status)}`} />
+                  <span className="text-xs sm:text-sm font-semibold text-gray-700">{getStatusLabel(delivery.status)}</span>
+                </div>
+                <p className="text-[10px] text-gray-500">
                   {new Date(delivery.$createdAt).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                   })}
-                </span>
+                </p>
               </div>
-              <ChevronDown 
-                className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
-              />
+
+              {/* Right: Fare & Distance Info Card */}
+              <div className="flex items-start gap-4 sm:gap-6">
+                <div className="text-right">
+                  <p className="text-sm font-bold text-gray-900">
+                    {formatNairaSimple(delivery.offeredFare)}
+                  </p>
+                  <p className="text-[10px] text-gray-500 font-medium">
+                    {(delivery.distance / 1000).toFixed(1)} km
+                  </p>
+                </div>
+                <ChevronDown 
+                  className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 mt-0.5 ${isExpanded ? 'rotate-180' : ''}`}
+                />
+              </div>
             </div>
             
             {/* Addresses */}
-            <div className="flex flex-col gap-1.5 min-w-0">
-              <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{delivery.pickupAddress}</span>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex gap-2 text-xs sm:text-sm text-gray-600 overflow-hidden">
+                <MapPin className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <span className="break-words overflow-hidden">{delivery.pickupAddress}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 min-w-0">
-                <span className="text-xs flex-shrink-0">→</span>
-                <span className="truncate">{delivery.dropoffAddress}</span>
+              <div className="flex gap-2 text-xs sm:text-sm text-gray-500 overflow-hidden">
+                <MapPin className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <span className="break-words overflow-hidden">{delivery.dropoffAddress}</span>
               </div>
             </div>
 
-            {/* Price and Distance */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-shrink-0">
-                <p className="text-lg font-semibold text-gray-900">
-                  {formatNairaSimple(delivery.offeredFare)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {(delivery.distance / 1000).toFixed(1)} km
-                </p>
-              </div>
-            </div>
           </div>
         </div>
 
