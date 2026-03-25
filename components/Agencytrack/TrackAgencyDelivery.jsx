@@ -25,7 +25,6 @@ import OfferBanner from '@/components/OfferBanner';
 const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const ORGS = process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID;
 
-// Pick the best available driver — prefers those with fewest active deliveries
 function pickBestDriver(drivers) {
   const available = drivers.filter((d) => d.status === 'available');
   if (!available.length) return null;
@@ -46,6 +45,7 @@ const TrackAgencyDelivery = () => {
 
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [accepting, setAccepting] = useState(false);
 
   const [assignmentModal, setAssignmentModal] = useState({
     isOpen: false,
@@ -53,6 +53,7 @@ const TrackAgencyDelivery = () => {
     selectedDriver: null,
     deliveryDetails: null,
   });
+
   const closeAssignmentModal = () =>
     setAssignmentModal({
       isOpen: false,
@@ -60,6 +61,7 @@ const TrackAgencyDelivery = () => {
       selectedDriver: null,
       deliveryDetails: null,
     });
+
   const openAssignmentModal = (delivery, preSelectedDriverId = null) =>
     setAssignmentModal({
       isOpen: true,
@@ -98,8 +100,6 @@ const TrackAgencyDelivery = () => {
     refreshDeliveries,
   } = useDeliveryManagement(agencyId, freeDriverFromDelivery);
 
-  // ── Shared assignment logic — used by both auto-dispatch and manual modal ──
-  // Single function, no duplication
   const completeAssignment = useCallback(
     async (deliveryId, driver) => {
       await assignDelivery(deliveryId, driver.$id, driver.name, driver.phone);
@@ -111,9 +111,9 @@ const TrackAgencyDelivery = () => {
     [assignDelivery, assignDriverToDelivery]
   );
 
-  // ── Called when agency accepts an offer via OfferBanner ───────────────────
   const handleDispatchAccepted = useCallback(
     async (deliveryId) => {
+      await refreshDeliveries();
       const bestDriver = pickBestDriver(drivers);
 
       if (!bestDriver) {
@@ -154,11 +154,21 @@ const TrackAgencyDelivery = () => {
         } catch (_) {}
       }
     },
-    [drivers, completeAssignment]
+    [drivers, completeAssignment, refreshDeliveries]
   );
 
-  //  Called when agency manually accepts from RequestsPage 
-  
+  const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
+    useDispatchOffer(agencyId, ORGS, { onAccepted: handleDispatchAccepted });
+
+  const handleAcceptOffer = useCallback(async () => {
+    setAccepting(true);
+    await acceptOffer();
+    setTimeout(() => {
+      setAccepting(false);
+      setActivePage('active'); 
+    }, 2000);
+  }, [acceptOffer]);
+
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);
     if (result?.success) {
@@ -172,7 +182,6 @@ const TrackAgencyDelivery = () => {
     return result;
   };
 
-  // Called when agency confirms driver selection in AssignmentModal 
   const handleCompleteAssignment = async () => {
     if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
     const driver = drivers.find(
@@ -185,11 +194,7 @@ const TrackAgencyDelivery = () => {
     closeAssignmentModal();
   };
 
-  // ─Dispatch offer 
-  const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
-    useDispatchOffer(agencyId, ORGS, { onAccepted: handleDispatchAccepted });
-
-  //  Location
+  //  Location ping 
   useEffect(() => {
     if (!agencyId) return;
 
@@ -230,8 +235,6 @@ const TrackAgencyDelivery = () => {
     };
   }, [agencyId]);
 
-  // ── Refresh drivers when deliveries change 
-
   useEffect(() => {
     if (agencyId) fetchDrivers();
   }, [activeDeliveries.length, completedDeliveries.length]);
@@ -239,7 +242,6 @@ const TrackAgencyDelivery = () => {
   useEffect(() => {
     if (activePage === 'drivers' && agencyId) fetchDrivers();
   }, [activePage, agencyId]);
-
 
   const renderPage = () => {
     switch (activePage) {
@@ -338,11 +340,13 @@ const TrackAgencyDelivery = () => {
         <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
       </div>
 
-      {incomingOffer && (
+      {/* ── Offer banner — stays mounted during accepting confirmation ── */}
+      {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}
-          onAccept={acceptOffer}
+          onAccept={handleAcceptOffer}
           onDecline={declineOffer}
+          accepting={accepting}
           label="A new delivery offer has been matched to your agency."
         />
       )}

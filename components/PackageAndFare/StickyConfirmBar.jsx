@@ -24,10 +24,28 @@ export default function StickyConfirmBar({
     if (!isValid || loading) return;
 
     if (!user) {
+      // Save the full snapshot so CreateDelivery can auto-submit after login.
+      // We include isLongDistance and fareMode so the Appwrite write has all
+      // the data it needs — no re-entry required from the user.
       if (deliverySnapshot) {
-        localStorage.setItem('pendingDelivery', JSON.stringify(deliverySnapshot));
+        const snapshotToSave = {
+          ...deliverySnapshot,
+          fareDetails: {
+            offeredFare: fareDetails?.offeredFare ?? 0,
+            paymentMethod: fareDetails?.paymentMethod ?? null,
+            isLongDistance: fareDetails?.isLongDistance ?? false,
+            fareMode: fareDetails?.fareMode ?? null,
+          },
+        };
+        localStorage.setItem(
+          'pendingDelivery',
+          JSON.stringify(snapshotToSave)
+        );
       }
-      localStorage.setItem('postAuthRedirect', '/check');
+      // After login → onboarding → getPostOnboardingRoute reads this and
+      // sends the user to /check, where CreateDelivery's useEffect fires
+      // the Appwrite write automatically.
+      localStorage.setItem('postAuthRedirect', '/send');
       router.push('/login');
       return;
     }
@@ -48,7 +66,6 @@ export default function StickyConfirmBar({
           </p>
         </div>
       )}
-
       <button
         onClick={handleClick}
         disabled={!isValid || loading}
@@ -61,11 +78,9 @@ export default function StickyConfirmBar({
         {loading
           ? 'Finding...'
           : !user
-          ? 'Login to Continue'   
-          : 'find couriers'}
+          ? 'Login to Continue'
+          : 'Find couriers'}
       </button>
-
-      {/* Guest nudge — only show when form is valid and user is not logged in */}
       {isValid && !user && (
         <p className="text-center text-xs text-gray-400 mt-2">
           Your delivery details will be saved

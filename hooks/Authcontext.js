@@ -59,25 +59,6 @@ export const AuthProvider = ({ children }) => {
       alert('Failed to login with Facebook: ' + error.message);
     }
   };
-
-  // const listSessions = async () => {
-  //   try {
-  //     return await account.listSessions();
-  //   } catch (error) {
-  //     console.error('Failed to list sessions:', error);
-  //     return [];
-  //   }
-  // };
-
-  // const logoutAllDevices = async () => {
-  //   try {
-  //     await account.deleteSessions();
-  //     setUser(null);
-  //     redirect('/');
-  //   } catch (error) {
-  //     console.error('Failed to logout all devices:', error);
-  //   }
-  // };
   
 
   // const refreshSession = async () => {
@@ -121,8 +102,6 @@ export const AuthProvider = ({ children }) => {
         logout,
         deleteAccount,
         checkSession,
-        // listSessions,
-        // logoutAllDevices,
         // refreshSession,
       }}
     >

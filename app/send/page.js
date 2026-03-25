@@ -29,6 +29,7 @@ export default function CreateDelivery() {
   const [initialRouteData, setInitialRouteData] = useState(null);
   const [hydrated, setHydrated] = useState(false);
 
+  // ── Restore pre-filled location data from homepage ──────────────────────
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem('deliveryData');
@@ -45,6 +46,47 @@ export default function CreateDelivery() {
       setHydrated(true);
     }
   }, []);
+
+  // ── Auto-submit pending delivery once user is authenticated ─────────────
+  // This runs when a guest filled out the form, got redirected to /login,
+  // logged in (or completed onboarding), and landed back at /send or /check.
+  // We read the snapshot they saved and fire the Appwrite write for them.
+  useEffect(() => {
+    if (!user || !hydrated) return;
+
+    const raw = localStorage.getItem('pendingDelivery');
+    if (!raw) return;
+
+    let snapshot;
+    try {
+      snapshot = JSON.parse(raw);
+    } catch {
+      localStorage.removeItem('pendingDelivery');
+      localStorage.removeItem('postAuthRedirect');
+      return;
+    }
+
+    // Clear immediately so a refresh doesn't re-trigger
+    localStorage.removeItem('pendingDelivery');
+    localStorage.removeItem('postAuthRedirect');
+
+    const { pickup, dropoffs, routeData, packageDetails, fareDetails } =
+      snapshot;
+
+    if (!pickup || !routeData || !packageDetails) return;
+
+    // Reconstruct fareDetails shape handleConfirmed expects
+    const fd = {
+      offeredFare: fareDetails?.offeredFare ?? 0,
+      paymentMethod: fareDetails?.paymentMethod ?? null,
+      isLongDistance: fareDetails?.isLongDistance ?? false,
+      fareMode: fareDetails?.fareMode ?? null,
+    };
+
+    // Fire the save — this will push to /check when done
+    handleConfirmed(packageDetails, fd, pickup, dropoffs ?? [], routeData);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, hydrated]);
 
   const handleConfirmed = async (
     packageDetails,
@@ -138,7 +180,7 @@ export default function CreateDelivery() {
       });
       sessionStorage.setItem('latestDeliveryId', deliveryId);
 
-      // ── Trigger dispatch-search (fire and forget — don't await) 
+      // ── Trigger dispatch-search (fire and forget)
       fetch(`${APPWRITE_BASE}/v1/functions/${DISPATCH_FN}/executions`, {
         method: 'POST',
         headers: {
@@ -150,6 +192,7 @@ export default function CreateDelivery() {
           async: true,
         }),
       }).catch((e) => console.error('dispatch-search trigger failed:', e));
+
       router.push('/check');
     } catch (error) {
       console.error('Error saving delivery:', error);

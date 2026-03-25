@@ -1,34 +1,54 @@
 'use client';
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Truck, Package, Zap, ArrowRight } from 'lucide-react';
 import InputLocation from './InputLocation';
 
 export default function Main() {
   const router = useRouter();
-  const [pickup, setPickup] = useState(null);
-  const [dropoff, setDropoff] = useState(null);
+  const [pickup, setPickup]       = useState(null);
+  const [dropoff, setDropoff]     = useState(null);
   const [routeData, setRouteData] = useState(null);
 
-  const handleLocationSelect = (type, location) => {
+  const handleLocationSelect = useCallback((type, location) => {
     if (type === 'pickup') setPickup(location);
-    else setDropoff(location);
-  };
+  }, []);
 
-  const handleRouteCalculated = (data) => setRouteData(data);
+  const handleDropoffsChange = useCallback((updatedDropoffs) => {
+    const first = updatedDropoffs?.[0];
+    setDropoff(first?.location ?? null);
+  }, []);
 
-  const handleBookDelivery = () => {
+  const handleRouteCalculated = useCallback((data) => {
+    setRouteData(data);
+  }, []);
+
+  const handleBookDelivery = useCallback(() => {
     if (pickup && dropoff) {
       sessionStorage.setItem(
         'deliveryData',
-        JSON.stringify({ pickup, dropoff, routeData, skipLocationScreen: true })
+        JSON.stringify({ pickup, dropoff, routeData })
       );
     }
-    // Always navigate — /send handles empty state gracefully
     router.push('/send');
-  };
+  }, [pickup, dropoff, routeData, router]);
 
   const bothFilled = pickup && dropoff;
+
+  // Memoized so InputLocation doesn't get a new object reference every render
+  const dropoffsProp = useMemo(() => {
+    if (!dropoff) return undefined;
+    return [
+      {
+        id: 'd0',
+        location: dropoff,
+        address: dropoff.place_name || '',
+        recipientName: '',
+        recipientPhone: '',
+        packageLabel: '',
+      },
+    ];
+  }, [dropoff]);
 
   return (
     <main className="bg-white rounded-2xl overflow-hidden my-0 md:mx-5 p-6 md:p-10">
@@ -39,7 +59,6 @@ export default function Main() {
               Nigeria's delivery market
             </div>
 
-            {/* Headline — directive, explains the differentiator */}
             <div>
               <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
                 Send anything.
@@ -48,12 +67,12 @@ export default function Main() {
               </h1>
             </div>
 
-            {/* Location inputs */}
             <InputLocation
               onLocationSelect={handleLocationSelect}
+              onDropoffsChange={handleDropoffsChange}
               onRouteCalculated={handleRouteCalculated}
               pickup={pickup}
-              dropoff={dropoff}
+              dropoffs={dropoffsProp}
               showNextButton={false}
             />
 
@@ -77,7 +96,6 @@ export default function Main() {
                 className="relative bg-white rounded-2xl overflow-hidden"
                 style={{ height: '460px' }}
               >
-                {/* Map background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
                   <div className="absolute inset-0 opacity-10">
                     <div className="grid grid-cols-8 grid-rows-8 h-full">
@@ -118,7 +136,6 @@ export default function Main() {
                   </svg>
                 </div>
 
-                {/* Pickup */}
                 <div className="absolute top-16 left-10 z-10">
                   <div className="bg-[#3A0A21] text-white px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium mb-2">
                     📍 Lekki Phase 1
@@ -126,7 +143,6 @@ export default function Main() {
                   <div className="w-5 h-5 bg-[#3A0A21] rounded-full border-4 border-white shadow-lg mx-auto" />
                 </div>
 
-                {/* Dropoff */}
                 <div className="absolute bottom-20 right-12 z-10">
                   <div className="bg-[#FF6B35] text-white px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium mb-2">
                     🎯 Victoria Island
@@ -134,7 +150,6 @@ export default function Main() {
                   <div className="w-5 h-5 bg-[#FF6B35] rounded-full border-4 border-white shadow-lg mx-auto" />
                 </div>
 
-                {/* Rider */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                   <div className="relative animate-pulse">
                     <div className="bg-white p-3 rounded-full shadow-xl border-2 border-[#3A0A21]">
@@ -147,7 +162,6 @@ export default function Main() {
                 </div>
               </div>
 
-              {/* Info card */}
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-5 w-11/12 border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">

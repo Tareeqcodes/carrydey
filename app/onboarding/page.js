@@ -27,12 +27,15 @@ const roles = [
   },
 ];
 
-function getPostOnboardingRoute(role) {
+// Reads the pending redirect (set by StickyConfirmBar before pushing to /login),
+// clears it immediately so it doesn't bleed into future sessions, then returns
+// the destination. Falls back to role-based routing when nothing is pending.
+function consumePostOnboardingRoute(role) {
   const pendingRedirect = localStorage.getItem('postAuthRedirect');
   if (pendingRedirect) {
-    return pendingRedirect; 
+    localStorage.removeItem('postAuthRedirect');
+    return pendingRedirect;
   }
-  // Normal role-based routing (no pending delivery)
   if (role === 'sender') return '/send';
   if (role === 'courier') return '/track';
   if (role === 'agency') return '/onboardagency';
@@ -69,9 +72,8 @@ export default function Onboarding() {
       });
 
       if (response.rows.length > 0 && response.rows[0].onboardingCompleted) {
-        // Already onboarded — still respect postAuthRedirect if present
-        // (handles the edge case where onboarding page is hit after a re-login)
-        router.push(getPostOnboardingRoute(response.rows[0].role));
+        // Already onboarded — consume redirect and go
+        router.push(consumePostOnboardingRoute(response.rows[0].role));
       }
     } catch (err) {
       console.error('Failed to check onboarding status:', err);
@@ -98,10 +100,10 @@ export default function Onboarding() {
         },
       });
 
-      // getPostOnboardingRoute reads postAuthRedirect from localStorage.
-      // ChooseTraveler will clear both 'postAuthRedirect' and 'pendingDelivery'
-      // after the delivery is saved to Appwrite — we must NOT clear them here.
-      router.push(getPostOnboardingRoute(role));
+      // consumePostOnboardingRoute clears 'postAuthRedirect' from localStorage.
+      // CreateDelivery's useEffect is responsible for reading + clearing
+      // 'pendingDelivery' and firing the Appwrite write — we must NOT touch it here.
+      router.push(consumePostOnboardingRoute(role));
     } catch (err) {
       console.error('Failed to save onboarding:', err);
       alert('Failed to save profile. Please try again.');
