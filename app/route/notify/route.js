@@ -2,28 +2,29 @@
 import { Client, Messaging, ID } from 'node-appwrite';
 import { NextResponse } from 'next/server';
 
-const client = new Client()
-  .setEndpoint(process.env.APPWRITE_ENDPOINT)
-  .setProject(process.env.APPWRITE_PROJECT_ID)
-  .setKey(process.env.APPWRITE_API_KEY);
-
-const messaging = new Messaging(client);
-
 export async function POST(req) {
   try {
-    const { userIds, title, body } = await req.json(); // removed `data` — unused
+    const { userIds, title, body } = await req.json();
 
     if (!userIds?.length || !title || !body) {
       return NextResponse.json({ ok: false, reason: 'missing_fields' }, { status: 400 });
     }
 
+    // ── Initialize inside the handler — runs at request time, not build time ──
+    const client = new Client()
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
+
+    const messaging = new Messaging(client);
+
     await messaging.createPush(
-      ID.unique(), // messageId
-      title,       // title
-      body,        // body
-      [],          // topics
-      userIds,     // userIds
-      [],          // targets
+      ID.unique(),
+      title,
+      body,
+      [],      // topics
+      userIds, // userIds
+      [],      // targets
     );
 
     return NextResponse.json({ ok: true });
