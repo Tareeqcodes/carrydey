@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     try {
       account.createOAuth2Session({
         provider: OAuthProvider.Google,
-        success: 'https://www.carrydey.tech/OAuthCallback',
+        success: 'http://localhost:3000/OAuthCallback',
         failure: 'https://www.carrydey.tech/login',
       });
     } catch (error) {

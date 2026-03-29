@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/Authcontext';
 import { formatNairaSimple } from '@/hooks/currency';
 import { useCourierDelivery } from '@/hooks/useCourierDelivery';
 import { useDispatchOffer } from '@/hooks/useDispatchOffer';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { tablesDB } from '@/lib/config/Appwriteconfig';
 import Profile from '../setting/Profile';
 import PickupCodeModal from '../Agencytrack/PickupCodeModal';
@@ -23,7 +24,7 @@ const TrackCourierDelivery = () => {
   const locationIntervalRef = useRef(null);
 
   const [activePage, setActivePage]     = useState('earnings');
-  const [isAccepting, setIsAccepting]   = useState(false);
+  // const [isAccepting, setIsAccepting]   = useState(false);
   const [accepting, setAccepting]       = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [copiedCode, setCopiedCode]     = useState(null);
@@ -34,7 +35,7 @@ const TrackCourierDelivery = () => {
     courier,
     deliveries: allDeliveries,
     loading,
-    acceptRequest,
+    // acceptRequest,
     confirmPickup,
     confirmDelivery,
     updateDeliveryStatus,
@@ -46,18 +47,24 @@ const TrackCourierDelivery = () => {
       onAccepted: () => refresh(),
     });
 
-  // ── Wrap acceptOffer to show confirmation state before closing ──
+
   const handleAcceptOffer = async () => {
     setAccepting(true);
     await acceptOffer();
-    // Keep confirmation screen visible while refresh() loads the new delivery
     setTimeout(() => {
       setAccepting(false);
-      setActivePage('active'); // auto-switch to active tab so courier sees it
+      setActivePage('active'); 
     }, 2000);
   };
 
-  //  Location ping 
+  usePushNotifications({
+    enabled: !!user?.$id,
+  onForegroundMessage: (payload) => {
+    console.log('Foreground notification:', payload.notification.title);
+  },
+});
+
+
   useEffect(() => {
     if (!courier?.$id) return;
 
@@ -96,7 +103,7 @@ const TrackCourierDelivery = () => {
     };
   }, [courier?.$id]);
 
-  const pendingDeliveries   = allDeliveries.filter((d) => d.status === 'pending');
+  // const pendingDeliveries   = allDeliveries.filter((d) => d.status === 'pending');
   const activeDeliveries    = allDeliveries.filter((d) =>
     ['accepted', 'assigned', 'picked_up', 'in_transit'].includes(d.status)
   );
@@ -110,18 +117,18 @@ const TrackCourierDelivery = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleAcceptDelivery = async (deliveryId) => {
-    setIsAccepting(true);
-    try {
-      const result = await acceptRequest(deliveryId);
-      if (result.success) refresh();
-      else alert(result.error || 'Failed to accept delivery');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAccepting(false);
-    }
-  };
+  // const handleAcceptDelivery = async (deliveryId) => {
+  //   setIsAccepting(true);
+  //   try {
+  //     const result = await acceptRequest(deliveryId);
+  //     if (result.success) refresh();
+  //     else alert(result.error || 'Failed to accept delivery');
+  //   } catch (err) {
+  //     console.error(err);
+  //   } finally {
+  //     setIsAccepting(false);
+  //   }
+  // };
 
   const handleConfirmPickup = async (deliveryId, pickupCode) => {
     const result = await confirmPickup(deliveryId, pickupCode);

@@ -41,7 +41,7 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Parse body 
+  // ── Parse body ─────────────────────────────────────────────────────────────
   let parsedBody = {};
   try {
     if (typeof req.body === 'string' && req.body.length > 0) {
@@ -58,9 +58,7 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'invalid_body' }, 400);
   }
 
-  // deliveryId: from direct call or event trigger ($id)
   const deliveryId = parsedBody.deliveryId ?? parsedBody.$id;
-  // radiusKm: from frontend call, default 10km
   const radiusKm =
     typeof parsedBody.radiusKm === 'number' ? parsedBody.radiusKm : 10;
 
@@ -132,6 +130,9 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'missing_coordinates' }, 400);
   }
 
+  // ── senderId extracted once from delivery — used in both notify paths ──────
+  const senderId = delivery.userId ?? delivery.senderId ?? null;
+
   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
   // ── Query couriers ─────────────────────────────────────────────────────────
@@ -176,8 +177,6 @@ export default async ({ req, res, log, error }) => {
 
   log('Candidates with location: ' + allCandidates.length);
 
-  // Score first, then apply radius filter
-  // This lets us log how many were filtered out vs actually nearby
   const scoredAll = allCandidates.map((c) => {
     const distance = getDistance(pickupLat, pickupLng, c.lat, c.lng);
     return {
@@ -191,7 +190,6 @@ export default async ({ req, res, log, error }) => {
     };
   });
 
-  // Apply radius filter AFTER scoring
   const withinRadius = scoredAll
     .filter((c) => c.distance <= radiusKm)
     .sort((a, b) => b.score - a.score)
@@ -199,8 +197,10 @@ export default async ({ req, res, log, error }) => {
 
   log('Within ' + radiusKm + 'km: ' + withinRadius.length + ' candidates');
 
+  // ── No couriers found — notify sender and exit ─────────────────────────────
   if (withinRadius.length === 0) {
     log('No candidates within ' + radiusKm + 'km — marking as no_couriers');
+
     await db
       .updateRow({
         databaseId: DB,
@@ -209,6 +209,20 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'no_couriers' },
       })
       .catch(() => {});
+
+    // ── Notify sender — senderId already extracted from delivery above ────────
+    if (senderId) {
+      await fetch(`${process.env.APP_URL}/route/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userIds: [senderId],
+          title: 'No couriers nearby',
+          body: "We couldn't find a courier right now. Try increasing your offer or retry.",
+        }),
+      }).catch(() => {});
+    }
+
     return res.json({ ok: false, reason: 'no_couriers', radiusKm });
   }
 
@@ -252,8 +266,6 @@ export default async ({ req, res, log, error }) => {
   log('Queue created: ' + queueDoc.$id);
 
   // ── Mark first candidate as offered ───────────────────────────────────────
-  // agencies: status is boolean — use isAvailable, not status string
-  // couriers: status is text — can write 'offered'
   const isFirstAgency = first.entityType === 'agency';
   try {
     await db.updateRow({
@@ -275,6 +287,21 @@ export default async ({ req, res, log, error }) => {
   } catch (e) {
     log('Could not mark entity as offered: ' + e.message);
   }
+
+  // ── Notify first courier/agency of their offer ────────────────────────────
+  const label = isFirstAgency
+    ? 'A new delivery is waiting for your agency.'
+    : 'A new delivery is near you. Open Carrydey to accept.';
+
+  await fetch(`${process.env.APP_URL}/route/notify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userIds: [first.courierId],
+      title: '📦 New Delivery Offer',
+      body: label,
+    }),
+  }).catch(() => {});
 
   log(
     'Queue ' +

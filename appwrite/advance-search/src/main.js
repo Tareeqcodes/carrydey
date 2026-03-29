@@ -98,11 +98,23 @@ export default async ({ req, res, log, error }) => {
   // ── ACCEPT ─────────────────────────────────────────────────────────────────
   if (action === 'accept') {
     try {
-      // Generate codes for everyone — courier or agency
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
 
-      // Load entity profile to get name/phone
+      // ── Load delivery FIRST to get senderId before updating it ────────────
+      let senderId = null;
+      try {
+        const delivery = await db.getRow({
+          databaseId: DB,
+          tableId: DELIVERIES,
+          rowId: queue.deliveryId,
+        });
+        senderId = delivery.userId ?? delivery.senderId ?? null;
+      } catch (e) {
+        log('Could not load delivery for senderId: ' + e.message);
+      }
+
+      // ── Load entity profile to get name/phone ─────────────────────────────
       let driverName = null;
       let driverPhone = null;
       try {
@@ -144,7 +156,7 @@ export default async ({ req, res, log, error }) => {
         data: deliveryUpdate,
       });
 
-      // Mark entity as on_delivery
+      // ── Mark entity as on_delivery ────────────────────────────────────────
       await db.updateRow({
         databaseId: DB,
         tableId: collectionFor(currentEntry),
@@ -172,6 +184,20 @@ export default async ({ req, res, log, error }) => {
           pickupCode
       );
 
+      // ── Notify sender ─────────────────────────────────────────────────────
+      if (senderId) {
+        const entityLabel = currentIsAgency ? 'An agency' : 'A courier';
+        await fetch(`${process.env.APP_URL}/route/notify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userIds: [senderId],
+            title: '🚀 Courier Found!',
+            body: `${entityLabel} has accepted your delivery and is on the way.`,
+          }),
+        }).catch(() => {});
+      }
+
       return res.json({
         ok: true,
         assigned: true,
@@ -186,7 +212,7 @@ export default async ({ req, res, log, error }) => {
     }
   }
 
-  // ── DECLINE or TIMEOUT 
+  // ── DECLINE or TIMEOUT ────────────────────────────────────────────────────
   const nextIndex = currentIndex + 1;
 
   if (nextIndex >= rankedCouriers.length) {
@@ -253,6 +279,21 @@ export default async ({ req, res, log, error }) => {
           },
     })
     .catch((e) => log('Could not mark next entity as offered: ' + e.message));
+
+  // ── Notify next courier/agency of their offer ─────────────────────────────
+  const label = nextIsAgency
+    ? 'A new delivery is waiting for your agency.'
+    : 'A new delivery is near you. Open Carrydey to accept.';
+
+  await fetch(`${process.env.APP_URL}/route/notify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userIds: [nextCourierId],
+      title: '📦 New Delivery Offer',
+      body: label,
+    }),
+  }).catch(() => {});
 
   log(
     'Advanced to ' +

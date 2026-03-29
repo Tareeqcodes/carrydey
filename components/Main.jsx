@@ -55,10 +55,10 @@ export default function Main() {
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 px-4 py-2 rounded-full text-sm font-semibold">
-              Nigeria's delivery market
+            <div className="inline-flex items-center text-sm text-gray-500 font-semibold">
+              Delivery Marketplace · Nigeria
             </div>
-
+            
             <div>
               <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
                 Send anything.

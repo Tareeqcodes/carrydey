@@ -11,21 +11,14 @@ const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(/\/v1\/
 
 const OFFER_DURATION_S = 20;
 
-// ── Detect whether this entity is a courier or an agency ─────────────────────
-// Couriers: status field is a string set to 'offered'
-// Agencies: status field doesn't exist — instead isAvailable=false + currentOfferId is set
 const entityHasOffer = (doc) => {
-  // Courier path — status string equals 'offered'
   if (doc.status === 'offered' && doc.currentOfferId) return true;
-  // Agency path — isAvailable is false AND currentOfferId is populated
   if (doc.isAvailable === false && doc.currentOfferId) return true;
   return false;
 };
 
 const entityOfferCleared = (doc) => {
-  // Courier back to available
   if (doc.status === 'available' && !doc.currentOfferId) return true;
-  // Agency offer withdrawn (timeout/decline advances to next)
   if (!doc.currentOfferId) return true;
   return false;
 };
