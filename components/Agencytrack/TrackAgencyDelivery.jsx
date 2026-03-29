@@ -9,6 +9,7 @@ import {
 } from '@/hooks/useDriverManagement';
 import { useDeliveryManagement } from '@/hooks/useDeliveryManagement';
 import { useDispatchOffer } from '@/hooks/useDispatchOffer';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { tablesDB } from '@/lib/config/Appwriteconfig';
 import Sidebar from './Sidebar';
 import AssignmentModal from './AssignmentModal';
@@ -168,6 +169,13 @@ const TrackAgencyDelivery = () => {
       setActivePage('active'); 
     }, 2000);
   }, [acceptOffer]);
+
+  usePushNotifications({
+    enabled: !!user?.$id,
+  onForegroundMessage: (payload) => {
+    console.log('Foreground notification:', payload.notification.title);
+  },
+});
 
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);

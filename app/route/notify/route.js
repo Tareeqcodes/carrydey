@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req) {
   try {
     const { userIds, title, body } = await req.json();
-
+ 
     if (!userIds?.length || !title || !body) {
       return NextResponse.json({ ok: false, reason: 'missing_fields' }, { status: 400 });
     }
