@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { getToken, onMessage } from 'firebase/messaging';
-import { getFirebaseMessaging } from '@/lib/firebase';
+import { getFirebaseMessaging } from '@/lib/config/firebase';
 import { account, ID } from '@/lib/config/Appwriteconfig';
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
