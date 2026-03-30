@@ -1,16 +1,14 @@
-// app/route/notify/route.js
 import { Client, Messaging, ID } from 'node-appwrite';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    const { userIds, title, body } = await req.json();
- 
-    if (!userIds?.length || !title || !body) {
+    const { targets, title, body } = await req.json();
+
+    if (!targets?.length || !title || !body) {
       return NextResponse.json({ ok: false, reason: 'missing_fields' }, { status: 400 });
     }
 
-    // ── Initialize inside the handler — runs at request time, not build time ──
     const client = new Client()
       .setEndpoint(process.env.APPWRITE_ENDPOINT)
       .setProject(process.env.APPWRITE_PROJECT_ID)
@@ -22,9 +20,9 @@ export async function POST(req) {
       ID.unique(),
       title,
       body,
-      [],      // topics
-      userIds, // userIds
-      [],      // targets
+      [],       // topics
+      [],       // userIds — no longer used
+      targets,  // target IDs directly
     );
 
     return NextResponse.json({ ok: true });

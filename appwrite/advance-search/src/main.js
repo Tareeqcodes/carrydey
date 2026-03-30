@@ -26,19 +26,32 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
+  // ── Notify helper — looks up pushTargetId from collection doc ──────────────
+  const notifyEntity = async (entityId, tableId, title, body) => {
+    try {
+      const doc = await db.getRow({ databaseId: DB, tableId, rowId: entityId });
+      const pushTargetId = doc.pushTargetId ?? null;
+      if (!pushTargetId) {
+        log('No pushTargetId for entity ' + entityId + ', skipping notify');
+        return;
+      }
+      await fetch(`${process.env.APP_URL}/route/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targets: [pushTargetId], title, body }),
+      }).catch(() => {});
+    } catch (e) {
+      log('notifyEntity failed for ' + entityId + ': ' + e.message);
+    }
+  };
+
   // ── Parse body ─────────────────────────────────────────────────────────────
   let body = req.body;
   if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      body = {};
-    }
+    try { body = JSON.parse(body); } catch { body = {}; }
   }
   if (typeof body?.body === 'string') {
-    try {
-      body = JSON.parse(body.body);
-    } catch {}
+    try { body = JSON.parse(body.body); } catch {}
   }
 
   const { queueId, action } = body ?? {};
@@ -49,11 +62,7 @@ export default async ({ req, res, log, error }) => {
   // ── Load queue ─────────────────────────────────────────────────────────────
   let queue;
   try {
-    queue = await db.getRow({
-      databaseId: DB,
-      tableId: DISPATCH,
-      rowId: queueId,
-    });
+    queue = await db.getRow({ databaseId: DB, tableId: DISPATCH, rowId: queueId });
   } catch (e) {
     error('Queue not found: ' + e.message);
     return res.json({ ok: false, reason: 'queue_not_found' }, 404);
@@ -101,7 +110,6 @@ export default async ({ req, res, log, error }) => {
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
 
-      // ── Load delivery FIRST to get senderId before updating it ────────────
       let senderId = null;
       try {
         const delivery = await db.getRow({
@@ -114,7 +122,6 @@ export default async ({ req, res, log, error }) => {
         log('Could not load delivery for senderId: ' + e.message);
       }
 
-      // ── Load entity profile to get name/phone ─────────────────────────────
       let driverName = null;
       let driverPhone = null;
       try {
@@ -131,7 +138,7 @@ export default async ({ req, res, log, error }) => {
 
       const deliveryUpdate = currentIsAgency
         ? {
-            status: 'pending', // agency still needs to assign a driver
+            status: 'pending',
             assignedAgencyId: currentCourierId,
             assignedCourierId: null,
             pickupCode,
@@ -156,7 +163,6 @@ export default async ({ req, res, log, error }) => {
         data: deliveryUpdate,
       });
 
-      // ── Mark entity as on_delivery ────────────────────────────────────────
       await db.updateRow({
         databaseId: DB,
         tableId: collectionFor(currentEntry),
@@ -174,28 +180,20 @@ export default async ({ req, res, log, error }) => {
       });
 
       log(
-        'Delivery ' +
-          queue.deliveryId +
-          ' accepted by ' +
-          currentEntry?.entityType +
-          ' ' +
-          currentCourierId +
-          ' | pickupCode: ' +
-          pickupCode
+        'Delivery ' + queue.deliveryId + ' accepted by ' +
+        currentEntry?.entityType + ' ' + currentCourierId +
+        ' | pickupCode: ' + pickupCode
       );
 
-      // ── Notify sender ─────────────────────────────────────────────────────
+      // ── Notify sender ──────────────────────────────────────────────────────
       if (senderId) {
         const entityLabel = currentIsAgency ? 'An agency' : 'A courier';
-        await fetch(`${process.env.APP_URL}/route/notify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userIds: [senderId],
-            title: '🚀 Courier Found!',
-            body: `${entityLabel} has accepted your delivery and is on the way.`,
-          }),
-        }).catch(() => {});
+        await notifyEntity(
+          senderId,
+          USERS,
+          '🚀 Courier Found!',
+          `${entityLabel} has accepted your delivery and is on the way.`
+        );
       }
 
       return res.json({
@@ -234,12 +232,7 @@ export default async ({ req, res, log, error }) => {
       })
       .catch(() => {});
 
-    log(
-      'All ' +
-        rankedCouriers.length +
-        ' candidates rejected delivery ' +
-        queue.deliveryId
-    );
+    log('All ' + rankedCouriers.length + ' candidates rejected delivery ' + queue.deliveryId);
     return res.json({ ok: true, assigned: false, reason: 'all_rejected' });
   }
 
@@ -253,11 +246,7 @@ export default async ({ req, res, log, error }) => {
       databaseId: DB,
       tableId: DISPATCH,
       rowId: queueId,
-      data: {
-        currentCourierId: nextCourierId,
-        attemptIndex: nextIndex,
-        expiresAt,
-      },
+      data: { currentCourierId: nextCourierId, attemptIndex: nextIndex, expiresAt },
     })
     .catch((e) => error('Queue advance failed: ' + e.message));
 
@@ -267,43 +256,26 @@ export default async ({ req, res, log, error }) => {
       tableId: collectionFor(nextEntry),
       rowId: nextCourierId,
       data: nextIsAgency
-        ? {
-            isAvailable: false,
-            currentOfferId: queue.deliveryId,
-            offerExpiresAt: expiresAt,
-          }
-        : {
-            status: 'offered',
-            currentOfferId: queue.deliveryId,
-            offerExpiresAt: expiresAt,
-          },
+        ? { isAvailable: false, currentOfferId: queue.deliveryId, offerExpiresAt: expiresAt }
+        : { status: 'offered', currentOfferId: queue.deliveryId, offerExpiresAt: expiresAt },
     })
     .catch((e) => log('Could not mark next entity as offered: ' + e.message));
 
-  // ── Notify next courier/agency of their offer ─────────────────────────────
+  // ── Notify next courier/agency ─────────────────────────────────────────────
   const label = nextIsAgency
     ? 'A new delivery is waiting for your agency.'
     : 'A new delivery is near you. Open Carrydey to accept.';
 
-  await fetch(`${process.env.APP_URL}/route/notify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userIds: [nextCourierId],
-      title: '📦 New Delivery Offer',
-      body: label,
-    }),
-  }).catch(() => {});
+  await notifyEntity(
+    nextCourierId,
+    nextIsAgency ? ORGS : USERS,
+    '📦 New Delivery Offer',
+    label
+  );
 
   log(
-    'Advanced to ' +
-      nextEntry.entityType +
-      ' ' +
-      (nextIndex + 1) +
-      '/' +
-      rankedCouriers.length +
-      ': ' +
-      nextCourierId
+    'Advanced to ' + nextEntry.entityType + ' ' +
+    (nextIndex + 1) + '/' + rankedCouriers.length + ': ' + nextCourierId
   );
 
   return res.json({

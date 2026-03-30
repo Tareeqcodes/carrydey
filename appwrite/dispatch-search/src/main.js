@@ -41,6 +41,25 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
+  // ── Notify helper — looks up pushTargetId from collection doc ──────────────
+  const notifyEntity = async (entityId, tableId, title, body) => {
+    try {
+      const doc = await db.getRow({ databaseId: DB, tableId, rowId: entityId });
+      const pushTargetId = doc.pushTargetId ?? null;
+      if (!pushTargetId) {
+        log('No pushTargetId for entity ' + entityId + ', skipping notify');
+        return;
+      }
+      await fetch(`${process.env.APP_URL}/route/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targets: [pushTargetId], title, body }),
+      }).catch(() => {});
+    } catch (e) {
+      log('notifyEntity failed for ' + entityId + ': ' + e.message);
+    }
+  };
+
   // ── Parse body ─────────────────────────────────────────────────────────────
   let parsedBody = {};
   try {
@@ -49,7 +68,6 @@ export default async ({ req, res, log, error }) => {
     } else if (req.body && typeof req.body === 'object') {
       parsedBody = req.body;
     }
-    // Frontend double-wraps: { body: '{"deliveryId":"...","radiusKm":20}' }
     if (typeof parsedBody.body === 'string') {
       parsedBody = JSON.parse(parsedBody.body);
     }
@@ -63,20 +81,11 @@ export default async ({ req, res, log, error }) => {
     typeof parsedBody.radiusKm === 'number' ? parsedBody.radiusKm : 10;
 
   if (!deliveryId) {
-    error(
-      'Missing deliveryId. Body: ' +
-        JSON.stringify(parsedBody).substring(0, 200)
-    );
+    error('Missing deliveryId. Body: ' + JSON.stringify(parsedBody).substring(0, 200));
     return res.json({ ok: false, reason: 'missing_deliveryId' }, 400);
   }
 
-  log(
-    'Starting dispatch for delivery: ' +
-      deliveryId +
-      ' radius: ' +
-      radiusKm +
-      'km'
-  );
+  log('Starting dispatch for delivery: ' + deliveryId + ' radius: ' + radiusKm + 'km');
 
   // ── Load delivery ──────────────────────────────────────────────────────────
   let delivery;
@@ -91,27 +100,12 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'delivery_not_found' }, 404);
   }
 
-  // Allow re-dispatch on 'no_couriers' status (from a previous failed attempt)
-  // Only block if already assigned/accepted
-  const blockedStatuses = [
-    'assigned',
-    'accepted',
-    'picked_up',
-    'in_transit',
-    'delivered',
-  ];
+  const blockedStatuses = ['assigned', 'accepted', 'picked_up', 'in_transit', 'delivered'];
   if (blockedStatuses.includes(delivery.status)) {
-    log(
-      'Delivery ' +
-        deliveryId +
-        ' is already: ' +
-        delivery.status +
-        ', skipping'
-    );
+    log('Delivery ' + deliveryId + ' is already: ' + delivery.status + ', skipping');
     return res.json({ ok: false, reason: 'already_dispatched' });
   }
 
-  // Reset delivery back to pending if it was no_couriers
   if (delivery.status === 'no_couriers') {
     await db
       .updateRow({
@@ -130,7 +124,6 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'missing_coordinates' }, 400);
   }
 
-  // ── senderId extracted once from delivery — used in both notify paths ──────
   const senderId = delivery.userId ?? delivery.senderId ?? null;
 
   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
@@ -210,17 +203,13 @@ export default async ({ req, res, log, error }) => {
       })
       .catch(() => {});
 
-    // ── Notify sender — senderId already extracted from delivery above ────────
     if (senderId) {
-      await fetch(`${process.env.APP_URL}/route/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userIds: [senderId],
-          title: 'No couriers nearby',
-          body: "We couldn't find a courier right now. Try increasing your offer or retry.",
-        }),
-      }).catch(() => {});
+      await notifyEntity(
+        senderId,
+        USERS,
+        'No couriers nearby',
+        "We couldn't find a courier right now. Try increasing your offer or retry."
+      );
     }
 
     return res.json({ ok: false, reason: 'no_couriers', radiusKm });
@@ -228,15 +217,8 @@ export default async ({ req, res, log, error }) => {
 
   const first = withinRadius[0];
   log(
-    'Top: ' +
-      first.name +
-      ' (' +
-      first.entityType +
-      ') score:' +
-      first.score +
-      ' dist:' +
-      first.distance +
-      'km'
+    'Top: ' + first.name + ' (' + first.entityType + ') score:' +
+    first.score + ' dist:' + first.distance + 'km'
   );
 
   // ── Create dispatch_queue row ──────────────────────────────────────────────
@@ -273,44 +255,26 @@ export default async ({ req, res, log, error }) => {
       tableId: isFirstAgency ? ORGS : USERS,
       rowId: first.courierId,
       data: isFirstAgency
-        ? {
-            isAvailable: false,
-            currentOfferId: deliveryId,
-            offerExpiresAt: expiresAt,
-          }
-        : {
-            status: 'offered',
-            currentOfferId: deliveryId,
-            offerExpiresAt: expiresAt,
-          },
+        ? { isAvailable: false, currentOfferId: deliveryId, offerExpiresAt: expiresAt }
+        : { status: 'offered', currentOfferId: deliveryId, offerExpiresAt: expiresAt },
     });
   } catch (e) {
     log('Could not mark entity as offered: ' + e.message);
   }
 
-  // ── Notify first courier/agency of their offer ────────────────────────────
+  // ── Notify first courier/agency ────────────────────────────────────────────
   const label = isFirstAgency
     ? 'A new delivery is waiting for your agency.'
     : 'A new delivery is near you. Open Carrydey to accept.';
 
-  await fetch(`${process.env.APP_URL}/route/notify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userIds: [first.courierId],
-      title: '📦 New Delivery Offer',
-      body: label,
-    }),
-  }).catch(() => {});
-
-  log(
-    'Queue ' +
-      queueDoc.$id +
-      ' → offering to ' +
-      first.entityType +
-      ' ' +
-      first.name
+  await notifyEntity(
+    first.courierId,
+    isFirstAgency ? ORGS : USERS,
+    '📦 New Delivery Offer',
+    label
   );
+
+  log('Queue ' + queueDoc.$id + ' → offering to ' + first.entityType + ' ' + first.name);
 
   return res.json({
     ok: true,
