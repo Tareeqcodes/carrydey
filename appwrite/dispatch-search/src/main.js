@@ -1,4 +1,4 @@
-import { Client, TablesDB, Query, ID } from 'node-appwrite';
+import { Client, TablesDB, Messaging, Query, ID } from 'node-appwrite';
 
 function getDistance(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -34,6 +34,7 @@ export default async ({ req, res, log, error }) => {
     .setKey(process.env.APPWRITE_API_KEY);
 
   const db = new TablesDB(client);
+  const messaging = new Messaging(client); // ← uses same client
 
   const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
@@ -41,7 +42,7 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Notify helper — looks up pushTargetId from collection doc ──────────────
+  // ── Notify helper — calls Appwrite Messaging directly ──────────────────────
   const notifyEntity = async (entityId, tableId, title, body) => {
     try {
       const doc = await db.getRow({ databaseId: DB, tableId, rowId: entityId });
@@ -50,11 +51,19 @@ export default async ({ req, res, log, error }) => {
         log('No pushTargetId for entity ' + entityId + ', skipping notify');
         return;
       }
-      await fetch(`${process.env.APP_URL}/route/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targets: [pushTargetId], title, body }),
-      }).catch(() => {});
+
+      log('Sending notification to ' + entityId + ' | target: ' + pushTargetId);
+
+      await messaging.createPush(
+        ID.unique(),
+        title,
+        body,
+        [],             // topics
+        [],             // userIds
+        [pushTargetId]  // targets
+      );
+
+      log('Notification sent to ' + entityId);
     } catch (e) {
       log('notifyEntity failed for ' + entityId + ': ' + e.message);
     }
