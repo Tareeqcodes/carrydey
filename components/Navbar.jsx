@@ -101,8 +101,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Routes where navbar is hidden entirely
-  const hiddenRoutes = ['/AgencyBooking/', '/bookconfirm/', '/driver/, /b/'];
+  const hiddenRoutes = ['/AgencyBooking/', '/bookconfirm/', '/driver/', '/b/'];
   if (hiddenRoutes.some((r) => pathname?.startsWith(r))) return null;
   if (loading) return <NavbarMorphism />;
 

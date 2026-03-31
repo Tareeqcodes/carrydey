@@ -10,15 +10,17 @@ export default function StickyConfirmBar({
   onConfirm,
   fareDetails,
   deliverySnapshot,
+  isAgencyBooking = false,
 }) {
   const { brandColors } = useBrandColors();
   const { user } = useAuth();
   const router = useRouter();
 
-  const paymentLabel = {
-    cash_on_pickup: 'Cash on pickup',
-    pay_now: 'Card · Pay now',
-  }[fareDetails?.paymentMethod] || '';
+  const paymentLabel =
+    {
+      cash_on_pickup: 'Cash on pickup',
+      pay_now: 'Card · Pay now',
+    }[fareDetails?.paymentMethod] || '';
 
   const handleClick = () => {
     if (!isValid || loading) return;
@@ -37,14 +39,8 @@ export default function StickyConfirmBar({
             fareMode: fareDetails?.fareMode ?? null,
           },
         };
-        localStorage.setItem(
-          'pendingDelivery',
-          JSON.stringify(snapshotToSave)
-        );
+        localStorage.setItem('pendingDelivery', JSON.stringify(snapshotToSave));
       }
-      // After login → onboarding → getPostOnboardingRoute reads this and
-      // sends the user to /check, where CreateDelivery's useEffect fires
-      // the Appwrite write automatically.
       localStorage.setItem('postAuthRedirect', '/send');
       router.push('/login');
       return;
@@ -76,10 +72,14 @@ export default function StickyConfirmBar({
         }}
       >
         {loading
-          ? 'Finding...'
+          ? isAgencyBooking
+            ? 'Confirming...'
+            : 'Finding...'
           : !user
-          ? 'Login to Continue'
-          : 'Find couriers'}
+            ? 'Login to Continue'
+            : isAgencyBooking
+              ? 'Continue '
+              : 'Find couriers'}
       </button>
       {isValid && !user && (
         <p className="text-center text-xs text-gray-400 mt-2">

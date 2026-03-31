@@ -1,5 +1,5 @@
 import '../assets/globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, Fraunces } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/hooks/Authcontext';
 import Navbar from '@/components/Navbar';
@@ -8,6 +8,14 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
+});
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  weight: ['700', '800', '900'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-fraunces',
 });
 
 const structuredData = {
@@ -266,7 +274,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${fraunces.variable}`}>
         <AuthProvider>
           <main className="min-h-screen">
             <Navbar />

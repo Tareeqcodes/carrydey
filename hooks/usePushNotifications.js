@@ -116,6 +116,7 @@ export function usePushNotifications({
 
         // 9. Save pushTargetId to the correct collection doc
         const tableId = role === 'agency' ? ORGS : USERS;
+
         try {
           await tablesDB.updateRow({
             databaseId: DB,
@@ -123,6 +124,14 @@ export function usePushNotifications({
             rowId: currentUser.$id,
             data: { pushTargetId: target.$id },
           });
+          console.log('[Push] Auth $id:', currentUser.$id);
+          console.log(
+            '[Push] Attempting updateRow on tableId:',
+            tableId,
+            'rowId:',
+            currentUser.$id
+          );
+
           console.log('[Push] Registered successfully. Target:', target.$id);
         } catch (e) {
           console.error('[Push] Failed to save pushTargetId to collection:', e);

@@ -63,7 +63,7 @@ export default function Main() {
               <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
                 Send anything.
                 <br />
-                <span className="text-[#FF6B35]">On your budget.</span>
+                <span className="text-[#FF6B35] ">On your budget.</span>
               </h1>
             </div>
 

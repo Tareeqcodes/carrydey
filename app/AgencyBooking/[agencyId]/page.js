@@ -38,7 +38,7 @@ function checkAvailability(agencyData) {
       'Tuesday',
       'Wednesday',
       'Thursday',
-      'Friday',
+      'Friday', 
       'Saturday',
       'Sunday',
     ];
@@ -197,7 +197,7 @@ export default function AgencyBookingPage() {
             Loading booking page...
           </p>
         </motion.div>
-      </div>
+      </div> 
     );
   }
 

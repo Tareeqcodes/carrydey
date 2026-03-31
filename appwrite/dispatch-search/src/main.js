@@ -34,7 +34,7 @@ export default async ({ req, res, log, error }) => {
     .setKey(process.env.APPWRITE_API_KEY);
 
   const db = new TablesDB(client);
-  const messaging = new Messaging(client); // ← uses same client
+  const messaging = new Messaging(client); 
 
   const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
@@ -42,7 +42,7 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Notify helper — calls Appwrite Messaging directly ──────────────────────
+
   const notifyEntity = async (entityId, tableId, title, body) => {
     try {
       const doc = await db.getRow({ databaseId: DB, tableId, rowId: entityId });
@@ -69,7 +69,7 @@ export default async ({ req, res, log, error }) => {
     }
   };
 
-  // ── Parse body ─────────────────────────────────────────────────────────────
+  // ── Parse body 
   let parsedBody = {};
   try {
     if (typeof req.body === 'string' && req.body.length > 0) {
@@ -137,7 +137,7 @@ export default async ({ req, res, log, error }) => {
 
   const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
-  // ── Query couriers ─────────────────────────────────────────────────────────
+  // ── Query couriers
   let couriersRes = { rows: [] };
   try {
     couriersRes = await db.listRows({
@@ -171,7 +171,7 @@ export default async ({ req, res, log, error }) => {
     error('Agencies query failed: ' + e.message);
   }
 
-  // ── Merge, score, filter by radiusKm ──────────────────────────────────────
+  // ── Merge, score, filter by radiusKm
   const allCandidates = [
     ...couriersRes.rows.map((c) => ({ ...c, entityType: 'courier' })),
     ...agenciesRes.rows.map((a) => ({ ...a, entityType: 'agency' })),
@@ -230,7 +230,7 @@ export default async ({ req, res, log, error }) => {
     first.score + ' dist:' + first.distance + 'km'
   );
 
-  // ── Create dispatch_queue row ──────────────────────────────────────────────
+  // ── Create dispatch_queue row 
   const expiresAt = new Date(Date.now() + 20 * 1000).toISOString();
   let queueDoc;
   try {

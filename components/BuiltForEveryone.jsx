@@ -18,8 +18,8 @@ const AUDIENCE = [
   {
     emoji: '🏢',
     title: 'Logistics agencies',
-    desc: 'List your fleet, manage drivers, accept inbound bookings. Full dashboard with revenue analytics.',
-    tags: ['Fleet management', 'Driver dashboard', 'Analytics'],
+    desc: 'Full agency dashboard. Assign jobs to your riders, track all deliveries at once, and replace WhatsApp chaos for good.',
+    tags: ['Fleet management', 'Drivers dashboard', 'Analytics'],
     dark: false,
   },
 ];
@@ -36,7 +36,6 @@ export default function BuiltForEveryone() {
           </p>
           <h2
             className="text-[28px] md:text-[38px] font-black text-[#3A0A21] leading-[1.08] tracking-[-0.02em]"
-            style={{ fontFamily: 'Fraunces, Georgia, serif' }}
           >
             Whether you ship{' '}
             <span className="text-[#FF6B35] italic">once</span>
@@ -46,7 +45,7 @@ export default function BuiltForEveryone() {
         </div>
 
         {/* Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 font-inter lg:grid-cols-3 gap-4">
           {AUDIENCE.map(({ emoji, title, desc, tags, dark }) => (
             <div
               key={title}
@@ -67,7 +66,7 @@ export default function BuiltForEveryone() {
                 {title}
               </h3>
 
-              <p className={`text-[13px] leading-[1.65] mb-5 ${dark ? 'text-white/50' : 'text-gray-500'}`}>
+              <p className={`text-[13px] font-fraunces font-semibold leading-[1.65] mb-5 ${dark ? 'text-white/50' : 'text-gray-500'}`}>
                 {desc}
               </p>
 
@@ -75,7 +74,7 @@ export default function BuiltForEveryone() {
                 {tags.map((t) => (
                   <span
                     key={t}
-                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
                       dark
                         ? 'bg-white/10 text-white/55'
                         : 'bg-[#3A0A21]/06 text-[#5a1535]'

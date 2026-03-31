@@ -25,7 +25,7 @@ import StickyConfirmBar from '@/components/PackageAndFare/StickyConfirmBar';
 import PaymentSection from '@/components/PackageAndFare/PaymentSection';
 import DeliverySummaryCard from '@/components/PackageAndFare/DeliverySummaryCard';
 
-// ── Helper: create a blank dropoff entry ──────────────────────────────────
+
 function makeDropoff(id) {
   return {
     id,
@@ -216,16 +216,14 @@ function GuestInfoModal({
                     />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                    <User className="w-6 h-6 text-white" />
+                  <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-white" />
                   </div>
                 )}
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
-                    Your Contact Info
-                  </h2>
-                  <p className="text-white/80 text-sm">
-                    {agency?.name} will use this to reach you
+                  
+                  <p className="text-white/80 text-md font-medium">
+                    We will use this to reach you
                   </p>
                 </div>
               </div>
@@ -342,7 +340,7 @@ function GuestInfoModal({
                 className="w-3 h-3"
                 style={{ color: brandColors.accent }}
               />
-              <span>Powered by {agency?.name}</span>
+              <span className="text-xs font-semibold">Powered by {agency?.name}</span>
             </div>
           </motion.div>
         </motion.div>
@@ -355,7 +353,7 @@ export default function DeliveryBookingPage({
   isAgencyBooking = false,
   agency = null,
   availability = { isOpen: true, message: '' },
-  showPricing = true,
+  showPricing = true, 
   loading = false,
   onConfirmed,
   initialPickup = null,
@@ -628,6 +626,7 @@ export default function DeliveryBookingPage({
           onConfirm={handleConfirm}
           fareDetails={fareDetails}
           deliverySnapshot={deliverySnapshot}
+          isAgencyBooking={isAgencyBooking}
         />
       </div>
 
