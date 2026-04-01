@@ -2,7 +2,7 @@ import '../assets/globals.css';
 import { Inter, Fraunces } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/hooks/Authcontext';
-import Navbar from '@/components/Navbar';
+// import Navbar from '@/components/Navbar';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -277,7 +277,7 @@ export default function RootLayout({ children }) {
       <body className={`${inter.variable} ${fraunces.variable}`}>
         <AuthProvider>
           <main className="min-h-screen">
-            <Navbar />
+            {/* <Navbar /> */}
             {children}
             <Analytics />
           </main>
