@@ -1,7 +1,181 @@
 'use client';
-import { Plus, Search, RefreshCw, Package, Truck, CheckCircle, DollarSign, Clock, AlertCircle, MapPin, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Plus,
+  Search,
+  RefreshCw,
+  Package,
+  Truck,
+  CheckCircle,
+  DollarSign,
+  Clock,
+  AlertCircle,
+  ArrowUpRight,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
+/* ─────────────────────────────────────────────
+   Status config — full static Tailwind strings
+───────────────────────────────────────────── */
+const STATUS_CFG = {
+  pending: {
+    label: 'Pending',
+    pill: 'bg-amber-50 text-amber-600 border-amber-100',
+    dot: 'bg-amber-400',
+    pulse: true,
+    icon: Clock,
+  },
+  accepted: {
+    label: 'Accepted',
+    pill: 'bg-sky-50 text-sky-600 border-sky-100',
+    dot: 'bg-sky-400',
+    pulse: false,
+    icon: CheckCircle,
+  },
+  assigned: {
+    label: 'Assigned',
+    pill: 'bg-blue-50 text-blue-600 border-blue-100',
+    dot: 'bg-blue-500',
+    pulse: false,
+    icon: Truck,
+  },
+  picked_up: {
+    label: 'Picked Up',
+    pill: 'bg-violet-50 text-violet-600 border-violet-100',
+    dot: 'bg-violet-500',
+    pulse: false,
+    icon: Package,
+  },
+  in_transit: {
+    label: 'In Transit',
+    pill: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    dot: 'bg-indigo-500',
+    pulse: true,
+    icon: Truck,
+  },
+  delivered: {
+    label: 'Delivered',
+    pill: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    dot: 'bg-emerald-500',
+    pulse: false,
+    icon: CheckCircle,
+  },
+  cancelled: {
+    label: 'Cancelled',
+    pill: 'bg-red-50 text-red-500 border-red-100',
+    dot: 'bg-red-400',
+    pulse: false,
+    icon: AlertCircle,
+  },
+};
+
+const FILTER_TABS = [
+  { id: 'all',        label: 'All'        },
+  { id: 'pending',    label: 'Pending'    },
+  { id: 'assigned',   label: 'Assigned'   },
+  { id: 'in_transit', label: 'In Transit' },
+];
+
+/* ─────────────────────────────────────────────
+   StatusPill
+───────────────────────────────────────────── */
+function StatusPill({ status }) {
+  const cfg = STATUS_CFG[status] ?? STATUS_CFG.pending;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.pill}`}
+    >
+      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+        {cfg.pulse && (
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${cfg.dot}`} />
+        )}
+        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />
+      </span>
+      {cfg.label}
+    </span>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   DeliveryRow — horizontal card
+───────────────────────────────────────────── */
+function DeliveryRow({ delivery, onTrack, index }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.22 }}
+      onClick={() => onTrack(delivery)}
+      className="group bg-white border border-gray-100 rounded-2xl px-5 py-4 flex items-center gap-5 hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all duration-200"
+    >
+      {/* Status dot column */}
+      <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+        <div
+          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+            STATUS_CFG[delivery.status]?.dot ?? 'bg-gray-300'
+          }`}
+        />
+      </div>
+
+      {/* Route */}
+      <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-6">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+            From
+          </p>
+          <p className="text-sm font-medium text-gray-800 truncate">
+            {delivery.pickupAddress}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+            To
+          </p>
+          <p className="text-sm font-medium text-gray-800 truncate">
+            {delivery.dropoffAddress}
+          </p>
+        </div>
+      </div>
+
+      {/* Meta — hidden on small screens */}
+      <div className="hidden md:flex items-center gap-6 flex-shrink-0">
+        <div className="text-right">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+            Fee
+          </p>
+          <p className="text-sm font-bold text-gray-900 tabular-nums">
+            {formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+            Size
+          </p>
+          <p className="text-sm font-medium text-gray-700">
+            {delivery.packageSize || 'Standard'}
+          </p>
+        </div>
+      </div>
+
+      {/* Status pill */}
+      <div className="flex-shrink-0 hidden sm:block">
+        <StatusPill status={delivery.status} />
+      </div>
+
+      {/* Arrow */}
+      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-gray-50 group-hover:bg-[#3A0A21] flex items-center justify-center transition-colors duration-200">
+        <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors duration-200" />
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Main
+───────────────────────────────────────────── */
 const SenderActiveDelivery = ({
   deliveries,
   allDeliveries,
@@ -13,149 +187,54 @@ const SenderActiveDelivery = ({
   onTrackDelivery,
   onNewDelivery,
 }) => {
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-amber-50 text-amber-700 border-amber-200',
-      assigned: 'bg-blue-50 text-blue-700 border-blue-200',
-      picked_up: 'bg-purple-50 text-purple-700 border-purple-200',
-      in_transit: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      delivered: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      cancelled: 'bg-red-50 text-red-700 border-red-200',
-    };
-    return colors[status] || 'bg-gray-50 text-gray-700 border-gray-200';
-  };
+  const [activeFilter, setActiveFilter] = useState('all');
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="w-4 h-4" />;
-      case 'assigned':
-      case 'picked_up':
-      case 'in_transit':
-        return <Truck className="w-4 h-4" />;
-      case 'delivered':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'cancelled':
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Package className="w-4 h-4" />;
-    }
-  };
-
-  const renderDeliveryCard = (delivery) => (
-    <div
-      key={delivery.$id}
-      className="group bg-white rounded-3xl border border-gray-200 hover:border-[#3A0A21]/30 hover:shadow-xl transition-all duration-300 overflow-hidden"
-    >
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(
-              delivery.status
-            )}`}
-          >
-            {getStatusIcon(delivery.status)}
-            <span className="capitalize">{delivery.status.replace('_', ' ')}</span>
-          </span>
-          <span className="text-xs font-medium text-gray-400">
-            {new Date(delivery.$createdAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-            })}
-          </span>
-        </div>
-
-        {/* Route Info */}
-        <div className="space-y-3 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 p-1.5 bg-blue-50 rounded-lg">
-              <Package className="w-4 h-4 text-blue-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-500 mb-0.5">Pickup</p>
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {delivery.pickupAddress}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center pl-2">
-            <div className="w-px h-6 bg-gradient-to-b from-gray-200 to-transparent" />
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="mt-1 p-1.5 bg-emerald-50 rounded-lg">
-              <MapPin className="w-4 h-4 text-emerald-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-500 mb-0.5">Dropoff</p>
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {delivery.dropoffAddress}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Details Row */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Delivery Fee</p>
-            <p className="text-lg font-bold text-gray-900">
-              {formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {delivery.isFragile && (
-              <span className="px-2.5 py-1 text-xs font-semibold bg-orange-50 text-orange-700 rounded-lg border border-orange-200">
-                Fragile
-              </span>
-            )}
-            <span className="px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-700 rounded-lg">
-              {delivery.packageSize || 'Standard'}
-            </span>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <button
-          onClick={() => onTrackDelivery(delivery)}
-          className="mt-4 w-full py-3 bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white rounded-2xl text-sm font-semibold hover:shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
-        >
-          Track Delivery
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
-    </div>
+  const totalSpent = allDeliveries.reduce(
+    (sum, d) => sum + (d.offeredFare || d.suggestedFare || 0),
+    0
   );
 
+  const filtered = deliveries.filter((d) => {
+    const matchesFilter =
+      activeFilter === 'all' ||
+      (activeFilter === 'assigned'
+        ? ['accepted', 'assigned', 'picked_up'].includes(d.status)
+        : d.status === activeFilter);
+    const matchesSearch =
+      !searchQuery ||
+      d.pickupAddress?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.dropoffAddress?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-4xl space-y-8">
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between">
         <div>
-          <p className="text-gray-900 text-lg md:text-xl font-semibold">Track and manage your ongoing Deliveries</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Deliveries</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            {deliveries.length} active · {completedDeliveries.length} completed
+          </p>
         </div>
         <button
           onClick={onNewDelivery}
-          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white rounded-2xl hover:shadow-lg transition-all font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#3A0A21] text-white rounded-xl font-semibold text-sm hover:bg-[#5A0A31] hover:shadow-lg hover:shadow-[#3A0A21]/20 active:scale-95 transition-all"
         >
-          <Plus className="w-5 h-5" />
-          New Delivery
+          <Plus className="w-4 h-4" />
+          New
         </button>
       </div>
 
-      {/* Stats Cards */}
+      {/* ── Stat cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-3xl p-6 border border-blue-200/50">
           <div className="flex items-center justify-between mb-3">
             <div className="p-3 bg-white rounded-2xl shadow-sm">
               <Truck className="w-6 h-6 text-blue-600" />
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-blue-900">{deliveries.length}</p>
-            </div>
+            <p className="text-3xl font-bold text-blue-900 tabular-nums">{deliveries.length}</p>
           </div>
           <p className="text-sm font-semibold text-blue-900">Active Deliveries</p>
           <p className="text-xs text-blue-700 mt-1">Currently in transit</p>
@@ -166,11 +245,9 @@ const SenderActiveDelivery = ({
             <div className="p-3 bg-white rounded-2xl shadow-sm">
               <CheckCircle className="w-6 h-6 text-emerald-600" />
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-emerald-900">
-                {completedDeliveries.length}
-              </p>
-            </div>
+            <p className="text-3xl font-bold text-emerald-900 tabular-nums">
+              {completedDeliveries.length}
+            </p>
           </div>
           <p className="text-sm font-semibold text-emerald-900">Completed</p>
           <p className="text-xs text-emerald-700 mt-1">Successfully delivered</p>
@@ -181,69 +258,133 @@ const SenderActiveDelivery = ({
             <div className="p-3 bg-white rounded-2xl shadow-sm">
               <DollarSign className="w-6 h-6 text-purple-600" />
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-purple-900">
-                ₦
-                {allDeliveries
-                  .reduce((sum, d) => sum + (d.offeredFare || d.suggestedFare || 0), 0)
-                  .toLocaleString()}
-              </p>
-            </div>
+            <p className="text-3xl font-bold text-purple-900 tabular-nums">
+              ₦{totalSpent.toLocaleString()}
+            </p>
           </div>
           <p className="text-sm font-semibold text-purple-900">Total Spent</p>
           <p className="text-xs text-purple-700 mt-1">All-time deliveries</p>
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex gap-3">
+      {/* ── Search + filter row ── */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by address..."
+            placeholder="Search by address…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#3A0A21] focus:border-transparent text-sm placeholder:text-gray-400"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3A0A21]/15 focus:border-[#3A0A21]/30 transition-all"
           />
         </div>
+
+        {/* Filter tabs */}
+        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-shrink-0">
+          {FILTER_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveFilter(tab.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeFilter === tab.id
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Refresh */}
         <button
           onClick={onRefresh}
           disabled={loading}
-          className="p-3.5 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-40 flex-shrink-0"
         >
-          <RefreshCw className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      {/* Deliveries Grid */}
+      {/* ── Content ── */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-gray-200 rounded-full" />
-            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-[#3A0A21] border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center justify-center py-32 gap-3">
+          <div className="relative w-8 h-8">
+            <div className="absolute inset-0 rounded-full border-[3px] border-gray-200" />
+            <div className="absolute inset-0 rounded-full border-[3px] border-[#3A0A21] border-t-transparent animate-spin" />
           </div>
+          <p className="text-sm text-gray-400">Loading…</p>
         </div>
-      ) : deliveries.length === 0 ? (
-        <div className="bg-white rounded-3xl border-2 border-dashed border-gray-200 p-16 text-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Package className="w-10 h-10 text-gray-400" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No Active Deliveries</h3>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Start sending packages by creating your first delivery request
-          </p>
-          <button
-            onClick={onNewDelivery}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white rounded-2xl hover:shadow-lg transition-all font-semibold"
-          >
-            <Plus className="w-5 h-5" />
-            Create Delivery
-          </button>
-        </div>
+      ) : filtered.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center justify-center py-28 text-center"
+        >
+          {searchQuery || activeFilter !== 'all' ? (
+            <>
+              <Search className="w-8 h-8 text-gray-300 mb-3" />
+              <p className="text-sm font-semibold text-gray-500">No deliveries found</p>
+              <button
+                onClick={() => { setSearchQuery(''); setActiveFilter('all'); }}
+                className="mt-2 text-xs text-[#3A0A21] font-semibold hover:underline"
+              >
+                Clear filters
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100">
+                <Package className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-base font-bold text-gray-800 mb-1">No active deliveries</p>
+              <p className="text-sm text-gray-400 mb-6 max-w-xs">
+                Create a delivery request to get started.
+              </p>
+              <button
+                onClick={onNewDelivery}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3A0A21] text-white rounded-xl font-semibold text-sm hover:bg-[#5A0A31] transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                New Delivery
+              </button>
+            </>
+          )}
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {deliveries.map(renderDeliveryCard)}
+        <div className="space-y-2">
+          {/* Column headers — desktop only */}
+          <div className="hidden md:grid grid-cols-[16px_1fr_auto_auto_auto_32px] gap-5 px-5 pb-1">
+            <div />
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider col-span-1">
+              Route
+            </p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider text-right">
+              Fee
+            </p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider text-right">
+              Size
+            </p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+              Status
+            </p>
+            <div />
+          </div>
+
+          <AnimatePresence>
+            {filtered.map((d, i) => (
+              <DeliveryRow
+                key={d.$id}
+                delivery={d}
+                onTrack={onTrackDelivery}
+                index={i}
+              />
+            ))}
+          </AnimatePresence>
+
+          
         </div>
       )}
     </div>
