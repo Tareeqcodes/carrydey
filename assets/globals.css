@@ -7,6 +7,20 @@ body {
   font-family: var(--font-inter), sans-serif;
 }
 
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker 18s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
 /* Custom map marker styles */
 .pickup-marker .absolute {
   top: -30px !important;

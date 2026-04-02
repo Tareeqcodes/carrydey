@@ -59,15 +59,15 @@ export default function FareNegotiation() {
             <span className="text-[#FF6B35] italic">you</span>
             {' '}name the price.
           </h2>
-          <p className="text-[14px] text-gray-500 leading-[1.75] mb-8 max-w-md">
-            Every other platform decides what you pay. Carrydey flips the model —
+          <p className="text-[14px] font-medium text-gray-500 leading-[1.75] mb-8 max-w-md">
+            Every other platform decides what you pay. Carrydey flips the model
             post your offer, watch couriers compete for your booking.
           </p>
 
           {/* Steps */}
           <div className="space-y-5">
             {[
-              { title: 'You set the opening offer',      desc: 'We suggest a fair price based on distance — accept it, go higher, or lower.' },
+              { title: 'You set the opening offer',      desc: 'We suggest a fair price based on distance  accept it, go higher, or lower.' },
               { title: 'Couriers respond in real-time',   desc: 'Accept your price, send a counter-offer, or pass. You stay in control.'      },
               { title: 'Confirm and tracking starts',     desc: 'Accept a courier and the delivery is live. No surprises, no hidden fees.'     },
             ].map(({ title, desc }, i) => (

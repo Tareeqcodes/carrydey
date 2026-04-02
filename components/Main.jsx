@@ -1,13 +1,35 @@
 'use client';
 import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Truck, Package, Zap, ArrowRight } from 'lucide-react';
+import {
+  Truck,
+  Package,
+  Zap,
+  ArrowRight,
+  MapPin,
+  Users,
+  Star,
+} from 'lucide-react';
 import InputLocation from './InputLocation';
+
+
+const CITIES = [
+  'Kano',
+  'Lagos',
+  'Abuja',
+  'Ibadan',
+  'Port Harcourt',
+  'Kaduna',
+  'Nasarawa',
+  'Kaduna',
+  'Jos',
+  'Kogi',
+];
 
 export default function Main() {
   const router = useRouter();
-  const [pickup, setPickup]       = useState(null);
-  const [dropoff, setDropoff]     = useState(null);
+  const [pickup, setPickup] = useState(null);
+  const [dropoff, setDropoff] = useState(null);
   const [routeData, setRouteData] = useState(null);
 
   const handleLocationSelect = useCallback((type, location) => {
@@ -35,7 +57,6 @@ export default function Main() {
 
   const bothFilled = pickup && dropoff;
 
-  // Memoized so InputLocation doesn't get a new object reference every render
   const dropoffsProp = useMemo(() => {
     if (!dropoff) return undefined;
     return [
@@ -54,17 +75,18 @@ export default function Main() {
     <main className="bg-white rounded-2xl overflow-hidden my-0 md:mx-5 p-6 md:p-10">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          {/* Left column */}
           <div className="space-y-6">
-            <div className="inline-flex items-center text-sm text-gray-500 font-semibold">
-              Delivery Marketplace · Nigeria
-            </div>
-            
             <div>
-              <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
-                Send anything.
+              <h1 className="text-4xl pt-5 md:text-5xl font-bold text-[#3A0A21] leading-[1.1] tracking-tight">
+                Send anything,
                 <br />
-                <span className="text-[#FF6B35] ">On your budget.</span>
+                <span className="text-[#FF6B35]">On your budget</span>
               </h1>
+              {/* One-liner explainer — critical for first-time visitors */}
+              <p className="mt-3 font-semibold text-[14px] text-gray-500 leading-relaxed">
+                Book verified couriers and agencies in seconds.
+              </p>
             </div>
 
             <InputLocation
@@ -90,6 +112,31 @@ export default function Main() {
             </button>
           </div>
 
+          <div className="lg:hidden overflow-hidden relative">
+              {/* fade edges */}
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+              <div className="flex animate-ticker w-max">
+                {/* Duplicate for seamless loop */}
+                {[...CITIES, ...CITIES].map((city, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1.5 px-3 py-1.5 mr-2 rounded-full bg-[#fdf8f2] border border-[#3A0A21]/10 whitespace-nowrap"
+                  >
+                    <MapPin className="w-3 h-3 text-[#FF6B35] flex-shrink-0" />
+                    <span
+                      className="text-[11px] font-semibold text-[#3A0A21]"
+                      style={{ fontFamily: 'DM Sans, sans-serif' }}
+                    >
+                      {city}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          {/* Right column — desktop map, hidden on mobile */}
           <div className="relative hidden lg:block">
             <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 border border-gray-200 shadow-2xl">
               <div
@@ -165,7 +212,7 @@ export default function Main() {
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl p-5 w-11/12 border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#3A0A21]/08 rounded-full flex items-center justify-center bg-orange-50">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-orange-50">
                       <Package className="w-5 h-5 text-[#FF6B35]" />
                     </div>
                     <div>

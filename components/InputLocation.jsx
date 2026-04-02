@@ -59,7 +59,7 @@ export default function InputLocation({
   const dropoffTimers = useRef({});
   const containerRef = useRef(null);
 
-  // ── Init ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
     setIsClient(true);
     getUserLocation();
@@ -92,7 +92,7 @@ export default function InputLocation({
   useEffect(() => {
     const firstDropoffLoc = dropoffStates[0]?.location || dropoff;
     if (pickup && firstDropoffLoc) calculateRoute(firstDropoffLoc);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [pickup, dropoffStates]);
 
   useEffect(
@@ -103,7 +103,7 @@ export default function InputLocation({
     []
   );
 
-  // ── Geolocation ───────────────────────────────────────────────────────
+  
   const getUserLocation = () => {
     if (!navigator.geolocation)
       return setUserLocation({ longitude: 7.4951, latitude: 9.0765 });
@@ -114,7 +114,7 @@ export default function InputLocation({
     );
   };
 
-  // ── Mapbox search ─────────────────────────────────────────────────────
+  //  Mapbox search 
   const searchAddress = async (query, callback) => {
     if (!query || query.length < 3) { callback([]); return; }
     try {
@@ -137,7 +137,7 @@ export default function InputLocation({
     } catch { callback([]); }
   };
 
-  // ── Route calculation ─────────────────────────────────────────────────
+  // ── Route calculation 
   const calculateRoute = async (dropoffLoc) => {
     if (!pickup?.geometry?.coordinates || !dropoffLoc?.geometry?.coordinates) return;
     setCalculatingRoute(true);
@@ -164,7 +164,7 @@ export default function InputLocation({
     } catch { /* silent */ } finally { setCalculatingRoute(false); }
   };
 
-  // ── Pickup handlers ───────────────────────────────────────────────────
+  // ── Pickup handlers
   const handlePickupChange = (value) => {
     setPickupAddress(value || '');
     if (pickup && value !== pickup.place_name) onLocationSelect('pickup', null);
@@ -208,18 +208,6 @@ export default function InputLocation({
     );
   };
 
-  // ── Dropoff helpers ───────────────────────────────────────────────────
-  // KEY FIX: compute next state outside setState, then update state + notify
-  // parent in the same synchronous block — never call onDropoffsChange inside
-  // a setState updater function (that runs during render and triggers the error).
-  const updateDropoff = (idx, patch) => {
-    const next = dropoffStatesRef.current.map((d, i) =>
-      i === idx ? { ...d, ...patch } : d
-    );
-    dropoffStatesRef.current = next;
-    setDropoffStates(next);
-    onDropoffsChange?.(next.map(toClean));
-  };
 
   const handleDropoffAddressChange = (idx, value) => {
     const next = dropoffStatesRef.current.map((d, i) =>
@@ -227,7 +215,7 @@ export default function InputLocation({
     );
     dropoffStatesRef.current = next;
     setDropoffStates(next);
-    // No parent call here — address changes don't need to notify until location is picked
+    
     clearTimeout(dropoffTimers.current[idx]);
     dropoffTimers.current[idx] = setTimeout(() => {
       searchAddress(value, (results) => {
@@ -252,12 +240,6 @@ export default function InputLocation({
     setActiveField(null);
   };
 
-  const handleDropoffFieldChange = (idx, field, value) => {
-    const next = dropoffStatesRef.current.map((d, i) => (i === idx ? { ...d, [field]: value } : d));
-    dropoffStatesRef.current = next;
-    setDropoffStates(next);
-    onDropoffsChange?.(next.map(toClean));
-  };
 
   const addDropoff = () => {
     const id = `d${Date.now()}`;
@@ -275,10 +257,10 @@ export default function InputLocation({
     onDropoffsChange?.(next.map(toClean));
   };
 
-  // ── SSR skeleton ──────────────────────────────────────────────────────
+  // skeleton 
   if (!isClient) {
     return (
-      <div className="rounded-2xl border border-gray-200 p-5 space-y-3 bg-white">
+      <div className="w-full rounded-2xl border border-gray-200 p-5 space-y-3 bg-white">
         {['Pickup', 'Drop-off 1'].map((label) => (
           <div key={label}>
             <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{label}</p>
@@ -289,7 +271,7 @@ export default function InputLocation({
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────
+  
   return (
     <div ref={containerRef} className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4 shadow-sm">
       {/* ── Pickup ── */}
@@ -422,13 +404,13 @@ export default function InputLocation({
       <button type="button" onClick={addDropoff}
         className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-gray-200 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-gray-600 hover:border-gray-300 transition-all">
         <Plus className="w-4 h-4" />
-        Add another drop-off
+        Add drop-off
       </button>
 
       {calculatingRoute && (
         <div className="flex items-center gap-2 text-xs text-gray-400">
           <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: MAROON }} />
-          Calculating route…
+          Checking route…
         </div>
       )}
 
