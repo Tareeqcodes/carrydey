@@ -78,9 +78,7 @@ const FILTER_TABS = [
   { id: 'in_transit', label: 'In Transit' },
 ];
 
-/* ─────────────────────────────────────────────
-   StatusPill
-───────────────────────────────────────────── */
+
 function StatusPill({ status }) {
   const cfg = STATUS_CFG[status] ?? STATUS_CFG.pending;
   return (
@@ -98,9 +96,7 @@ function StatusPill({ status }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   DeliveryRow — horizontal card
-───────────────────────────────────────────── */
+
 function DeliveryRow({ delivery, onTrack, index }) {
   return (
     <motion.div
@@ -173,9 +169,7 @@ function DeliveryRow({ delivery, onTrack, index }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   Main
-───────────────────────────────────────────── */
+
 const SenderActiveDelivery = ({
   deliveries,
   allDeliveries,
@@ -214,17 +208,17 @@ const SenderActiveDelivery = ({
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Deliveries</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          {/* <p className="text-sm text-gray-400 mt-1">
             {deliveries.length} active · {completedDeliveries.length} completed
-          </p>
+          </p> */}
         </div>
-        <button
+        {/* <button
           onClick={onNewDelivery}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#3A0A21] text-white rounded-xl font-semibold text-sm hover:bg-[#5A0A31] hover:shadow-lg hover:shadow-[#3A0A21]/20 active:scale-95 transition-all"
         >
           <Plus className="w-4 h-4" />
           New
-        </button>
+        </button> */}
       </div>
 
       {/* ── Stat cards ── */}
