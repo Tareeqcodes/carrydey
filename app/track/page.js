@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import TrackAgencyDelivery from '@/components/Agencytrack/TrackAgencyDelivery';
 import TrackCourierDelivery from '@/components/CourierTracking/TrackCourierDelivery';
 import TrackSenderDelivery from '@/components/SenderTracking/TrackSenderDelivery';
-import TrackPageLoading from '@/components/CourierTracking/TrackPageLoading';
+import TrackPageLoading from '@/ui/TrackPageLoading';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/Authcontext';
 
