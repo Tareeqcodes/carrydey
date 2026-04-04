@@ -162,7 +162,7 @@ const TrackSenderDelivery = () => {
         />
 
         {/* Main Content */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 pb-40 lg:pb-8">
           {renderPage()}
         </main>
       </div>
