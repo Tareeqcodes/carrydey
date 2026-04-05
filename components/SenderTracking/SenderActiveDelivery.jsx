@@ -208,17 +208,9 @@ const SenderActiveDelivery = ({
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Deliveries</h1>
-          {/* <p className="text-sm text-gray-400 mt-1">
-            {deliveries.length} active · {completedDeliveries.length} completed
-          </p> */}
+          
         </div>
-        {/* <button
-          onClick={onNewDelivery}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#3A0A21] text-white rounded-xl font-semibold text-sm hover:bg-[#5A0A31] hover:shadow-lg hover:shadow-[#3A0A21]/20 active:scale-95 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          New
-        </button> */}
+        
       </div>
 
       {/* ── Stat cards ── */}
@@ -231,7 +223,6 @@ const SenderActiveDelivery = ({
             <p className="text-3xl font-bold text-blue-900 tabular-nums">{deliveries.length}</p>
           </div>
           <p className="text-sm font-semibold text-blue-900">Active Deliveries</p>
-          <p className="text-xs text-blue-700 mt-1">Currently in transit</p>
         </div>
 
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-3xl p-6 border border-emerald-200/50">
@@ -244,7 +235,6 @@ const SenderActiveDelivery = ({
             </p>
           </div>
           <p className="text-sm font-semibold text-emerald-900">Completed</p>
-          <p className="text-xs text-emerald-700 mt-1">Successfully delivered</p>
         </div>
 
         <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-3xl p-6 border border-purple-200/50">
@@ -257,7 +247,6 @@ const SenderActiveDelivery = ({
             </p>
           </div>
           <p className="text-sm font-semibold text-purple-900">Total Spent</p>
-          <p className="text-xs text-purple-700 mt-1">All-time deliveries</p>
         </div>
       </div>
 

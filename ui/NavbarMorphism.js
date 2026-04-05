@@ -1,24 +1,69 @@
-import React from 'react'
+'use client';
+
+
+const shimmer =
+  'animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 rounded-lg';
 
 export default function NavbarMorphism() {
   return (
-    <div className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-6">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-10 w-32 bg-gray-200 rounded-full animate-pulse"></div>
-            </div>
-            <div className="md:hidden">
-              <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
-            </div>
+    <>
+      {/* ── Desktop skeleton (md+) ── */}
+      <nav className="hidden md:flex w-full fixed top-0 left-0 right-0 z-50 items-center justify-between h-16 px-6 bg-white border-b border-gray-100">
+        {/* Logo — always visible, no shimmer */}
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold text-[#3A0A21] tracking-tight">
+            Carrydey
+          </span>
+        </div>
+
+        {/* Nav links skeleton */}
+        <div className="flex items-center gap-2">
+          <div className={`${shimmer} h-8 w-16`} style={{ animationDelay: '0ms' }} />
+          <div className={`${shimmer} h-8 w-16`} style={{ animationDelay: '80ms' }} />
+          <div className={`${shimmer} h-8 w-14`} style={{ animationDelay: '160ms' }} />
+          {/* Auth area */}
+          <div className={`${shimmer} ml-3 h-8 w-20`} style={{ animationDelay: '240ms' }} />
+        </div>
+      </nav>
+
+      {/* ── Mobile top bar skeleton ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 bg-white border-b border-gray-100">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold text-[#3A0A21] tracking-tight">
+            Carrydey
+          </span>
+        </div>
+        {/* Right side — login button placeholder */}
+        <div className={`${shimmer} h-8 w-16`} style={{ animationDelay: '80ms' }} />
+      </div>
+
+      {/* ── Mobile bottom nav skeleton ── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+        <div
+          className="bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}
+        >
+          <div className="flex items-center justify-around px-2 pt-1 pb-1">
+            {[0, 80, 160].map((delay) => (
+              <div key={delay} className="flex flex-col items-center justify-center flex-1 py-2 px-1 gap-1.5">
+                <div
+                  className={`${shimmer} w-11 h-11 rounded-2xl`}
+                  style={{ animationDelay: `${delay}ms` }}
+                />
+                <div
+                  className={`${shimmer} h-2 w-8 rounded`}
+                  style={{ animationDelay: `${delay + 40}ms` }}
+                />
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-  )
+      </nav>
+
+      {/* ── Spacers — identical to Navbar's spacers ── */}
+      <div className="md:hidden h-14" />
+      <div className="hidden md:block h-16" />
+    </>
+  );
 }
