@@ -62,14 +62,13 @@ export const useCourierDelivery = (userId) => {
     load();
   }, [userId]);
 
-  // Always reads from ref — safe to call from any async callback
+
   const refresh = useCallback(async () => {
     const id = courierRef.current?.$id;
     if (!id) return;
     await fetchCourierDeliveries(id);
   }, [fetchCourierDeliveries]);
 
-  // ── confirmPickup ────────────────────────────────────────────────────────
   const confirmPickup = async (deliveryId, enteredCode) => {
     try {
       const delivery = deliveries.find((d) => d.$id === deliveryId);
@@ -97,7 +96,7 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
-  // ── confirmDelivery ──────────────────────────────────────────────────────
+
   const confirmDelivery = async (deliveryId, enteredOTP) => {
     try {
       const delivery = deliveries.find((d) => d.$id === deliveryId);
@@ -129,14 +128,14 @@ export const useCourierDelivery = (userId) => {
     }
   };
 
-  // ── updateDeliveryStatus ─────────────────────────────────────────────────
+
   const updateDeliveryStatus = async (deliveryId, newStatus) => {
     try {
       const response = await tablesDB.updateRow({
         databaseId: DB,
         tableId: DELIVERIES,
         rowId: deliveryId,
-        data: { status: newStatus },
+      data: { status: newStatus, ...extraData },
       });
 
       setDeliveries((prev) =>

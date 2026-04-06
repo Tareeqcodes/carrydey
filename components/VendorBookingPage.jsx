@@ -15,8 +15,9 @@ import {
   Sparkles,
   ClipboardList,
   AlertCircle,
-  Package,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/Authcontext';
+import { useUserRole } from '@/hooks/useUserRole';
 import PackageSection from '@/components/PackageAndFare/PackageSection';
 import PaymentSection from '@/components/PackageAndFare/PaymentSection';
 
@@ -528,7 +529,6 @@ function PasteModal({ onParsed, onClose }) {
           </p>
           <p>Aminu Hassan / 08012345678 / Sabon Gari/ ORD-001</p>
           <p>Fatima / 09087654321 / Fagge / ORD-002</p>
-          <p>Khadija Musa / 08033333333 / Kano Municipal / ORD-003</p>
         </div>
 
         {/* Textarea */}
@@ -736,6 +736,8 @@ function DetailsStep({
   paymentMethod,
   setPaymentMethod,
   pickupAddress,
+  pickupPhone,
+  setPickupPhone,
   onBack,
   onConfirm,
   loading,
@@ -829,21 +831,46 @@ function DetailsStep({
           ))}
         </div>
 
-        {/* Fare note */}
+        
         <div
-          className="px-4 py-3 flex items-start gap-2.5"
+          className="px-4 py-3 space-y-2.5"
           style={{
             background: `${MAROON}05`,
             borderTop: `1px solid ${MAROON}10`,
           }}
         >
-          <Phone
-            className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"
-            style={{ color: MAROON }}
-          />
-          <p className="text-xs text-gray-500 leading-relaxed">
+          {/* Pickup phone input */}
+          <div
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-white"
+            style={{
+              border: `1.5px solid ${pickupPhone ? `${MAROON}35` : '#ede8e6'}`,
+            }}
+          >
+            <Phone
+              className="w-3.5 h-3.5 flex-shrink-0"
+              style={{ color: pickupPhone ? MAROON : '#ccc' }}
+            />
+            <input
+              type="tel"
+              value={pickupPhone}
+              onChange={(e) => setPickupPhone(e.target.value)}
+              placeholder="Your pickup phone number"
+              className="flex-1 text-sm text-gray-900 placeholder-gray-300 bg-transparent outline-none"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            />
+            {pickupPhone && (
+              <button onClick={() => setPickupPhone('')}>
+                <X className="w-3 h-3 text-gray-300 hover:text-gray-500" />
+              </button>
+            )}
+          </div>
+          {/* <p className="text-xs text-gray-400 leading-relaxed flex items-center gap-1.5">
+            <Phone
+              className="w-3 h-3 flex-shrink-0"
+              style={{ color: MAROON }}
+            />
             Courier will confirm exact fare per order before pickup.
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -900,10 +927,11 @@ function DetailsStep({
 
 export default function VendorBookingPage({ loading = false, onConfirmed }) {
   const [step, setStep] = useState(1);
-
+  const { user } = useAuth();
+  const { userData } = useUserRole();
   const [pickupLoc, setPickupLoc] = useState(null);
   const [pickupAddress, setPickupAddress] = useState('');
-
+  const [pickupPhone, setPickupPhone] = useState('');
   const [recipients, setRecipients] = useState([makeRecipient('r0')]);
 
   const [packageDetails, setPackageDetails] = useState({
@@ -922,10 +950,17 @@ export default function VendorBookingPage({ loading = false, onConfirmed }) {
 
   const [paymentMethod, setPaymentMethod] = useState('');
 
+  useEffect(() => {
+    if (userData?.phone && !pickupPhone) {
+      setPickupPhone(userData.phone);
+    }
+  }, [userData]);
+
   const handleConfirm = () =>
     onConfirmed({
       pickupLoc,
       pickupAddress,
+      pickupPhone,
       recipients,
       packageDetails,
       paymentMethod,
@@ -1005,6 +1040,8 @@ export default function VendorBookingPage({ loading = false, onConfirmed }) {
                 paymentMethod={paymentMethod}
                 setPaymentMethod={setPaymentMethod}
                 pickupAddress={pickupAddress}
+                pickupPhone={pickupPhone}
+                setPickupPhone={setPickupPhone}
                 onBack={() => setStep(2)}
                 onConfirm={handleConfirm}
                 loading={loading}

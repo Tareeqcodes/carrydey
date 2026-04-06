@@ -86,14 +86,10 @@ function PageHeader({ tab, onTabChange }) {
 export default function SendPage() {
   const router = useRouter();
   const { user } = useAuth();
-
+  
   const [tab, setTab] = useState(null);
   const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // savedPickup is loaded async — VendorBookingPage handles late arrival via useEffect
-  const [savedPickup, setSavedPickup] = useState(null);
-
   const [initialPickup, setInitialPickup] = useState(null);
   const [initialDropoff, setInitialDropoff] = useState(null);
   const [initialRouteData, setInitialRouteData] = useState(null);
@@ -272,102 +268,99 @@ export default function SendPage() {
       setLoading(false);
     }
   };
+const handleVendorConfirmed = async ({
+  pickupLoc,
+  pickupAddress,
+  pickupPhone,
+  recipients,
+  packageDetails,
+  paymentMethod,
+}) => {
+  if (!user) {
+    router.push('/login');
+    return;
+  }
 
-  const handleVendorConfirmed = async ({
-    pickupLoc,
-    pickupAddress,
-    recipients,
-    packageDetails,
-    paymentMethod,
-  }) => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
+  setLoading(true);
+  try {
+    const deliveryId = ID.unique();
+    const batchId = ID.unique();
+    const primary = recipients[0];
 
-    setLoading(true);
-    try {
-      const batchId = ID.unique();
+    await tablesDB.createRow({
+      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
+      rowId: deliveryId,
+      data: {
+        // Pickup
+        pickupAddress: pickupAddress.substring(0, 500),
+        pickupLat: pickupLoc.geometry.coordinates[1],
+        pickupLng: pickupLoc.geometry.coordinates[0],
+        pickupContactName:
+          packageDetails?.pickupContact?.pickupContactName?.substring(0, 100) ?? null,
+        pickupPhone: pickupPhone?.substring(0, 20) ?? null,
 
-      const deliveryIds = await Promise.all(
-        recipients.map(async (recipient) => {
-          const deliveryId = ID.unique();
+        // Primary dropoff — first recipient
+        dropoffAddress: (primary.area || '').substring(0, 500),
+        dropoffLat: null,
+        dropoffLng: null,
+        dropoffContactName: (primary.recipientName || '').substring(0, 100) || null,
+        dropoffPhone: (primary.recipientPhone || '').substring(0, 20) || null,
+        dropoffInstructions: (primary.orderRef || '').substring(0, 1000) || null,
 
-          await tablesDB.createRow({
-            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-            tableId: process.env.NEXT_PUBLIC_APPWRITE_DELIVERIES_COLLECTION_ID,
-            rowId: deliveryId,
-            data: {
-              pickupAddress: pickupAddress.substring(0, 500),
-              pickupLat: pickupLoc.geometry.coordinates[1],
-              pickupLng: pickupLoc.geometry.coordinates[0],
-              pickupContactName:
-                packageDetails?.pickupContact?.pickupContactName?.substring(
-                  0,
-                  100
-                ) ?? null,
-              pickupPhone:
-                packageDetails?.pickupContact?.pickupPhone?.substring(0, 20) ??
-                null,
-              // pickupTime:
-              //   packageDetails?.pickupTime?.substring(0, 500) || 'courier',
-              dropoffAddress: (recipient.area || '').substring(0, 500),
-              dropoffLat: null,
-              dropoffLng: null,
-              dropoffContactName:
-                (recipient.recipientName || '').substring(0, 100) || null,
-              dropoffPhone:
-                (recipient.recipientPhone || '').substring(0, 20) || null,
-              dropoffInstructions:
-                (recipient.orderRef || '').substring(0, 1000) || null,
-              distance: 0,
-              duration: 0,
+        // All recipients packed into mutipledropoff
+        mutipledropoff: JSON.stringify(
+          recipients.map((r, i) => ({
+            idx: i,
+            dropoffAddress: (r.area || '').substring(0, 500),
+            dropoffContactName: (r.recipientName || '').substring(0, 100) || null,
+            dropoffPhone: (r.recipientPhone || '').substring(0, 20) || null,
+            orderRef: (r.orderRef || '').substring(0, 100) || null,
+          }))
+        ),
 
-              /* Package */
-              packageSize: packageDetails?.size?.substring(0, 50) ?? null,
-              packageDescription:
-                packageDetails?.description?.substring(0, 500) ?? null,
-              isFragile: packageDetails?.isFragile ?? false,
+        distance: 0,
+        duration: 0,
 
-              offeredFare: 0,
-              paymentMethod: paymentMethod ?? null,
-              isLongDistance: false,
-              pricingProvidedAtBooking: false,
+        // Package
+        packageSize: packageDetails?.size?.substring(0, 50) ?? null,
+        packageDescription: packageDetails?.description?.substring(0, 500) ?? null,
+        isFragile: packageDetails?.isFragile ?? false,
 
-              status: 'pending',
-              userId: user.$id,
-              assignedAgencyId: null,
-              assignedCourierId: null,
-              pickupCode: null,
-              dropoffOTP: null,
-              driverName: null,
-              driverPhone: null,
-              driverId: null,
-              driverToken: null,
-              trackingToken: null,
+        offeredFare: 0,
+        paymentMethod: paymentMethod ?? null,
+        isLongDistance: false,
+        pricingProvidedAtBooking: false,
 
-              isVendorBatch: true,
-              batchId: batchId,
-              orderRef: (recipient.orderRef || '').substring(0, 100) || null,
-              mutipledropoff: null,
-            },
-          });
+        status: 'pending',
+        userId: user.$id,
+        assignedAgencyId: null,
+        assignedCourierId: null,
+        pickupCode: null,
+        dropoffOTP: null,
+        driverName: null,
+        driverPhone: null,
+        driverId: null,
+        driverToken: null,
+        trackingToken: null,
 
-          return deliveryId;
-        })
-      );
+        isVendorBatch: true,
+        batchId: batchId,
+        orderRef: (primary.orderRef || '').substring(0, 100) || null,
+      },
+    });
 
-      sessionStorage.setItem('latestDeliveryId', deliveryIds[0]);
-      sessionStorage.setItem('vendorBatchIds', JSON.stringify(deliveryIds));
-      deliveryIds.forEach(triggerDispatch);
-      router.push('/check');
-    } catch (error) {
-      console.error('Vendor batch creation error:', error);
-      alert(`Error creating deliveries: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+    sessionStorage.setItem('latestDeliveryId', deliveryId); 
+    sessionStorage.removeItem('vendorBatchIds'); // no longer needed
+    triggerDispatch(deliveryId);
+    router.push('/check');
+  } catch (error) {
+    console.error('Vendor batch creation error:', error);
+    alert(`Error creating deliveries: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* Spinner while hydrating */
   if (!hydrated || tab === null) {

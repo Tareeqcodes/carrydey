@@ -11,7 +11,6 @@ import Profile from '../setting/Profile';
 import PickupCodeModal from '../Agencytrack/PickupCodeModal';
 import DropoffOTPModal from '../Agencytrack/DropoffOTPModal';
 import Couriersidebar from './Couriersidebar';
-// import Courierpendingdelivery from './Courierpendingdelivery';
 import CourierActiveDelivery from './CourierActiveDelivery';
 import CourierHistory from './CourierHistory';
 import OfferBanner from '@/components/OfferBanner';
@@ -24,7 +23,6 @@ const TrackCourierDelivery = () => {
   const locationIntervalRef = useRef(null);
 
   const [activePage, setActivePage]     = useState('earnings');
-  // const [isAccepting, setIsAccepting]   = useState(false);
   const [accepting, setAccepting]       = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [copiedCode, setCopiedCode]     = useState(null);
@@ -35,7 +33,6 @@ const TrackCourierDelivery = () => {
     courier,
     deliveries: allDeliveries,
     loading,
-    // acceptRequest,
     confirmPickup,
     confirmDelivery,
     updateDeliveryStatus,
@@ -46,6 +43,15 @@ const TrackCourierDelivery = () => {
     useDispatchOffer(courier?.$id, USERS, {
       onAccepted: () => refresh(),
     });
+
+
+    const handleAdvanceStop = async (deliveryId, nextStopIdx) => {
+  const result = await updateDeliveryStatus(deliveryId, 'in_transit', { 
+    currentStopIdx: nextStopIdx 
+  });
+  if (result.success) refresh();
+};
+
 
 
   const handleAcceptOffer = async () => {
@@ -103,7 +109,6 @@ const TrackCourierDelivery = () => {
     };
   }, [courier?.$id]);
 
-  // const pendingDeliveries   = allDeliveries.filter((d) => d.status === 'pending');
   const activeDeliveries    = allDeliveries.filter((d) =>
     ['accepted', 'assigned', 'picked_up', 'in_transit'].includes(d.status)
   );
@@ -117,18 +122,6 @@ const TrackCourierDelivery = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  // const handleAcceptDelivery = async (deliveryId) => {
-  //   setIsAccepting(true);
-  //   try {
-  //     const result = await acceptRequest(deliveryId);
-  //     if (result.success) refresh();
-  //     else alert(result.error || 'Failed to accept delivery');
-  //   } catch (err) {
-  //     console.error(err);
-  //   } finally {
-  //     setIsAccepting(false);
-  //   }
-  // };
 
   const handleConfirmPickup = async (deliveryId, pickupCode) => {
     const result = await confirmPickup(deliveryId, pickupCode);
@@ -150,16 +143,6 @@ const TrackCourierDelivery = () => {
 
   const renderPage = () => {
     switch (activePage) {
-      // case 'deliveries':
-      //   return (
-      //     <Courierpendingdelivery
-      //       deliveries={pendingDeliveries}
-      //       allDeliveries={allDeliveries}
-      //       loading={loading}
-      //       isAccepting={isAccepting}
-      //       onAcceptDelivery={handleAcceptDelivery}
-      //     />
-      //   );
       case 'active':
         return (
           <CourierActiveDelivery
@@ -168,6 +151,7 @@ const TrackCourierDelivery = () => {
             loading={loading}
             copiedCode={copiedCode}
             onCopyCode={copyToClipboard}
+            onAdvanceStop={handleAdvanceStop}
             onConfirmPickup={(id) => setSelectedDeliveryForPickup(id)}
             onStartDelivery={(id) => handleUpdateStatus(id, 'in_transit')}
             onConfirmDelivery={(id) => setSelectedDeliveryForDropoff(id)}

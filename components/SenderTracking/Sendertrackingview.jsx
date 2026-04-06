@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
-
 const STATUS_PROGRESS = {
   pending: 0,
   accepted: 20,
@@ -33,11 +32,11 @@ const STATUS_PROGRESS = {
 };
 
 const TIMELINE_STEPS = [
-  { label: 'Order Placed',     status: 'pending',    icon: Package,     progress: 0   },
-  { label: 'Courier Assigned', status: 'assigned',   icon: User,        progress: 40  },
-  { label: 'Picked Up',        status: 'picked_up',  icon: CheckCircle, progress: 60  },
-  { label: 'In Transit',       status: 'in_transit', icon: Truck,       progress: 80  },
-  { label: 'Delivered',        status: 'delivered',  icon: MapPin,      progress: 100 },
+  { label: 'Order Placed', status: 'pending', icon: Package, progress: 0 },
+  { label: 'Courier Assigned', status: 'assigned', icon: User, progress: 40 },
+  { label: 'Picked Up', status: 'picked_up', icon: CheckCircle, progress: 60 },
+  { label: 'In Transit', status: 'in_transit', icon: Truck, progress: 80 },
+  { label: 'Delivered', status: 'delivered', icon: MapPin, progress: 100 },
 ];
 
 function useCopy(timeout = 2000) {
@@ -50,7 +49,6 @@ function useCopy(timeout = 2000) {
   return [copied, copy];
 }
 
-
 function ProgressBar({ progress }) {
   return (
     <div className="space-y-1.5">
@@ -62,7 +60,6 @@ function ProgressBar({ progress }) {
           className="h-full bg-white rounded-full"
         />
       </div>
-      
     </div>
   );
 }
@@ -89,11 +86,15 @@ function TimelineRow({ step, isActive, isCurrent, isLast }) {
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1">
-        <p className={`font-semibold text-sm ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>
+        <p
+          className={`font-semibold text-sm ${isActive ? 'text-gray-900' : 'text-gray-400'}`}
+        >
           {step.label}
         </p>
         {isCurrent && (
-          <p className="text-xs text-[#3A0A21] font-medium mt-0.5">In Progress</p>
+          <p className="text-xs text-[#3A0A21] font-medium mt-0.5">
+            In Progress
+          </p>
         )}
       </div>
     </div>
@@ -102,7 +103,9 @@ function TimelineRow({ step, isActive, isCurrent, isLast }) {
 
 function CodeDisplay({ label, code, gradient, onCopy, copied }) {
   return (
-    <div className={`relative rounded-3xl p-7 text-center overflow-hidden ${gradient}`}>
+    <div
+      className={`relative rounded-3xl p-7 text-center overflow-hidden ${gradient}`}
+    >
       {/* subtle dot-grid texture */}
       <div
         className="absolute inset-0 opacity-10"
@@ -125,7 +128,11 @@ function CodeDisplay({ label, code, gradient, onCopy, copied }) {
           onClick={() => onCopy(code)}
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-xl text-sm font-semibold transition-all"
         >
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {copied ? (
+            <Check className="w-4 h-4" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
@@ -136,41 +143,59 @@ function CodeDisplay({ label, code, gradient, onCopy, copied }) {
 /** Inline hint chip */
 function HintChip({ color, icon: Icon, text }) {
   const schemes = {
-    blue:    'bg-blue-50 border-blue-200 text-blue-800',
+    blue: 'bg-blue-50 border-blue-200 text-blue-800',
     emerald: 'bg-emerald-50 border-emerald-200 text-emerald-800',
   };
   const iconSchemes = {
-    blue:    'text-blue-500',
+    blue: 'text-blue-500',
     emerald: 'text-emerald-500',
   };
   return (
-    <div className={`flex items-start gap-3 rounded-2xl border p-4 ${schemes[color]}`}>
+    <div
+      className={`flex items-start gap-3 rounded-2xl border p-4 ${schemes[color]}`}
+    >
       <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${iconSchemes[color]}`} />
       <p className="text-xs leading-relaxed font-medium">{text}</p>
     </div>
   );
 }
 
-  //  Main component
-   
-const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, isFavourite: initialFav = false }) => {
-  const [activeTab, setActiveTab]         = useState('tracking');
-  const [showRating, setShowRating]       = useState(false);
+const SenderTrackingView = ({
+  delivery,
+  onClose,
+  onRebook,
+  onToggleFavourite,
+  isFavourite: initialFav = false,
+}) => {
+  const [activeTab, setActiveTab] = useState('tracking');
+  const [showRating, setShowRating] = useState(false);
   const [courierRating, setCourierRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
-  const [favourite, setFavourite]         = useState(initialFav);
-  const [copiedPickup,  copyPickup]       = useCopy();
-  const [copiedDropoff, copyDropoff]      = useCopy();
+  const [favourite, setFavourite] = useState(initialFav);
+  const [copiedPickup, copyPickup] = useCopy();
+  const [copiedDropoff, copyDropoff] = useCopy();
 
-  const progress     = STATUS_PROGRESS[delivery?.status] ?? 0;
-  const isDelivered  = delivery?.status === 'delivered';
-  const hasCourier   = Boolean(delivery?.driverName);
+  const progress = STATUS_PROGRESS[delivery?.status] ?? 0;
+  const isDelivered = delivery?.status === 'delivered';
+  const hasCourier = Boolean(delivery?.driverName);
+
+  const stops = (() => {
+    try {
+      return delivery?.mutipledropoff
+        ? JSON.parse(delivery.mutipledropoff)
+        : null;
+    } catch {
+      return null;
+    }
+  })();
+  const isVendorBatch = delivery?.isVendorBatch && stops?.length > 0;
+  const currentStopIdx = delivery?.currentStopIdx ?? 0;
 
   const TABS = [
-    { id: 'tracking', label: 'Tracking'  },
-    { id: 'security', label: 'Codes'     },
-    { id: 'courier',  label: 'Courier',  hidden: !hasCourier },
-    { id: 'details',  label: 'Details'   },
+    { id: 'tracking', label: 'Tracking' },
+    { id: 'security', label: 'Codes' },
+    { id: 'courier', label: 'Courier', hidden: !hasCourier },
+    { id: 'details', label: 'Details' },
   ].filter((t) => !t.hidden);
 
   const handleToggleFavourite = () => {
@@ -186,18 +211,27 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
 
   const handleSubmitRating = () => {
     if (courierRating === 0) return;
-    console.log('Rating:', { courierRating, ratingComment, deliveryId: delivery?.$id });
+    console.log('Rating:', {
+      courierRating,
+      ratingComment,
+      deliveryId: delivery?.$id,
+    });
     setShowRating(false);
     onClose();
   };
 
   /* ── Tab: Tracking ── */
   const renderTracking = () => {
-    const currentStepIndex = TIMELINE_STEPS.findIndex((s) => s.progress >= progress);
+    const currentStepIndex = TIMELINE_STEPS.findIndex(
+      (s) => s.progress >= progress
+    );
 
     return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-5"
+      >
         {/* Status Banner */}
         <div className="bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-3xl p-6 text-white">
           <div className="flex items-center justify-between mb-5">
@@ -222,7 +256,9 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
 
         {/* Timeline */}
         <div className="bg-white rounded-3xl border border-gray-200 p-6">
-          <h3 className="text-base font-bold text-gray-900 mb-5">Delivery Timeline</h3>
+          <h3 className="text-base font-bold text-gray-900 mb-5">
+            Delivery Timeline
+          </h3>
           <div className="space-y-5">
             {TIMELINE_STEPS.map((step, i) => (
               <TimelineRow
@@ -236,23 +272,109 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
           </div>
         </div>
 
-        {/* Route */}
         <div className="bg-white rounded-3xl border border-gray-200 p-6 space-y-3">
-          <h3 className="text-base font-bold text-gray-900 mb-1">Route</h3>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-base font-bold text-gray-900">Route</h3>
+            {isVendorBatch && (
+              <span
+                className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white"
+                style={{ background: '#FF6B35' }}
+              >
+                {stops.length} stops
+              </span>
+            )}
+          </div>
+
+          {/* Pickup — always the same */}
           <div className="flex gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-200">
             <MapPin className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-blue-900 mb-0.5">Pickup</p>
+              <p className="text-xs font-semibold text-blue-900 mb-0.5">
+                Pickup
+              </p>
               <p className="text-sm text-blue-800">{delivery?.pickupAddress}</p>
             </div>
           </div>
-          <div className="flex gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
-            <MapPin className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-xs font-semibold text-emerald-900 mb-0.5">Dropoff</p>
-              <p className="text-sm text-emerald-800">{delivery?.dropoffAddress}</p>
+
+          {/* Dropoffs */}
+          {isVendorBatch ? (
+            <div className="rounded-2xl border border-gray-200 overflow-hidden">
+              {stops.map((stop, i) => {
+                const isDone = i < currentStopIdx;
+                const isCurrent = i === currentStopIdx;
+                return (
+                  <div
+                    key={i}
+                    className={`flex gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0 ${
+                      isCurrent
+                        ? 'bg-orange-50'
+                        : isDone
+                          ? 'bg-gray-50'
+                          : 'bg-white'
+                    }`}
+                  >
+                    {/* Stop indicator */}
+                    <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+                        style={{
+                          background: isDone
+                            ? '#10b981'
+                            : isCurrent
+                              ? '#FF6B35'
+                              : '#d1d5db',
+                        }}
+                      >
+                        {isDone ? '✓' : i + 1}
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p
+                          className={`text-sm font-semibold truncate ${isDone ? 'text-gray-400 line-through' : 'text-gray-900'}`}
+                        >
+                          {stop.dropoffAddress}
+                        </p>
+                        {isCurrent && (
+                          <span className="text-[10px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                            Current
+                          </span>
+                        )}
+                        {isDone && (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                            Done
+                          </span>
+                        )}
+                      </div>
+                      {stop.dropoffContactName && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {stop.dropoffContactName}
+                        </p>
+                      )}
+                      {stop.orderRef && (
+                        <p className="text-[10px] text-gray-400 font-mono mt-0.5">
+                          {stop.orderRef}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          ) : (
+            <div className="flex gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
+              <MapPin className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-emerald-900 mb-0.5">
+                  Dropoff
+                </p>
+                <p className="text-sm text-emerald-800">
+                  {delivery?.dropoffAddress}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Rate CTA */}
@@ -271,12 +393,19 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
 
   /* ── Tab: Security Codes (display-only) ── */
   const renderSecurity = () => {
-    const canShowPickup  = ['accepted', 'assigned', 'pending'].includes(delivery?.status);
-    const canShowDropoff = ['picked_up', 'in_transit', 'delivered'].includes(delivery?.status);
+    const canShowPickup = ['accepted', 'assigned', 'pending'].includes(
+      delivery?.status
+    );
+    const canShowDropoff = ['picked_up', 'in_transit', 'delivered'].includes(
+      delivery?.status
+    );
 
     return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-5"
+      >
         {/* Pickup Code */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -301,7 +430,9 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
           ) : (
             <div className="rounded-2xl border-2 border-dashed border-gray-200 p-6 text-center">
               <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Available once a courier is assigned</p>
+              <p className="text-sm text-gray-500">
+                Available once a courier is assigned
+              </p>
             </div>
           )}
         </div>
@@ -309,7 +440,9 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
         {/* Divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400 font-medium">DELIVERY OTP</span>
+          <span className="text-xs text-gray-400 font-medium">
+            DELIVERY OTP
+          </span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
@@ -337,7 +470,9 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
           ) : (
             <div className="rounded-2xl border-2 border-dashed border-gray-200 p-6 text-center">
               <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Available once the package is picked up</p>
+              <p className="text-sm text-gray-500">
+                Available once the package is picked up
+              </p>
             </div>
           )}
         </div>
@@ -347,8 +482,11 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
 
   /* ── Tab: Courier ── */
   const renderCourier = () => (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5"
+    >
       {/* Courier Card */}
       <div className="bg-white rounded-3xl border border-gray-200 p-6">
         <div className="flex items-center gap-4 mb-5">
@@ -362,8 +500,9 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-gray-900 text-lg leading-tight">{delivery?.driverName}</p>
-            
+            <p className="font-bold text-gray-900 text-lg leading-tight">
+              {delivery?.driverName}
+            </p>
           </div>
 
           {/* Favourite toggle */}
@@ -391,7 +530,9 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
             </div>
             <div className="flex-1">
               <p className="text-xs text-gray-500 font-medium">Phone</p>
-              <p className="text-sm font-bold text-gray-900">{delivery.driverPhone}</p>
+              <p className="text-sm font-bold text-gray-900">
+                {delivery.driverPhone}
+              </p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
           </a>
@@ -409,7 +550,8 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
               <div className="flex items-center gap-2 p-3 bg-rose-50 rounded-xl border border-rose-200">
                 <Heart className="w-4 h-4 text-rose-500 fill-rose-500 flex-shrink-0" />
                 <p className="text-xs text-rose-700 font-medium">
-                  Saved to favourites  you can rebook this courier on future deliveries.
+                  Saved to favourites you can rebook this courier on future
+                  deliveries.
                 </p>
               </div>
             </motion.div>
@@ -425,22 +567,32 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
               <Repeat2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900">Rebook {delivery?.driverName?.split(' ')[0]}</h4>
-              <p className="text-xs text-gray-500 mt-0.5">Start a new delivery with the same courier</p>
+              <h4 className="font-bold text-gray-900">
+                Rebook {delivery?.driverName?.split(' ')[0]}
+              </h4>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Start a new delivery with the same courier
+              </p>
             </div>
           </div>
 
           {/* Route preview of last delivery */}
           <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-2">
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-3">Last Route</p>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-3">
+              Last Route
+            </p>
             <div className="flex items-start gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-              <p className="text-sm text-gray-700 line-clamp-1">{delivery?.pickupAddress}</p>
+              <p className="text-sm text-gray-700 line-clamp-1">
+                {delivery?.pickupAddress}
+              </p>
             </div>
             <div className="ml-[3px] w-px h-3 bg-gray-200" />
             <div className="flex items-start gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
-              <p className="text-sm text-gray-700 line-clamp-1">{delivery?.dropoffAddress}</p>
+              <p className="text-sm text-gray-700 line-clamp-1">
+                {delivery?.dropoffAddress}
+              </p>
             </div>
           </div>
 
@@ -453,7 +605,8 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
           </button>
 
           <p className="text-xs text-center text-gray-400">
-            You'll be taken to a new delivery form pre-filled with this courier's details.
+            You'll be taken to a new delivery form pre-filled with this
+            courier's details.
           </p>
         </div>
       )}
@@ -462,24 +615,42 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
       {!isDelivered && (
         <div className="rounded-2xl border-2 border-dashed border-gray-200 p-6 text-center">
           <RotateCcw className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm font-semibold text-gray-500">Rebook available after delivery</p>
-          <p className="text-xs text-gray-400 mt-1">Once this delivery is completed you can rebook this courier.</p>
+          <p className="text-sm font-semibold text-gray-500">
+            Rebook available after delivery
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Once this delivery is completed you can rebook this courier.
+          </p>
         </div>
       )}
     </motion.div>
   );
 
-  /* ── Tab: Details ── */
   const renderDetails = () => (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-4"
+    >
       <div className="bg-white rounded-3xl border border-gray-200 p-6">
-        <h3 className="text-base font-semibold text-gray-600 mb-5">Delivery Information</h3>
+        <h3 className="text-base font-semibold text-gray-600 mb-5">
+          Delivery Information
+        </h3>
         <div className="divide-y divide-gray-100">
           {[
-            { label: 'Package Size',   value: delivery?.packageSize || 'Standard' },
+            {
+              label: 'Package Size',
+              value: delivery?.packageSize || 'Standard',
+            },
+            isVendorBatch && {
+              label: 'Total Stops',
+              value: `${stops.length} orders`,
+            },
             {
               label: 'Delivery Fee',
-              value: formatNairaSimple(delivery?.offeredFare || delivery?.suggestedFare),
+              value: formatNairaSimple(
+                delivery?.offeredFare || delivery?.suggestedFare
+              ),
             },
             delivery?.isFragile && {
               label: 'Special Handling',
@@ -491,28 +662,71 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
             },
             {
               label: 'Order Date',
-              value: new Date(delivery?.$createdAt).toLocaleDateString('en-US', {
-                month: 'long', day: 'numeric', year: 'numeric',
-              }),
+              value: new Date(delivery?.$createdAt).toLocaleDateString(
+                'en-US',
+                {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                }
+              ),
             },
-            // {
-            //   label: 'Delivery ID',
-            //   value: (
-            //     <span className="font-mono text-xs text-gray-500">
-            //       {delivery?.$id?.slice(0, 12)}…
-            //     </span>
-            //   ),
-            // },
           ]
             .filter(Boolean)
             .map(({ label, value }) => (
-              <div key={label} className="flex items-center justify-between py-3.5">
-                <span className="text-gray-500 font-medium text-sm">{label}</span>
+              <div
+                key={label}
+                className="flex items-center justify-between py-3.5"
+              >
+                <span className="text-gray-500 font-medium text-sm">
+                  {label}
+                </span>
                 <span className="font-bold text-gray-900 text-sm">{value}</span>
               </div>
             ))}
         </div>
       </div>
+
+      {/* Batch stops breakdown */}
+      {isVendorBatch && (
+        <div className="bg-white rounded-3xl border border-gray-200 p-6">
+          <h3 className="text-base font-semibold text-gray-600 mb-4">
+            All Orders
+          </h3>
+          <div className="space-y-2">
+            {stops.map((stop, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl"
+              >
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5"
+                  style={{
+                    background: i < currentStopIdx ? '#10b981' : '#FF6B35',
+                  }}
+                >
+                  {i < currentStopIdx ? '✓' : i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {stop.dropoffAddress}
+                  </p>
+                  {stop.dropoffContactName && (
+                    <p className="text-xs text-gray-500">
+                      {stop.dropoffContactName}
+                    </p>
+                  )}
+                  {stop.orderRef && (
+                    <p className="text-[10px] text-gray-400 font-mono">
+                      {stop.orderRef}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 
@@ -527,9 +741,10 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
       >
         {/* ── Header ── */}
         <div className="bg-white border-b border-gray-200 px-6 py-5 flex items-center justify-between flex-shrink-0">
-          <div> 
-            <h2 className="text-lg font-bold text-gray-700">Delivery Tracking</h2>
-            
+          <div>
+            <h2 className="text-lg font-bold text-gray-700">
+              Delivery Tracking
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -567,8 +782,8 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
           <AnimatePresence mode="wait">
             {activeTab === 'tracking' && renderTracking()}
             {activeTab === 'security' && renderSecurity()}
-            {activeTab === 'courier'  && renderCourier()}
-            {activeTab === 'details'  && renderDetails()}
+            {activeTab === 'courier' && renderCourier()}
+            {activeTab === 'details' && renderDetails()}
           </AnimatePresence>
         </div>
       </motion.div>
@@ -594,8 +809,12 @@ const SenderTrackingView = ({ delivery, onClose, onRebook, onToggleFavourite, is
                 <div className="w-16 h-16 bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg">
                   {delivery?.driverName?.charAt(0).toUpperCase()}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Rate Your Experience</h3>
-                <p className="text-sm text-gray-500 mt-1">How was {delivery?.driverName}?</p>
+                <h3 className="text-xl font-bold text-gray-900">
+                  Rate Your Experience
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  How was {delivery?.driverName}?
+                </p>
               </div>
 
               <div className="flex justify-center gap-2 mb-6">

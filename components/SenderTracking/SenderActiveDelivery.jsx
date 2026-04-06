@@ -72,12 +72,11 @@ const STATUS_CFG = {
 };
 
 const FILTER_TABS = [
-  { id: 'all',        label: 'All'        },
-  { id: 'pending',    label: 'Pending'    },
-  { id: 'assigned',   label: 'Assigned'   },
+  { id: 'all', label: 'All' },
+  { id: 'pending', label: 'Pending' },
+  { id: 'assigned', label: 'Assigned' },
   { id: 'in_transit', label: 'In Transit' },
 ];
-
 
 function StatusPill({ status }) {
   const cfg = STATUS_CFG[status] ?? STATUS_CFG.pending;
@@ -87,15 +86,18 @@ function StatusPill({ status }) {
     >
       <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
         {cfg.pulse && (
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${cfg.dot}`} />
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${cfg.dot}`}
+          />
         )}
-        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />
+        <span
+          className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`}
+        />
       </span>
       {cfg.label}
     </span>
   );
 }
-
 
 function DeliveryRow({ delivery, onTrack, index }) {
   return (
@@ -126,13 +128,20 @@ function DeliveryRow({ delivery, onTrack, index }) {
           </p>
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-            To
-          </p>
-          <p className="text-sm font-medium text-gray-800 truncate">
-            {delivery.dropoffAddress}
-          </p>
-        </div>
+  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">To</p>
+  {delivery.isVendorBatch && delivery.mutipledropoff ? (
+    <p className="text-sm font-medium text-gray-800 truncate">
+      {(() => {
+        try {
+          const s = JSON.parse(delivery.mutipledropoff);
+          return `${s.length} stops · ${s[0]?.dropoffAddress || ''}`;
+        } catch { return delivery.dropoffAddress; }
+      })()}
+    </p>
+  ) : (
+    <p className="text-sm font-medium text-gray-800 truncate">{delivery.dropoffAddress}</p>
+  )}
+</div>
       </div>
 
       {/* Meta — hidden on small screens */}
@@ -169,7 +178,6 @@ function DeliveryRow({ delivery, onTrack, index }) {
   );
 }
 
-
 const SenderActiveDelivery = ({
   deliveries,
   allDeliveries,
@@ -203,14 +211,13 @@ const SenderActiveDelivery = ({
 
   return (
     <div className="max-w-4xl space-y-8">
-
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Deliveries</h1>
-          
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Deliveries
+          </h1>
         </div>
-        
       </div>
 
       {/* ── Stat cards ── */}
@@ -220,9 +227,13 @@ const SenderActiveDelivery = ({
             <div className="p-3 bg-white rounded-2xl shadow-sm">
               <Truck className="w-6 h-6 text-blue-600" />
             </div>
-            <p className="text-3xl font-bold text-blue-900 tabular-nums">{deliveries.length}</p>
+            <p className="text-3xl font-bold text-blue-900 tabular-nums">
+              {deliveries.length}
+            </p>
           </div>
-          <p className="text-sm font-semibold text-blue-900">Active Deliveries</p>
+          <p className="text-sm font-semibold text-blue-900">
+            Active Deliveries
+          </p>
         </div>
 
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-3xl p-6 border border-emerald-200/50">
@@ -287,7 +298,9 @@ const SenderActiveDelivery = ({
           disabled={loading}
           className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-40 flex-shrink-0"
         >
-          <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`}
+          />
         </button>
       </div>
 
@@ -309,9 +322,14 @@ const SenderActiveDelivery = ({
           {searchQuery || activeFilter !== 'all' ? (
             <>
               <Search className="w-8 h-8 text-gray-300 mb-3" />
-              <p className="text-sm font-semibold text-gray-500">No deliveries found</p>
+              <p className="text-sm font-semibold text-gray-500">
+                No deliveries found
+              </p>
               <button
-                onClick={() => { setSearchQuery(''); setActiveFilter('all'); }}
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveFilter('all');
+                }}
                 className="mt-2 text-xs text-[#3A0A21] font-semibold hover:underline"
               >
                 Clear filters
@@ -322,7 +340,9 @@ const SenderActiveDelivery = ({
               <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100">
                 <Package className="w-6 h-6 text-gray-400" />
               </div>
-              <p className="text-base font-bold text-gray-800 mb-1">No active deliveries</p>
+              <p className="text-base font-bold text-gray-800 mb-1">
+                No active deliveries
+              </p>
               <p className="text-sm text-gray-400 mb-6 max-w-xs">
                 Create a delivery request to get started.
               </p>
@@ -366,8 +386,6 @@ const SenderActiveDelivery = ({
               />
             ))}
           </AnimatePresence>
-
-          
         </div>
       )}
     </div>
