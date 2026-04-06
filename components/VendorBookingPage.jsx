@@ -952,7 +952,7 @@ export default function VendorBookingPage({ loading = false, onConfirmed }) {
 
   return (
     <div className="min-h-screen" style={{ background: '#faf9f7' }}>
-      <div className="max-w-md mx-auto px-4 pt-5 pb-16">
+      <div className="max-w-md mx-auto px-4 pt-5 pb-36">
         <StepDots />
         <AnimatePresence mode="wait">
           {step === 1 && (
