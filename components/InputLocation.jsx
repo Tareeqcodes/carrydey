@@ -149,7 +149,7 @@ export default function InputLocation({
     []
   );
 
-  // ── Mapbox search ──────────────────────────────────────────────────────
+  // ── Mapbox search 
   const searchAddress = async (query, callback) => {
     if (!query || query.length < 3) {
       callback([]);
@@ -215,7 +215,7 @@ export default function InputLocation({
     }
   };
 
-  // ── Pickup handlers ────────────────────────────────────────────────────
+  
   const handlePickupChange = (value) => {
     setPickupAddress(value || '');
     if (pickup && value !== pickup.place_name) onLocationSelect('pickup', null);

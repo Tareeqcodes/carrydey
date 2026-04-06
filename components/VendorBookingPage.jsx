@@ -8,52 +8,31 @@ import {
   User,
   Phone,
   Hash,
-  Package,
-  ChevronRight,
-  ChevronDown,
   Navigation,
   Loader2,
-  Store,
   X,
-  AlertCircle,
   CheckCircle2,
   Sparkles,
+  ClipboardList,
+  AlertCircle,
+  Package,
 } from 'lucide-react';
-import { useBrandColors } from '@/hooks/BrandColors';
 import PackageSection from '@/components/PackageAndFare/PackageSection';
 import PaymentSection from '@/components/PackageAndFare/PaymentSection';
-import { formatNairaSimple } from '@/hooks/currency';
 
-/* ─────────────────────────────────────────────
-   Constants
-───────────────────────────────────────────── */
 const MAROON = '#3A0A21';
-const BASE_FARE_PER_KM = 60;
-const BASE_FARE = 150;
-
-function estimateFare(distanceKm) {
-  return Math.round(BASE_FARE + parseFloat(distanceKm || 0) * BASE_FARE_PER_KM);
-}
+const ORANGE = '#FF6B35';
 
 function makeRecipient(id) {
   return {
     id,
-    address: '',
-    location: null,
+    area: '',
     recipientName: '',
     recipientPhone: '',
     orderRef: '',
-    routeData: null,
-    suggestions: [],
-    showSugg: false,
-    calculatingRoute: false,
-    error: null,
   };
 }
 
-/* ─────────────────────────────────────────────
-   Mapbox helpers
-───────────────────────────────────────────── */
 async function searchMapbox(query, proximity) {
   if (!query || query.length < 3) return [];
   try {
@@ -66,7 +45,8 @@ async function searchMapbox(query, proximity) {
       language: 'en',
       bbox: '2.668432,4.240594,14.680073,13.892007',
     };
-    if (proximity) params.proximity = `${proximity.longitude},${proximity.latitude}`;
+    if (proximity)
+      params.proximity = `${proximity.longitude},${proximity.latitude}`;
     const res = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${new URLSearchParams(params)}`
     );
@@ -96,84 +76,59 @@ async function reverseGeocode(longitude, latitude) {
         place_name: f.place_name,
       };
     }
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
   return null;
 }
 
-async function calcRoute(pickupLoc, dropoffLoc) {
-  if (!pickupLoc?.geometry?.coordinates || !dropoffLoc?.geometry?.coordinates) return null;
-  try {
-    const [px, py] = pickupLoc.geometry.coordinates;
-    const [dx, dy] = dropoffLoc.geometry.coordinates;
-    const res = await fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/driving/${px},${py};${dx},${dy}?` +
-        new URLSearchParams({
-          access_token: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-          geometries: 'geojson',
-          overview: 'full',
-          steps: 'false',
-        })
-    );
-    const data = await res.json();
-    if (data.routes?.[0]) {
-      const r = data.routes[0];
-      const distance = (r.distance / 1000).toFixed(1);
-      const duration = Math.round(r.duration / 60);
-      return { distance, duration, estimatedFare: estimateFare(distance) };
-    }
-  } catch { /* silent */ }
-  return null;
+function parseOrderList(raw) {
+  const phonePattern = /^(\+?234|0)\d{9,10}$/;
+  return raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, i) => {
+      const parts = line
+        .split(/[,\/\t]|\s{2,}/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+
+      let name = '';
+      let phone = '';
+      let area = '';
+      let orderRef = '';
+
+      for (const p of parts) {
+        const stripped = p.replace(/\s/g, '');
+        if (!phone && phonePattern.test(stripped)) {
+          phone = p;
+        } else if (!name && !/^\d/.test(p) && p.length > 1 && p.length < 60) {
+          name = p;
+        } else if (!area && p.length > 2) {
+          area = p;
+        } else if (!orderRef) {
+          orderRef = p;
+        }
+      }
+
+      return {
+        ...makeRecipient(`paste-${Date.now()}-${i}`),
+        recipientName: name,
+        recipientPhone: phone,
+        area,
+        orderRef,
+      };
+    });
 }
 
-/* ─────────────────────────────────────────────
-   Step indicator
-───────────────────────────────────────────── */
-function StepIndicator({ step }) {
-  const steps = ['Store', 'Orders', 'Details'];
-  return (
-    <div className="flex items-center gap-2 mb-6">
-      {steps.map((label, i) => {
-        const idx = i + 1;
-        const active = step === idx;
-        const done = step > idx;
-        return (
-          <div key={label} className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  done
-                    ? 'bg-emerald-500 text-white'
-                    : active
-                    ? 'text-white'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-                style={active ? { background: MAROON } : {}}
-              >
-                {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : idx}
-              </div>
-              <span
-                className={`text-xs font-semibold ${
-                  active ? 'text-gray-900' : done ? 'text-emerald-600' : 'text-gray-400'
-                }`}
-              >
-                {label}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className={`flex-1 h-px w-6 ${done ? 'bg-emerald-300' : 'bg-gray-200'}`} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Step 1 — Store address
-───────────────────────────────────────────── */
-function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPickupLoc, savedAddress, onNext }) {
-  const { brandColors } = useBrandColors();
+function StoreAddressStep({
+  pickupLoc,
+  pickupAddress,
+  setPickupAddress,
+  setPickupLoc,
+  onNext,
+}) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSugg, setShowSugg] = useState(false);
   const [gettingLoc, setGettingLoc] = useState(false);
@@ -183,12 +138,35 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { longitude, latitude } }) => setUserLoc({ longitude, latitude }),
-        () => setUserLoc({ longitude: 7.4951, latitude: 9.0765 })
-      );
+    if (!navigator.geolocation) {
+      setUserLoc({ longitude: 8.5167, latitude: 12.0022 });
+      return;
     }
+
+    setGettingLoc(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords: { longitude, latitude } }) => {
+        setUserLoc({ longitude, latitude });
+        // Only auto-fill if no pickup set yet
+        if (!pickupLoc) {
+          try {
+            const loc = await reverseGeocode(longitude, latitude);
+            if (loc) {
+              setPickupLoc(loc);
+              setPickupAddress(loc.place_name);
+            }
+          } catch {
+            /* silent */
+          }
+        }
+        setGettingLoc(false);
+      },
+      () => {
+        setUserLoc({ longitude: 8.5167, latitude: 12.0022 });
+        setGettingLoc(false);
+      }
+    );
+
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setShowSugg(false);
@@ -211,7 +189,11 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
   };
 
   const handleSelect = (s) => {
-    const loc = { ...s, geometry: { type: 'Point', coordinates: s.center }, place_name: s.place_name };
+    const loc = {
+      ...s,
+      geometry: { type: 'Point', coordinates: s.center },
+      place_name: s.place_name,
+    };
     setPickupLoc(loc);
     setPickupAddress(s.place_name);
     setSuggestions([]);
@@ -219,12 +201,15 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
     setActive(false);
   };
 
-  const useMyLocation = async () => {
+  const useMyLocation = () => {
     setGettingLoc(true);
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { longitude, latitude } }) => {
         const loc = await reverseGeocode(longitude, latitude);
-        if (loc) { setPickupLoc(loc); setPickupAddress(loc.place_name); }
+        if (loc) {
+          setPickupLoc(loc);
+          setPickupAddress(loc.place_name);
+        }
         setGettingLoc(false);
       },
       () => setGettingLoc(false)
@@ -232,54 +217,57 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-      <div>
-        <h2 className="text-lg font-bold text-gray-900">Your store address</h2>
-        <p className="text-sm text-gray-400 mt-0.5">
-          This is where the courier will collect all orders from.
-        </p>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5"
+    >
+      <h2 className="text-lg text-gray-300 font-bold">Your store address</h2>
 
-      {/* Saved address shortcut */}
-      {savedAddress && !pickupLoc && (
-        <button
-          onClick={() => {
-            setPickupLoc(savedAddress.loc);
-            setPickupAddress(savedAddress.address);
-          }}
-          className="w-full flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-2xl hover:border-gray-300 transition-all text-left"
-        >
-          <div className="p-2 rounded-xl" style={{ background: `${MAROON}15` }}>
-            <Store className="w-4 h-4" style={{ color: MAROON }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-gray-500 mb-0.5">Saved store address</p>
-            <p className="text-sm font-medium text-gray-800 truncate">{savedAddress.address}</p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        </button>
-      )}
-
-      {/* Address input */}
       <div ref={containerRef} className="relative">
         <div
           className="flex items-center border-2 rounded-2xl overflow-hidden transition-all bg-white"
-          style={{ borderColor: active ? MAROON : pickupLoc ? `${MAROON}50` : '#e5e7eb' }}
+          style={{
+            borderColor: active
+              ? MAROON
+              : pickupLoc
+                ? `${MAROON}50`
+                : '#e8e2e5',
+          }}
         >
           <div className="pl-4 pr-3">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ background: MAROON }} />
+            {gettingLoc ? (
+              <Loader2
+                className="w-3 h-3 animate-spin"
+                style={{ color: MAROON }}
+              />
+            ) : (
+              <div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ background: MAROON }}
+              />
+            )}
           </div>
           <input
             type="text"
             value={pickupAddress}
             onChange={(e) => handleChange(e.target.value)}
             onFocus={() => setActive(true)}
-            placeholder="Search your store address…"
-            className="flex-1 py-3.5 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none"
+            placeholder={
+              gettingLoc ? 'Detecting your location…' : 'Search store address…'
+            }
+            className="flex-1 py-3.5 text-sm text-gray-900 placeholder-gray-300 bg-transparent outline-none"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
           <div className="flex items-center pr-2 gap-1">
-            {pickupAddress && (
-              <button onClick={() => { setPickupAddress(''); setPickupLoc(null); }} className="p-2 rounded-xl hover:bg-gray-100">
+            {pickupAddress && !gettingLoc && (
+              <button
+                onClick={() => {
+                  setPickupAddress('');
+                  setPickupLoc(null);
+                }}
+                className="p-2 rounded-xl hover:bg-gray-100"
+              >
                 <X className="w-3.5 h-3.5 text-gray-400" />
               </button>
             )}
@@ -288,8 +276,13 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
               disabled={gettingLoc}
               className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-40"
               style={{ color: MAROON }}
+              title="Use my current location"
             >
-              {gettingLoc ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+              {gettingLoc ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Navigation className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
@@ -302,10 +295,17 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
                 onClick={() => handleSelect(s)}
                 className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 text-left"
               >
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: MAROON }} />
+                <MapPin
+                  className="w-4 h-4 mt-0.5 flex-shrink-0"
+                  style={{ color: MAROON }}
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{s.text}</p>
-                  <p className="text-xs text-gray-400 truncate mt-0.5">{s.place_name}</p>
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {s.text}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate mt-0.5">
+                    {s.place_name}
+                  </p>
                 </div>
               </button>
             ))}
@@ -317,401 +317,544 @@ function StoreAddressStep({ pickupLoc, pickupAddress, setPickupAddress, setPicku
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
           style={{ background: `${MAROON}08` }}
         >
-          <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: MAROON }} />
-          <p className="text-xs font-medium text-gray-700 truncate">{pickupAddress}</p>
+          <CheckCircle2
+            className="w-4 h-4 flex-shrink-0"
+            style={{ color: MAROON }}
+          />
+          <p className="text-xs font-medium text-gray-700 truncate">
+            {pickupAddress}
+          </p>
         </motion.div>
       )}
 
       <button
         onClick={onNext}
         disabled={!pickupLoc}
-        className="w-full py-4 rounded-2xl font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed text-white"
-        style={{ background: pickupLoc ? MAROON : '#e5e7eb', color: pickupLoc ? 'white' : '#9ca3af' }}
+        className="w-full py-4 rounded-full font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background: pickupLoc ? MAROON : '#e8e2e5',
+          color: pickupLoc ? 'white' : '#bbb',
+          fontFamily: "'DM Sans', sans-serif",
+        }}
       >
-        Next: Add Orders →
+        Next: Add orders
       </button>
     </motion.div>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Recipient row card
-───────────────────────────────────────────── */
-function RecipientCard({ recipient, index, pickupLoc, userLoc, onUpdate, onRemove, canRemove }) {
-  const { brandColors } = useBrandColors();
-  const ORANGE = brandColors.accent || '#FF6B35';
-  const timerRef = useRef(null);
-  const containerRef = useRef(null);
-  const [addrActive, setAddrActive] = useState(false);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        onUpdate({ showSugg: false });
-        setAddrActive(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const handleAddressChange = (val) => {
-    onUpdate({ address: val, location: null, error: null });
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(async () => {
-      const results = await searchMapbox(val, userLoc);
-      onUpdate({ suggestions: results, showSugg: results.length > 0 });
-    }, 350);
-  };
-
-  const handleAddressSelect = async (s) => {
-    const loc = { ...s, geometry: { type: 'Point', coordinates: s.center }, place_name: s.place_name };
-    onUpdate({ location: loc, address: s.place_name, suggestions: [], showSugg: false, calculatingRoute: true });
-    setAddrActive(false);
-    const route = await calcRoute(pickupLoc, loc);
-    onUpdate({ routeData: route, calculatingRoute: false });
-  };
+/* Single compact recipient row */
+function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
+  const isValid = recipient.area.trim().length > 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8, height: 0 }}
-      transition={{ duration: 0.2 }}
-      className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
+      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      transition={{ duration: 0.18 }}
+      className="rounded-2xl overflow-hidden"
+      style={{
+        border: `1.5px solid ${isValid ? `${ORANGE}40` : '#ede8e6'}`,
+        background: 'white',
+      }}
     >
-      {/* Card header */}
+      {/* Row header */}
       <div
-        className="flex items-center justify-between px-4 py-3 border-b border-gray-100"
-        style={{ background: `${ORANGE}08` }}
+        className="flex items-center justify-between px-3.5 py-2.5"
+        style={{
+          background: isValid ? `${ORANGE}08` : '#fafafa',
+          borderBottom: `1px solid ${isValid ? `${ORANGE}18` : '#f3f3f3'}`,
+        }}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div
-            className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-            style={{ background: ORANGE }}
+            className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+            style={{ background: isValid ? ORANGE : '#ccc' }}
           >
             {index + 1}
           </div>
-          <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+          <span
+            className="text-xs font-semibold"
+            style={{ color: isValid ? '#555' : '#bbb' }}
+          >
             Order {index + 1}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          {recipient.routeData && (
-            <span className="text-xs text-gray-400 font-medium">
-              {recipient.routeData.distance} km · {formatNairaSimple(recipient.routeData.estimatedFare)}
-            </span>
-          )}
-          {recipient.calculatingRoute && (
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
-          )}
-          {canRemove && (
+        {canRemove && (
+          <button
+            onClick={onRemove}
+            className="p-1.5 rounded-lg hover:bg-red-50 transition-colors group"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-gray-300 group-hover:text-red-400 transition-colors" />
+          </button>
+        )}
+      </div>
+
+      {/* Fields */}
+      <div className="p-3 space-y-2">
+        {/* Area — required, the key field */}
+        <div
+          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all"
+          style={{
+            background: recipient.area ? `${ORANGE}06` : '#fafafa',
+            border: `1.5px solid ${recipient.area ? `${ORANGE}35` : '#ede8e6'}`,
+          }}
+        >
+          <MapPin
+            className="w-3.5 h-3.5 flex-shrink-0"
+            style={{ color: recipient.area ? ORANGE : '#ccc' }}
+          />
+          <input
+            type="text"
+            value={recipient.area}
+            onChange={(e) => onUpdate({ area: e.target.value })}
+            placeholder="Area / neighborhood  (e.g. Sabon Gari, Kano) *"
+            className="flex-1 text-sm text-gray-900 placeholder-gray-300 bg-transparent outline-none"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          />
+          {recipient.area && (
             <button
-              onClick={onRemove}
-              className="p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+              onClick={() => onUpdate({ area: '' })}
+              className="flex-shrink-0"
             >
-              <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500 transition-colors" />
+              <X className="w-3 h-3 text-gray-300 hover:text-gray-500" />
             </button>
           )}
         </div>
-      </div>
 
-      <div className="p-4 space-y-3" ref={containerRef}>
-        {/* Delivery address */}
-        <div className="relative">
-          <div
-            className="flex items-center border-2 rounded-xl overflow-hidden bg-white transition-all"
-            style={{
-              borderColor: addrActive ? ORANGE : recipient.location ? `${ORANGE}50` : '#f3f4f6',
-              background: addrActive ? 'white' : '#fafafa',
-            }}
-          >
-            <div className="pl-3 pr-2">
-              <MapPin className="w-4 h-4" style={{ color: ORANGE }} />
-            </div>
-            <input
-              type="text"
-              value={recipient.address}
-              onChange={(e) => handleAddressChange(e.target.value)}
-              onFocus={() => setAddrActive(true)}
-              placeholder="Delivery address *"
-              className="flex-1 py-2.5 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none"
-            />
-            {recipient.address && (
-              <button
-                onClick={() => onUpdate({ address: '', location: null, suggestions: [], showSugg: false, routeData: null })}
-                className="p-2 mr-1 rounded-lg hover:bg-gray-100"
-              >
-                <X className="w-3 h-3 text-gray-400" />
-              </button>
-            )}
-          </div>
-
-          {/* Suggestions */}
-          {recipient.showSugg && recipient.suggestions.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-              {recipient.suggestions.map((s, i) => (
-                <button
-                  key={`${s.id}-${i}`}
-                  onClick={() => handleAddressSelect(s)}
-                  className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 text-left"
-                >
-                  <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: ORANGE }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{s.text}</p>
-                    <p className="text-xs text-gray-400 truncate">{s.place_name}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Recipient details — 2 col grid */}
+        {/* Name + Phone row */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
-            <User className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <div
+            className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+            style={{ background: '#fafafa', border: '1.5px solid #ede8e6' }}
+          >
+            <User className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
             <input
               type="text"
               value={recipient.recipientName}
               onChange={(e) => onUpdate({ recipientName: e.target.value })}
-              placeholder="Recipient name"
-              className="flex-1 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none min-w-0"
+              placeholder="Name"
+              className="flex-1 text-sm text-gray-900 placeholder-gray-300 bg-transparent outline-none min-w-0"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
-            <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <div
+            className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+            style={{ background: '#fafafa', border: '1.5px solid #ede8e6' }}
+          >
+            <Phone className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
             <input
               type="tel"
               value={recipient.recipientPhone}
               onChange={(e) => onUpdate({ recipientPhone: e.target.value })}
               placeholder="Phone"
-              className="flex-1 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none min-w-0"
+              className="flex-1 text-sm text-gray-900 placeholder-gray-300 bg-transparent outline-none min-w-0"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
           </div>
         </div>
 
-        {/* Order reference */}
-        <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
-          <Hash className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+        {/* Order ref */}
+        <div
+          className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+          style={{ background: '#fafafa', border: '1.5px solid #ede8e6' }}
+        >
+          <Hash className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
           <input
             type="text"
             value={recipient.orderRef}
             onChange={(e) => onUpdate({ orderRef: e.target.value })}
-            placeholder="Order ref / label (optional)"
-            className="flex-1 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none"
+            placeholder="Order ref / note (optional)"
+            className="flex-1 text-sm text-gray-900 placeholder-gray-300 bg-transparent outline-none"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
         </div>
-
-        {/* Error */}
-        {recipient.error && (
-          <div className="flex items-center gap-1.5">
-            <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-            <p className="text-xs text-red-400">{recipient.error}</p>
-          </div>
-        )}
       </div>
     </motion.div>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Step 2 — Recipient list
-───────────────────────────────────────────── */
-function RecipientsStep({ recipients, setRecipients, pickupLoc, onNext, onBack }) {
-  const [userLoc, setUserLoc] = useState(null);
+/* Paste modal */
+function PasteModal({ onParsed, onClose }) {
+  const [raw, setRaw] = useState('');
+  const preview = raw.trim() ? parseOrderList(raw) : [];
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { longitude, latitude } }) => setUserLoc({ longitude, latitude }),
-        () => setUserLoc({ longitude: 7.4951, latitude: 9.0765 })
-      );
-    }
-  }, []);
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 40, opacity: 0 }}
+        transition={{ type: 'spring', damping: 28 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+      >
+        {/* Header */}
+        <div
+          className="px-5 py-4 flex items-center justify-between border-b"
+          style={{ borderColor: '#f0ece9' }}
+        >
+          <div>
+            <p className="text-sm font-bold text-gray-900">Paste order list</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              One order per line Name, Phone, Area, Ref
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-gray-100"
+          >
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
 
-  const updateRecipient = (id, patch) => {
+        {/* Hint */}
+        <div
+          className="mx-5 mt-4 px-3 py-2.5 rounded-xl text-xs text-gray-400 font-mono leading-relaxed"
+          style={{ background: '#fafafa', border: '1px solid #f0ece9' }}
+        >
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+            Example
+          </p>
+          <p>Aminu Hassan / 08012345678 / Sabon Gari/ ORD-001</p>
+          <p>Fatima / 09087654321 / Fagge / ORD-002</p>
+          <p>Khadija Musa / 08033333333 / Kano Municipal / ORD-003</p>
+        </div>
+
+        {/* Textarea */}
+        <div className="px-5 mt-3">
+          <textarea
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            placeholder="Paste your orders here…"
+            rows={6}
+            className="w-full rounded-2xl px-4 py-3 text-sm text-gray-900 placeholder-gray-300 outline-none resize-none"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              border: `2px solid ${raw ? MAROON : '#e8e2e5'}`,
+              background: raw ? `${MAROON}04` : '#fafafa',
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+          />
+        </div>
+
+        {/* Preview count */}
+        {preview.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-5 mt-2 flex items-center gap-2 px-3 py-2 rounded-xl"
+            style={{ background: `${MAROON}08` }}
+          >
+            <CheckCircle2
+              className="w-4 h-4 flex-shrink-0"
+              style={{ color: MAROON }}
+            />
+            <p className="text-xs font-semibold text-gray-700">
+              {preview.length} order{preview.length > 1 ? 's' : ''} detected
+            </p>
+          </motion.div>
+        )}
+
+        {/* Actions */}
+        <div className="px-5 py-4 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-full text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (preview.length > 0) {
+                onParsed(preview);
+                onClose();
+              }
+            }}
+            disabled={preview.length === 0}
+            className="flex-[2] py-3 rounded-full text-sm font-bold text-white transition-all disabled:opacity-40"
+            style={{
+              background: preview.length > 0 ? MAROON : '#e8e2e5',
+              color: preview.length > 0 ? 'white' : '#bbb',
+            }}
+          >
+            Add {preview.length > 0 ? `${preview.length} orders` : 'orders'}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* Recipients step */
+function RecipientsStep({ recipients, setRecipients, onNext, onBack }) {
+  const [showPaste, setShowPaste] = useState(false);
+
+  const updateRecipient = (id, patch) =>
     setRecipients((prev) =>
       prev.map((r) => (r.id === id ? { ...r, ...patch } : r))
     );
-  };
 
-  const addRecipient = () => {
+  const addRecipient = () =>
     setRecipients((prev) => [...prev, makeRecipient(`r${Date.now()}`)]);
-  };
 
-  const removeRecipient = (id) => {
+  const removeRecipient = (id) =>
     setRecipients((prev) => prev.filter((r) => r.id !== id));
-  };
 
-  const totalFare = recipients.reduce(
-    (sum, r) => sum + (r.routeData?.estimatedFare || 0),
-    0
-  );
-  const readyCount = recipients.filter((r) => r.location).length;
-  const canNext = readyCount > 0 && readyCount === recipients.length;
+  const handleParsed = (parsed) =>
+    setRecipients((prev) => {
+      // if the only row is blank, replace it; otherwise append
+      const isOnlyBlank =
+        prev.length === 1 &&
+        !prev[0].area &&
+        !prev[0].recipientName &&
+        !prev[0].recipientPhone;
+      return isOnlyBlank ? parsed : [...prev, ...parsed];
+    });
+
+  const validCount = recipients.filter((r) => r.area.trim()).length;
+  const canNext = validCount > 0 && validCount === recipients.length;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">Add orders</h2>
-          <p className="text-sm text-gray-400 mt-0.5">Each order goes to a separate recipient.</p>
-        </div>
-        {recipients.length > 0 && (
-          <div className="text-right">
-            <p className="text-xs text-gray-400">Est. total</p>
-            <p className="text-sm font-bold" style={{ color: MAROON }}>
-              {formatNairaSimple(totalFare)}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Summary bar */}
-      {recipients.length > 1 && (
-        <div
-          className="flex items-center justify-between px-4 py-3 rounded-xl text-sm"
-          style={{ background: `${MAROON}08` }}
-        >
-          <span className="text-gray-600 font-medium">
-            {readyCount}/{recipients.length} addresses set
-          </span>
-          <span className="font-bold" style={{ color: MAROON }}>
-            {recipients.length} deliveries
-          </span>
-        </div>
-      )}
-
-      {/* Recipient cards */}
-      <AnimatePresence>
-        {recipients.map((r, i) => (
-          <RecipientCard
-            key={r.id}
-            recipient={r}
-            index={i}
-            pickupLoc={pickupLoc}
-            userLoc={userLoc}
-            onUpdate={(patch) => updateRecipient(r.id, patch)}
-            onRemove={() => removeRecipient(r.id)}
-            canRemove={recipients.length > 1}
-          />
-        ))}
-      </AnimatePresence>
-
-      {/* Add order */}
-      <button
-        onClick={addRecipient}
-        className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-semibold text-gray-400 hover:border-gray-300 hover:text-gray-600 hover:bg-gray-50 transition-all"
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-4"
       >
-        <Plus className="w-4 h-4" />
-        Add another order
-      </button>
+        {/* Header row */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base text-gray-500 font-bold">Add orders</h2>
+          </div>
+          {/* Paste shortcut */}
+          <button
+            onClick={() => setShowPaste(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:shadow-sm"
+            style={{
+              background: `${MAROON}10`,
+              color: MAROON,
+              border: `1px solid ${MAROON}25`,
+            }}
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            Paste list
+          </button>
+        </div>
 
-      {/* Nav */}
-      <div className="flex gap-3 pt-2">
+        {/* Recipient rows */}
+        <AnimatePresence initial={false}>
+          {recipients.map((r, i) => (
+            <RecipientRow
+              key={r.id}
+              recipient={r}
+              index={i}
+              onUpdate={(patch) => updateRecipient(r.id, patch)}
+              onRemove={() => removeRecipient(r.id)}
+              canRemove={recipients.length > 1}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* Add row */}
         <button
-          onClick={onBack}
-          className="flex-1 py-3.5 rounded-2xl font-semibold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
+          onClick={addRecipient}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-gray-400 hover:text-gray-600 hover:bg-white transition-all"
+          style={{ border: '2px dashed #e8e2e5' }}
         >
-          Back
+          <Plus className="w-4 h-4" />
+          Add order
         </button>
-        <button
-          onClick={onNext}
-          disabled={!canNext}
-          className="flex-2 flex-grow-[2] py-3.5 rounded-2xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: canNext ? MAROON : '#e5e7eb', color: canNext ? 'white' : '#9ca3af' }}
-        >
-          Next: Package & Pay →
-        </button>
-      </div>
-    </motion.div>
+
+        {/* Validation hint */}
+        {recipients.length > 0 && !canNext && validCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl"
+            style={{ background: '#fff8f0', border: '1px solid #fde8d0' }}
+          >
+            <AlertCircle className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+            <p className="text-xs text-orange-600">
+              {recipients.length - validCount} order
+              {recipients.length - validCount > 1 ? 's are' : ' is'} missing a
+              delivery area
+            </p>
+          </motion.div>
+        )}
+
+        {/* Nav */}
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={onBack}
+            className="flex-1 py-3.5 rounded-full font-semibold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+          >
+            Back
+          </button>
+          <button
+            onClick={onNext}
+            disabled={!canNext}
+            className="flex-[2] py-3.5 rounded-full font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: canNext ? MAROON : '#e8e2e5',
+              color: canNext ? 'white' : '#bbb',
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Next: Package &amp; pay
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Paste modal */}
+      <AnimatePresence>
+        {showPaste && (
+          <PasteModal
+            onParsed={handleParsed}
+            onClose={() => setShowPaste(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Step 3 — Package details + payment + confirm
-───────────────────────────────────────────── */
-function DetailsStep({ recipients, packageDetails, setPackageDetails, paymentMethod, setPaymentMethod, pickupAddress, onBack, onConfirm, loading }) {
-  const totalFare = recipients.reduce((sum, r) => sum + (r.routeData?.estimatedFare || 0), 0);
+function DetailsStep({
+  recipients,
+  packageDetails,
+  setPackageDetails,
+  paymentMethod,
+  setPaymentMethod,
+  pickupAddress,
+  onBack,
+  onConfirm,
+  loading,
+}) {
   const canConfirm = packageDetails.size && paymentMethod;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       <div>
-        <h2 className="text-lg font-bold text-gray-900">Package & payment</h2>
-        <p className="text-sm text-gray-400 mt-0.5">Applies to all {recipients.length} orders.</p>
+        <h2
+          className="text-md font-semibold text-gray-500"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}
+        >
+          Payment Applies to all {recipients.length} order
+          {recipients.length > 1 ? 's' : ''}.
+        </h2>
       </div>
 
-      {/* Order summary card */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-          <p className="text-sm font-bold text-gray-900">Batch Summary</p>
+      {/* Batch summary card */}
+      <div
+        className="bg-white border rounded-2xl overflow-hidden"
+        style={{ borderColor: '#ede8e6' }}
+      >
+        {/* Card header */}
+        <div
+          className="px-4 py-3 border-b flex items-center justify-between"
+          style={{ borderColor: '#f3eef1', background: `${MAROON}04` }}
+        >
+          <p
+            className="text-sm font-bold text-gray-900"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            Batch summary
+          </p>
           <span
             className="px-2.5 py-1 rounded-full text-xs font-bold text-white"
             style={{ background: MAROON }}
           >
-            {recipients.length} orders
+            {recipients.length} order{recipients.length > 1 ? 's' : ''}
           </span>
         </div>
 
-        {/* Pickup */}
-        <div className="px-4 py-3 border-b border-gray-50 flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: MAROON }} />
+        {/* Pickup row */}
+        <div
+          className="px-4 py-3 border-b flex items-center gap-3"
+          style={{ borderColor: '#f7f3f5' }}
+        >
+          <div
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ background: MAROON }}
+          />
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Pickup</p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">
+              Pickup
+            </p>
             <p className="text-sm text-gray-700 truncate">{pickupAddress}</p>
           </div>
         </div>
 
-        {/* Recipients list */}
-        <div className="divide-y divide-gray-50">
+        {/* Recipient rows */}
+        <div className="divide-y" style={{ borderColor: '#f7f3f5' }}>
           {recipients.map((r, i) => (
             <div key={r.id} className="px-4 py-2.5 flex items-center gap-3">
               <div
                 className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-                style={{ background: '#FF6B35' }}
+                style={{ background: ORANGE }}
               >
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-800 truncate">{r.address}</p>
+                <p className="text-sm text-gray-800 truncate">
+                  {r.area || <span className="text-gray-300">No area set</span>}
+                </p>
                 {r.recipientName && (
-                  <p className="text-xs text-gray-400">{r.recipientName}</p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {r.recipientName}
+                    {r.recipientPhone ? ` · ${r.recipientPhone}` : ''}
+                  </p>
+                )}
+                {r.orderRef && (
+                  <p className="text-[10px] text-gray-300 font-mono">
+                    {r.orderRef}
+                  </p>
                 )}
               </div>
-              {r.routeData && (
-                <p className="text-xs font-semibold text-gray-600 flex-shrink-0 tabular-nums">
-                  {formatNairaSimple(r.routeData.estimatedFare)}
-                </p>
-              )}
             </div>
           ))}
         </div>
 
-        {/* Total */}
+        {/* Fare note */}
         <div
-          className="px-4 py-3 flex items-center justify-between"
-          style={{ background: `${MAROON}06` }}
+          className="px-4 py-3 flex items-start gap-2.5"
+          style={{
+            background: `${MAROON}05`,
+            borderTop: `1px solid ${MAROON}10`,
+          }}
         >
-          <p className="text-sm font-bold text-gray-900">Estimated Total</p>
-          <p className="text-lg font-bold tabular-nums" style={{ color: MAROON }}>
-            {formatNairaSimple(totalFare)}
+          <Phone
+            className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"
+            style={{ color: MAROON }}
+          />
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Courier will confirm exact fare per order before pickup.
           </p>
         </div>
       </div>
 
-      {/* Package section */}
       <PackageSection
         packageDetails={packageDetails}
-        onPackageDetailChange={(k, v) => setPackageDetails((p) => ({ ...p, [k]: v }))}
+        onPackageDetailChange={(k, v) =>
+          setPackageDetails((p) => ({ ...p, [k]: v }))
+        }
         errors={{}}
       />
 
-      {/* Payment section */}
       <PaymentSection
         paymentMethod={paymentMethod}
         onPaymentMethodChange={setPaymentMethod}
@@ -722,25 +865,31 @@ function DetailsStep({ recipients, packageDetails, setPackageDetails, paymentMet
       <div className="flex gap-3">
         <button
           onClick={onBack}
-          className="flex-1 py-3.5 rounded-2xl font-semibold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
+          className="flex-1 py-3.5 rounded-full font-semibold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
         >
           Back
         </button>
         <button
           onClick={onConfirm}
           disabled={!canConfirm || loading}
-          className="flex-2 flex-grow-[2] py-3.5 rounded-2xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          style={{ background: canConfirm && !loading ? MAROON : '#e5e7eb', color: canConfirm && !loading ? 'white' : '#9ca3af' }}
+          className="flex-[2] py-3.5 rounded-full font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          style={{
+            background: canConfirm && !loading ? MAROON : '#e8e2e5',
+            color: canConfirm && !loading ? 'white' : '#bbb',
+            fontFamily: "'DM Sans', sans-serif",
+          }}
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Creating {recipients.length} deliveries…
+              Dispatching {recipients.length} order
+              {recipients.length > 1 ? 's' : ''}…
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              Dispatch {recipients.length} order{recipients.length > 1 ? 's' : ''}
+              Dispatch {recipients.length} order
+              {recipients.length > 1 ? 's' : ''}
             </>
           )}
         </button>
@@ -749,35 +898,31 @@ function DetailsStep({ recipients, packageDetails, setPackageDetails, paymentMet
   );
 }
 
-/* ─────────────────────────────────────────────
-   Main export
-───────────────────────────────────────────── */
-export default function VendorBookingPage({
-  savedPickup = null,
-  loading = false,
-  onConfirmed,
-}) {
+export default function VendorBookingPage({ loading = false, onConfirmed }) {
   const [step, setStep] = useState(1);
 
-  // Step 1
-  const [pickupLoc, setPickupLoc] = useState(savedPickup?.loc || null);
-  const [pickupAddress, setPickupAddress] = useState(savedPickup?.address || '');
+  const [pickupLoc, setPickupLoc] = useState(null);
+  const [pickupAddress, setPickupAddress] = useState('');
 
-  // Step 2
   const [recipients, setRecipients] = useState([makeRecipient('r0')]);
 
-  // Step 3
   const [packageDetails, setPackageDetails] = useState({
     size: '',
     description: '',
     isFragile: false,
     pickupTime: 'courier',
     pickupContact: { pickupContactName: '', pickupPhone: '' },
-    dropoffContact: { dropoffContactName: '', dropoffPhone: '', dropoffInstructions: '', recipientPermission: false },
+    dropoffContact: {
+      dropoffContactName: '',
+      dropoffPhone: '',
+      dropoffInstructions: '',
+      recipientPermission: false,
+    },
   });
+
   const [paymentMethod, setPaymentMethod] = useState('');
 
-  const handleConfirm = () => {
+  const handleConfirm = () =>
     onConfirmed({
       pickupLoc,
       pickupAddress,
@@ -785,53 +930,74 @@ export default function VendorBookingPage({
       packageDetails,
       paymentMethod,
     });
-  };
+
+  // Step indicator dots
+  const StepDots = () => (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {[1, 2, 3].map((s) => (
+        <div
+          key={s}
+          className="transition-all duration-300"
+          style={{
+            width: s === step ? 20 : 6,
+            height: 6,
+            borderRadius: 3,
+            background:
+              s === step ? MAROON : s < step ? `${MAROON}40` : '#e0dada',
+          }}
+        />
+      ))}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="max-w-md mx-auto px-4 py-6 pb-16">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: MAROON }}
-          >
-            <Store className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-gray-900">Vendor Dispatch</h1>
-            <p className="text-xs text-gray-400">Batch delivery for your orders</p>
-          </div>
-        </div>
-
-        <StepIndicator step={step} />
-
+    <div className="min-h-screen" style={{ background: '#faf9f7' }}>
+      <div className="max-w-md mx-auto px-4 pt-5 pb-16">
+        <StepDots />
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="s1"
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.18 }}
+            >
               <StoreAddressStep
                 pickupLoc={pickupLoc}
                 pickupAddress={pickupAddress}
                 setPickupAddress={setPickupAddress}
                 setPickupLoc={setPickupLoc}
-                savedAddress={savedPickup}
                 onNext={() => setStep(2)}
               />
             </motion.div>
           )}
+
           {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="s2"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.18 }}
+            >
               <RecipientsStep
                 recipients={recipients}
                 setRecipients={setRecipients}
-                pickupLoc={pickupLoc}
                 onNext={() => setStep(3)}
                 onBack={() => setStep(1)}
               />
             </motion.div>
           )}
+
           {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="s3"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.18 }}
+            >
               <DetailsStep
                 recipients={recipients}
                 packageDetails={packageDetails}

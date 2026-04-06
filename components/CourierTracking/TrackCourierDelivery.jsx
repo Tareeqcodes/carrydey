@@ -191,7 +191,7 @@ const TrackCourierDelivery = () => {
           .reduce((sum, d) => sum + (d.offeredFare || 0), 0);
 
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 ">
             <p className="text-gray-900 text-lg md:text-xl font-semibold">
               Track your earnings and income
             </p>
@@ -274,7 +274,7 @@ const TrackCourierDelivery = () => {
         </main>
       </div>
 
-      {/* ── Shared offer banner — stays mounted during accepting state ── */}
+
       {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}

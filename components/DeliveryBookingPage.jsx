@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,7 +23,6 @@ import PickupOptions from '@/components/PackageAndFare/PickupOptions';
 import StickyConfirmBar from '@/components/PackageAndFare/StickyConfirmBar';
 import PaymentSection from '@/components/PackageAndFare/PaymentSection';
 import DeliverySummaryCard from '@/components/PackageAndFare/DeliverySummaryCard';
-
 
 function makeDropoff(id) {
   return {
@@ -221,7 +219,6 @@ function GuestInfoModal({
                   </div>
                 )}
                 <div>
-                  
                   <p className="text-white/80 text-md font-medium">
                     We will use this to reach you
                   </p>
@@ -340,7 +337,9 @@ function GuestInfoModal({
                 className="w-3 h-3"
                 style={{ color: brandColors.accent }}
               />
-              <span className="text-xs font-semibold">Powered by {agency?.name}</span>
+              <span className="text-xs font-semibold">
+                Powered by {agency?.name}
+              </span>
             </div>
           </motion.div>
         </motion.div>
@@ -349,17 +348,22 @@ function GuestInfoModal({
   );
 }
 
+/* 
+   Main export
+   hideHeader: suppresses the "New delivery" h1 when rendered
+   inside SendPage (which already renders the shared header + tabs)
+ */
 export default function DeliveryBookingPage({
   isAgencyBooking = false,
   agency = null,
   availability = { isOpen: true, message: '' },
-  showPricing = true, 
+  showPricing = true,
   loading = false,
   onConfirmed,
   initialPickup = null,
   initialDropoff = null,
   initialRouteData = null,
-  // onBack,
+  hideHeader = false, // ← new prop
 }) {
   const { brandColors } = useBrandColors();
   const [pickup, setPickup] = useState(initialPickup);
@@ -370,7 +374,6 @@ export default function DeliveryBookingPage({
 
   const [dropoffs, setDropoffs] = useState(() => {
     if (initialDropoff) {
-      // Legacy prefill: wrap single dropoff into array
       return [
         {
           id: 'd0',
@@ -459,17 +462,11 @@ export default function DeliveryBookingPage({
   const handleLocationSelect = (type, loc) => {
     if (type === 'pickup') setPickup(loc);
   };
-
-  const handleDropoffsChange = (updatedDropoffs) => {
-    setDropoffs(updatedDropoffs);
-  };
-
+  const handleDropoffsChange = (updated) => setDropoffs(updated);
   const handleRouteCalculated = (data) => {
     setRouteData(data);
     setRouteReady(true);
   };
-
-  // isValid also requires at least one dropoff with location + recipient
   const allDropoffsValid = dropoffs.every((d) => d.location);
 
   const handleConfirm = () => {
@@ -484,7 +481,6 @@ export default function DeliveryBookingPage({
     if (isAgencyBooking) {
       setShowGuestForm(true);
     } else {
-      // Pass dropoffs array as 6th argument
       onConfirmed(packageDetails, fd, pickup, dropoffs, routeData);
     }
   };
@@ -526,22 +522,17 @@ export default function DeliveryBookingPage({
 
       <div className="min-h-screen bg-white max-w-md pb-28 md:pb-0 mx-auto">
         <div className="max-w-3xl mx-auto px-4 py-5 space-y-6">
-          {!isAgencyBooking && (
+          {/* Only show the h1 when NOT embedded inside SendPage */}
+          {!isAgencyBooking && !hideHeader && (
             <h1 className="text-lg font-bold text-gray-900">New delivery</h1>
           )}
 
-          <div
-            className="h-0.5 rounded-full"
-            style={{
-              background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.accent} 50%, ${brandColors.secondary} 100%)`,
-            }}
-          />
+          
 
           <section className="space-y-3">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
               Where to &amp; from
             </p>
-            {/* ── Updated InputLocation: now takes dropoffs[] + onDropoffsChange ── */}
             <InputLocation
               onLocationSelect={handleLocationSelect}
               onDropoffsChange={handleDropoffsChange}

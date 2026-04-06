@@ -132,11 +132,11 @@ const CourierHistory = ({ deliveries, loading }) => {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-10">
       {/* Page Header */}
       <div>
         <p className="text-gray-900 text-lg md:text-xl font-semibold">
-          Your delivery history and completed jobs
+          History and Completed Jobs
         </p>
       </div>
 

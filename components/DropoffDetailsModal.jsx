@@ -16,7 +16,6 @@ export default function DropoffDetailsModal({
     dropoffContactName: initialData?.dropoffContactName || '',
     dropoffPhone: initialData?.dropoffPhone || '',
     dropoffInstructions: initialData?.dropoffInstructions || '',
-    recipientPermission: initialData?.recipientPermission || false,
   });
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function DropoffDetailsModal({
         dropoffContactName: initialData?.dropoffContactName || '',
         dropoffPhone: initialData?.dropoffPhone || '',
         dropoffInstructions: initialData?.dropoffInstructions || '',
-        recipientPermission: initialData?.recipientPermission || false,
       });
     }
   }, [isOpen, initialData]);
@@ -52,12 +50,7 @@ export default function DropoffDetailsModal({
       return;
     }
 
-    if (!formData.recipientPermission) {
-      alert(
-        "Please confirm you have permission to share the recipient's phone number."
-      );
-      return;
-    }
+    
 
     onSave(formData);
     onClose();
@@ -178,25 +171,6 @@ export default function DropoffDetailsModal({
                   Add nearby landmarks, building names, or specific location details
                 </p>
               </div>
-            </div>
-
-            {/* PERMISSION CHECKBOX */}
-            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                name="recipientPermission"
-                checked={formData.recipientPermission}
-                onChange={handleInputChange}
-                required
-                className="h-5 w-5 mt-0.5 flex-shrink-0"
-                style={{
-                  accentColor: brandColors.primary,
-                }}
-              />
-              <p className="text-sm text-gray-600">
-                I have permission from the recipient to share their phone number
-                for delivery updates.
-              </p>
             </div>
 
             {/* SUBMIT BUTTON */}

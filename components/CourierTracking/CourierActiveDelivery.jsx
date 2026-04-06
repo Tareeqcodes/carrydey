@@ -3,12 +3,11 @@ import { useState } from 'react';
 import { 
   Package, 
   MapPin, 
-  CheckCircle, 
   Truck, 
   Copy, 
   Check, 
+  Phone,
   ChevronDown,
-  Clock,
   DollarSign,
 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
@@ -158,7 +157,15 @@ const CourierActiveDelivery = ({
               <div className="bg-white rounded-lg p-3 border border-gray-200">
                 <p className="text-xs font-semibold text-gray-600 mb-2">SENDER</p>
                 <p className="text-sm font-medium text-gray-900">{delivery.pickupContactName}</p>
-                <p className="text-sm text-gray-600">{delivery.pickupPhone}</p>
+                {delivery.pickupPhone && (
+                  <a
+                    href={`tel:${delivery.pickupPhone}`}
+                    className="flex items-center gap-2 mt-2 text-sm font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors"
+                  >
+                    <Phone className="w-4 h-4 flex-shrink-0" />
+                    {delivery.pickupPhone}
+                  </a>
+                )}
               </div>
             )}
 
@@ -166,7 +173,15 @@ const CourierActiveDelivery = ({
               <div className="bg-white rounded-lg p-3 border border-gray-200">
                 <p className="text-xs font-semibold text-gray-600 mb-2">RECIPIENT</p>
                 <p className="text-sm font-medium text-gray-900">{delivery.dropoffContactName}</p>
-                <p className="text-sm text-gray-600">{delivery.dropoffPhone}</p>
+                {delivery.dropoffPhone && (
+                  <a
+                    href={`tel:${delivery.dropoffPhone}`}
+                    className="flex items-center gap-2 mt-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:underline transition-colors"
+                  >
+                    <Phone className="w-4 h-4 flex-shrink-0" />
+                    {delivery.dropoffPhone}
+                  </a>
+                )}
               </div>
             )}
 
@@ -207,7 +222,7 @@ const CourierActiveDelivery = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-10">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
