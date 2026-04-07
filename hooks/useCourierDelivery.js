@@ -82,7 +82,7 @@ export const useCourierDelivery = (userId) => {
         databaseId: DB,
         tableId: DELIVERIES,
         rowId: deliveryId,
-        data: { status: 'picked_up' },
+        data: { status: 'in_transit' },
       });
 
       setDeliveries((prev) =>
@@ -129,25 +129,23 @@ export const useCourierDelivery = (userId) => {
   };
 
 
-  const updateDeliveryStatus = async (deliveryId, newStatus) => {
-    try {
-      const response = await tablesDB.updateRow({
-        databaseId: DB,
-        tableId: DELIVERIES,
-        rowId: deliveryId,
+ const updateDeliveryStatus = async (deliveryId, newStatus, extraData = {}) => {
+  try {
+    const response = await tablesDB.updateRow({
+      databaseId: DB,
+      tableId: DELIVERIES,
+      rowId: deliveryId,
       data: { status: newStatus, ...extraData },
-      });
-
-      setDeliveries((prev) =>
-        prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
-      );
-
-      return { success: true, data: response };
-    } catch (err) {
-      console.error('Error updating delivery status:', err);
-      return { success: false, error: err.message };
-    }
-  };
+    });
+    setDeliveries((prev) =>
+      prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
+    );
+    return { success: true, data: response };
+  } catch (err) {
+    console.error('Error updating delivery status:', err);
+    return { success: false, error: err.message };
+  }
+};
 
   return {
     courier,
