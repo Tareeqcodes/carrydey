@@ -10,6 +10,15 @@ import {
   Plus,
 } from 'lucide-react';
 
+function parseStops(raw) {
+  if (!raw) return [];
+  try {
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch {
+    return [];
+  }
+}
+
 const AssignmentModal = ({
   isOpen,
   deliveryDetails,
@@ -19,6 +28,7 @@ const AssignmentModal = ({
   onConfirm,
   onCancel,
   onAddDriver,
+  assigning,
 }) => {
   if (!isOpen) return null;
   const assignableDrivers = drivers.filter((d) => d.status !== 'offline');
@@ -45,10 +55,43 @@ const AssignmentModal = ({
                   <MapPin className="w-4 h-4 text-green-600" />
                   <span>Pickup: {deliveryDetails?.pickupAddress}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-red-600" />
-                  <span>Dropoff: {deliveryDetails?.dropoffAddress}</span>
-                </div>
+                {deliveryDetails?.isVendorBatch &&
+                deliveryDetails?.mutipledropoff ? (
+                  (() => {
+                    const stops = parseStops(deliveryDetails.mutipledropoff);
+                    return (
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold text-gray-500 flex items-center gap-1">
+                          <Package className="w-3.5 h-3.5" />
+                          {stops.length} delivery stops
+                        </p>
+                        {stops.map((stop, i) => (
+                          <div key={i} className="flex items-start gap-2 pl-2">
+                            <div
+                              className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0 mt-0.5"
+                              style={{ background: '#FF6B35' }}
+                            >
+                              {i + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm">{stop.dropoffAddress}</p>
+                              {stop.dropoffContactName && (
+                                <p className="text-xs text-gray-400">
+                                  {stop.dropoffContactName}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-red-600" />
+                    <span>Dropoff: {deliveryDetails?.dropoffAddress}</span>
+                  </div>
+                )}
                 {deliveryDetails?.payout && (
                   <div className="flex items-center gap-2">
                     <Package className="w-4 h-4 text-gray-600" />
@@ -124,14 +167,39 @@ const AssignmentModal = ({
             </button>
             <button
               onClick={onConfirm}
-              disabled={!selectedDriver}
+              disabled={!selectedDriver || assigning}
               className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-                selectedDriver
+                selectedDriver && !assigning
                   ? 'bg-[#3A0A21] text-white hover:bg-[#4A0A31]'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
-              Assign Delivery
+              {assigning ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="animate-spin w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
+                  Assigning…
+                </span>
+              ) : (
+                'Assign Delivery'
+              )}
             </button>
           </div>
         </div>

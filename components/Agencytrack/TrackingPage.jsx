@@ -1,6 +1,12 @@
 'use client';
 import { MapPin, Truck } from 'lucide-react';
 
+function parseStops(raw) {
+  if (!raw) return [];
+  try { return typeof raw === 'string' ? JSON.parse(raw) : raw; }
+  catch { return []; }
+}
+
 const TrackingPage = ({ activeDeliveries, drivers }) => {
   const activeOnes = activeDeliveries.filter(
     (d) => !['delivered', 'pending_assignment'].includes(d.status)
@@ -15,7 +21,6 @@ const TrackingPage = ({ activeDeliveries, drivers }) => {
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
         <div className="px-3 py-3">
           <h1 className="text-base font-bold text-gray-900">Live Tracking</h1>
-          
         </div>
       </div>
 
@@ -183,8 +188,16 @@ const TrackingPage = ({ activeDeliveries, drivers }) => {
                     </div>
 
                     {/* One address row per assigned delivery */}
-                    {assignedDeliveries.map((delivery) =>
-                      delivery.pickupAddress || delivery.dropoffAddress ? (
+                    {assignedDeliveries.map((delivery) => {
+                      const isBatch = delivery.isVendorBatch;
+                      const stops = isBatch
+                        ? parseStops(delivery.mutipledropoff)
+                        : [];
+                      const currentIdx = delivery.currentStopIdx ?? 0;
+                      const currentStop = stops[currentIdx];
+
+                      return delivery.pickupAddress ||
+                        delivery.dropoffAddress ? (
                         <div
                           key={delivery.$id || delivery.id}
                           className="flex items-center gap-1 pl-4 min-w-0"
@@ -198,11 +211,13 @@ const TrackingPage = ({ activeDeliveries, drivers }) => {
                           </span>
                           <MapPin className="w-2.5 h-2.5 text-red-400 flex-shrink-0" />
                           <span className="text-[10px] text-gray-400 truncate">
-                            {delivery.dropoffAddress?.split(',')[0]}
+                            {isBatch && currentStop
+                              ? `${currentStop.dropoffAddress} (${currentIdx + 1}/${stops.length})`
+                              : delivery.dropoffAddress?.split(',')[0]}
                           </span>
                         </div>
-                      ) : null
-                    )}
+                      ) : null;
+                    })}
                   </div>
                 );
               })}

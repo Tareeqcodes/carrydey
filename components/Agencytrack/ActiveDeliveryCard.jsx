@@ -14,6 +14,12 @@ import {
 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
+function parseStops(raw) {
+  if (!raw) return [];
+  try { return typeof raw === 'string' ? JSON.parse(raw) : raw; }
+  catch { return []; }
+}
+
 const getStatusConfig = (status) => {
   const configs = {
     accepted: {
@@ -52,6 +58,9 @@ const getStatusConfig = (status) => {
       ringColor: '#A5B4FC',
     },
   };
+
+  
+
   return (
     configs[status] || {
       dot: '#6B7280',
@@ -63,35 +72,76 @@ const getStatusConfig = (status) => {
   );
 };
 
-const RouteVisual = ({ pickup, dropoff, dropoffInstructions }) => (
-  <div className="rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
-    <div className="flex items-start gap-2.5 px-3 py-2.5">
-      <div className="flex flex-col items-center gap-0.5 pt-0.5">
-        <div className="w-2.5 h-2.5 rounded-full border-2 border-green-500 bg-green-100 flex-shrink-0" />
-        <div className="w-px h-5 border-l border-dashed border-gray-300" />
+const RouteVisual = ({ pickup, dropoff, dropoffInstructions, mutipledropoff, isVendorBatch }) => {
+  const stops = isVendorBatch ? parseStops(mutipledropoff) : [];
+
+  return (
+    <div className="rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
+      {/* Pickup — unchanged */}
+      <div className="flex items-start gap-2.5 px-3 py-2.5">
+        <div className="flex flex-col items-center gap-0.5 pt-0.5">
+          <div className="w-2.5 h-2.5 rounded-full border-2 border-green-500 bg-green-100 flex-shrink-0" />
+          <div className="w-px h-5 border-l border-dashed border-gray-300" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Pickup</p>
+          <p className="text-xs text-gray-900 font-medium leading-snug">{pickup}</p>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Pickup</p>
-        <p className="text-xs text-gray-900 font-medium leading-snug">{pickup}</p>
-      </div>
-    </div>
-    <div className="flex items-start gap-2.5 px-3 pb-2.5">
-      <div className="pt-0.5 flex-shrink-0">
-        <div className="w-2.5 h-2.5 rounded-full border-2 border-red-400 bg-red-100" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Dropoff</p>
-        <p className="text-xs text-gray-900 font-medium leading-snug">{dropoff}</p>
-        {dropoffInstructions && (
-          <div className="mt-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1.5 bg-amber-50 border border-amber-200">
-            <Navigation className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-amber-600" />
-            <p className="text-[10px] leading-snug text-amber-900">{dropoffInstructions}</p>
+
+      {/* Dropoffs */}
+      {isVendorBatch && stops.length > 0 ? (
+        <div className="divide-y divide-gray-100">
+          {stops.map((stop, i) => (
+            <div key={i} className="flex items-start gap-2.5 px-3 py-2">
+              <div className="flex flex-col items-center gap-0.5 pt-0.5 flex-shrink-0">
+                <div
+                  className="w-2.5 h-2.5 rounded-full border-2 flex items-center justify-center"
+                  style={{ borderColor: '#FF6B35', backgroundColor: '#FFF7F3' }}
+                >
+                  <span className="text-[7px] font-bold" style={{ color: '#FF6B35' }}>{i + 1}</span>
+                </div>
+                {i < stops.length - 1 && (
+                  <div className="w-px h-3 border-l border-dashed border-gray-300" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+                  Stop {i + 1}
+                </p>
+                <p className="text-xs text-gray-900 font-medium leading-snug">{stop.dropoffAddress}</p>
+                {stop.dropoffContactName && (
+                  <p className="text-[10px] text-gray-500 mt-0.5">
+                    {stop.dropoffContactName}{stop.dropoffPhone ? ` · ${stop.dropoffPhone}` : ''}
+                  </p>
+                )}
+                {stop.orderRef && (
+                  <p className="text-[10px] text-gray-400 font-mono mt-0.5">{stop.orderRef}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-start gap-2.5 px-3 pb-2.5">
+          <div className="pt-0.5 flex-shrink-0">
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-red-400 bg-red-100" />
           </div>
-        )}
-      </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Dropoff</p>
+            <p className="text-xs text-gray-900 font-medium leading-snug">{dropoff}</p>
+            {dropoffInstructions && (
+              <div className="mt-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1.5 bg-amber-50 border border-amber-200">
+                <Navigation className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-amber-600" />
+                <p className="text-[10px] leading-snug text-amber-900">{dropoffInstructions}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 // Driver link share panel — shown when delivery is assigned (or beyond)
 const DriverLinkPanel = ({ delivery }) => {
@@ -210,29 +260,26 @@ const DriverLinkPanel = ({ delivery }) => {
   );
 };
 
-const ActiveDeliveryCard = ({
-  delivery,
-  showAssignButton = false,
-  onAssign,
-}) => {
+
+const ActiveDeliveryCard = ({ delivery, showAssignButton = false, onAssign }) => {
   const [expanded, setExpanded] = useState(false);
-  // const deliveryId = delivery.id || delivery.$id;
-
   const statusConfig = getStatusConfig(delivery.status);
-  const isExpandable = [
-    'accepted',
-    'pending_assignment',
-    'assigned',
-    'picked_up',
-    'in_transit',
-  ].includes(delivery.status);
 
-  // Status label to show driver progress to the admin (read-only)
+  // Parse batch data once at card level
+  const isVendorBatch = delivery.isVendorBatch;
+  const stops = isVendorBatch ? parseStops(delivery.mutipledropoff) : [];
+  const currentStopIdx = delivery.currentStopIdx ?? 0;
+
+  const isExpandable = ['accepted','pending_assignment','assigned','picked_up','in_transit'].includes(delivery.status);
+
   const statusProgressLabel = {
     assigned: 'Waiting for driver to confirm pickup',
     picked_up: 'Driver has picked up the package',
-    in_transit: 'Package is on the way',
+    in_transit: isVendorBatch
+      ? `On stop ${currentStopIdx + 1} of ${stops.length}`
+      : 'Package is on the way',
   }[delivery.status];
+  
 
   const renderActionButton = () => {
     const baseClass =
@@ -273,21 +320,33 @@ const ActiveDeliveryCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs font-semibold text-gray-900">
-              {delivery.packageSize || 'Medium'}
+              {isVendorBatch ? `${stops.length} stops` : (delivery.packageSize || 'Medium')}
             </span>
+            {/* Batch badge */}
+            {isVendorBatch && (
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
+                style={{ background: '#FF6B35' }}
+              >
+                Batch
+              </span>
+            )}
             <span
-              className="text-[6px] font-bold uppercase px-1.5 py-0.5 rounded-full"
+              className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full"
               style={{ background: statusConfig.badgeBg, color: statusConfig.badgeText }}
             >
               {statusConfig.label}
             </span>
           </div>
-          {(delivery.pickupAddress || delivery.dropoffAddress) && (
-            <p className="text-[10px] text-gray-400 truncate mt-0.5">
-              {delivery.pickupAddress?.split(',')[0]} → {delivery.dropoffAddress?.split(',')[0]}
-            </p>
-          )}
-          {/* Progress hint for admin (read-only) */}
+
+          {/* Route preview — for batch show first stop */}
+          <p className="text-[10px] text-gray-400 truncate mt-0.5">
+            {delivery.pickupAddress?.split(',')[0]} →{' '}
+            {isVendorBatch && stops.length > 0
+              ? `${stops[currentStopIdx]?.dropoffAddress || stops[0]?.dropoffAddress} (+${stops.length - 1} more)`
+              : delivery.dropoffAddress?.split(',')[0]}
+          </p>
+
           {statusProgressLabel && !expanded && (
             <p className="text-[10px] text-blue-500 mt-0.5 font-medium">{statusProgressLabel}</p>
           )}
@@ -309,21 +368,31 @@ const ActiveDeliveryCard = ({
       {/* Expanded panel */}
       {expanded && isExpandable && (
         <div className="border-t border-gray-100 px-3 pb-3 pt-2.5 space-y-2.5 bg-gray-50">
-          {/* Route */}
-          {(delivery.pickup || delivery.dropoff) && (
-            <RouteVisual
-              pickup={delivery.pickup}
-              dropoff={delivery.dropoff}
-              dropoffInstructions={delivery.dropoffInstructions}
-            />
+          {/* Route — now batch-aware */}
+          <RouteVisual
+            pickup={delivery.pickupAddress}
+            dropoff={delivery.dropoffAddress}
+            dropoffInstructions={delivery.dropoffInstructions}
+            mutipledropoff={delivery.mutipledropoff}
+            isVendorBatch={isVendorBatch}
+          />
+
+          {/* Stop progress pill for in_transit batch */}
+          {isVendorBatch && delivery.status === 'in_transit' && (
+            <div className="flex items-center gap-2 p-2.5 rounded-xl border"
+              style={{ background: '#FFF7F3', borderColor: '#FF6B3540' }}>
+              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#FF6B35' }} />
+              <p className="text-[11px] font-semibold" style={{ color: '#FF6B35' }}>
+                Driver is on stop {currentStopIdx + 1} of {stops.length}
+              </p>
+            </div>
           )}
 
-          {/* Driver Portal Link — shown when driver is assigned */}
+          {/* Driver Portal Link */}
           {['assigned', 'picked_up', 'in_transit'].includes(delivery.status) && (
             <DriverLinkPanel delivery={delivery} />
           )}
 
-          {/* Status progress for admin */}
           {statusProgressLabel && (
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200">
               <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
@@ -331,14 +400,12 @@ const ActiveDeliveryCard = ({
             </div>
           )}
 
-          {/* Driver info */}
+          {/* Driver info — unchanged */}
           {delivery.driverName && (
             <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-gray-200">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                  style={{ background: '#3A0A21' }}
-                >
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{ background: '#3A0A21' }}>
                   {delivery.driverName[0]}
                 </div>
                 <div className="min-w-0">
@@ -349,33 +416,10 @@ const ActiveDeliveryCard = ({
                 </div>
               </div>
               {delivery.driverPhone && (
-                <a
-                  href={`tel:${delivery.driverPhone}`}
+                <a href={`tel:${delivery.driverPhone}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors bg-green-50 border border-green-200 hover:bg-green-100"
-                >
+                  className="w-8 h-8 rounded-xl flex items-center justify-center bg-green-50 border border-green-200 hover:bg-green-100">
                   <Phone className="w-3.5 h-3.5 text-green-600" />
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Sender contact */}
-          {!delivery.driverName && (delivery.guestPhone || delivery.pickupContactName) && (
-            <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-gray-200">
-              <div>
-                <p className="text-[9px] text-gray-400 uppercase font-bold">Sender</p>
-                <p className="text-xs text-gray-700 font-medium">
-                  {delivery.pickupContactName || 'Customer'}
-                </p>
-              </div>
-              {delivery.guestPhone && (
-                <a
-                  href={`tel:${delivery.guestPhone}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors"
-                >
-                  <Phone className="w-3.5 h-3.5 text-blue-600" />
                 </a>
               )}
             </div>
@@ -383,11 +427,6 @@ const ActiveDeliveryCard = ({
 
           {renderActionButton()}
         </div>
-      )}
-
-      {/* Assign button when not expandable */}
-      {!isExpandable && (
-        <div className="border-t border-gray-100 p-2.5">{renderActionButton()}</div>
       )}
     </div>
   );

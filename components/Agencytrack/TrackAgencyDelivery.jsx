@@ -43,10 +43,10 @@ function pickBestDriver(drivers) {
 const TrackAgencyDelivery = () => {
   const { user } = useAuth();
   const locationIntervalRef = useRef(null);
-
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accepting, setAccepting] = useState(false);
+const [assigning, setAssigning] = useState(false);
 
   const [assignmentModal, setAssignmentModal] = useState({
     isOpen: false,
@@ -191,16 +191,19 @@ const TrackAgencyDelivery = () => {
   };
 
   const handleCompleteAssignment = async () => {
-    if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
-    const driver = drivers.find(
-      (d) =>
-        d.$id === assignmentModal.selectedDriver ||
-        d.id === assignmentModal.selectedDriver
-    );
-    if (!driver) return;
+  if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
+  const driver = drivers.find(
+    (d) => d.$id === assignmentModal.selectedDriver || d.id === assignmentModal.selectedDriver
+  );
+  if (!driver) return;
+  setAssigning(true);
+  try {
     await completeAssignment(assignmentModal.deliveryId, driver);
     closeAssignmentModal();
-  };
+  } finally {
+    setAssigning(false);
+  }
+};
 
   //  Location ping 
   useEffect(() => {
@@ -370,6 +373,7 @@ const TrackAgencyDelivery = () => {
         onConfirm={handleCompleteAssignment}
         onCancel={closeAssignmentModal}
         onAddDriver={openAddDriverModal}
+        assigning={assigning}
       />
 
       <AddDriverModal

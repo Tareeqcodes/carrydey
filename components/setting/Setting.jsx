@@ -7,12 +7,12 @@ import { useAuth } from '@/hooks/Authcontext';
 export default function Setting() {
   const { user, deleteAccount } = useAuth();
 
-  const [step,    setStep]    = useState('idle'); // idle | confirm
-  const [input,   setInput]   = useState('');
+  const [step, setStep] = useState('idle');
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
 
-  const name    = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const name = user?.displayName || user?.email?.split('@')[0] || 'User';
   const initial = name[0].toUpperCase();
   const canDelete = input.toLowerCase() === 'delete my account';
 
@@ -32,8 +32,12 @@ export default function Setting() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-[18px] font-bold text-[#1a1a1a]">Account Settings</h2>
-        <p className="text-[12px] text-gray-400 mt-0.5">Manage your Carrydey account</p>
+        <h2 className="text-[18px] font-bold text-[#1a1a1a]">
+          Account Settings
+        </h2>
+        <p className="text-[12px] text-gray-400 mt-0.5">
+          Manage your Carrydey account
+        </p>
       </div>
 
       {/* Profile summary — read only */}
@@ -42,33 +46,41 @@ export default function Setting() {
           <span className="text-white font-bold text-xl">{initial}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-[14px] font-bold text-[#1a1a1a] truncate">{name}</p>
+          <p className="text-[14px] font-bold text-[#1a1a1a] truncate">
+            {name}
+          </p>
           <p className="text-[12px] text-gray-400 truncate">{user?.email}</p>
-          <p className="text-[11px] text-gray-300 mt-0.5">To update your info, contact support</p>
+          <p className="text-[11px] text-gray-300 mt-0.5">
+            To update your info, contact support
+          </p>
         </div>
       </div>
 
       {/* Delete account */}
       <div className="bg-white rounded-2xl border border-red-100 overflow-hidden">
-
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-red-50">
           <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
             <Trash2 size={15} className="text-red-400" />
           </div>
           <div className="flex-1">
-            <p className="text-[13.5px] font-bold text-red-500">Delete Account</p>
-            <p className="text-[11px] text-gray-400">Permanent and cannot be undone</p>
+            <p className="text-[13.5px] font-bold text-red-500">
+              Delete Account
+            </p>
+            <p className="text-[11px] text-gray-400">
+              Permanent and cannot be undone
+            </p>
           </div>
         </div>
 
         <div className="px-4 py-4 space-y-4">
           <p className="text-[12.5px] text-gray-500 leading-relaxed">
-            Deleting your account will permanently remove all your data — deliveries, history, payment info, and profile. You will not be able to recover it.
+            Deleting your account will permanently remove all your data —
+            deliveries, history, payment info, and profile. You will not be able
+            to recover it.
           </p>
 
           <AnimatePresence mode="wait">
-
             {/* Step 1 — idle */}
             {step === 'idle' && (
               <motion.button
@@ -91,16 +103,23 @@ export default function Setting() {
                 className="space-y-3"
               >
                 <div className="flex gap-2.5 bg-red-50 rounded-xl p-3">
-                  <AlertTriangle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle
+                    size={14}
+                    className="text-red-400 flex-shrink-0 mt-0.5"
+                  />
                   <p className="text-[12px] text-red-500 leading-relaxed">
-                    Type <span className="font-bold">delete my account</span> below to confirm.
+                    Type <span className="font-bold">delete my account</span>{' '}
+                    below to confirm.
                   </p>
                 </div>
 
                 <input
                   type="text"
                   value={input}
-                  onChange={e => { setInput(e.target.value); setError(''); }}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    setError('');
+                  }}
                   placeholder="delete my account"
                   autoFocus
                   disabled={loading}
@@ -123,7 +142,11 @@ export default function Setting() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setStep('idle'); setInput(''); setError(''); }}
+                    onClick={() => {
+                      setStep('idle');
+                      setInput('');
+                      setError('');
+                    }}
                     disabled={loading}
                     className="flex-1 py-3.5 rounded-xl border border-gray-200 bg-white text-[13px] font-semibold text-gray-500 disabled:opacity-50"
                   >
@@ -135,9 +158,10 @@ export default function Setting() {
                     disabled={!canDelete || loading}
                     whileTap={canDelete && !loading ? { scale: 0.97 } : {}}
                     className={`flex-1 py-3.5 rounded-xl text-[13px] font-bold transition-all duration-200 flex items-center justify-center gap-2
-                      ${canDelete && !loading
-                        ? 'bg-red-500 text-white'
-                        : 'bg-red-100 text-red-300 cursor-not-allowed'
+                      ${
+                        canDelete && !loading
+                          ? 'bg-red-500 text-white'
+                          : 'bg-red-100 text-red-300 cursor-not-allowed'
                       }`}
                   >
                     {loading ? (

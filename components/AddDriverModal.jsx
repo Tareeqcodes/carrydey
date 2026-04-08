@@ -29,7 +29,6 @@ const vehicleTypes = [
 const statusOptions = [
   { value: 'available', label: 'Available' },
   { value: 'offline', label: 'Offline' },
-  { value: 'on_delivery', label: 'On Delivery' },
 ];
 
 const phoneTypeOptions = [
