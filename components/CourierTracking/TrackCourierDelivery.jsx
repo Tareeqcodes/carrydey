@@ -176,41 +176,41 @@ const TrackCourierDelivery = () => {
 
         return (
           <div className="space-y-8 ">
-            <p className="text-gray-900 text-lg md:text-xl font-semibold">
+            <h2 className="text-[20px] font-black text-white leading-[1.08] tracking-[-0.02em]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>
               Track your earnings and income
-            </p>
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-3xl p-6 border border-emerald-200/50">
+              <div className="bg-white/5 rounded-3xl p-6 border border-white/10 shadow-md">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-white rounded-2xl shadow-sm">
-                    <DollarSign className="w-6 h-6 text-emerald-600" />
+                  <div className="p-3 bg-emerald-500/20 rounded-2xl">
+                    <DollarSign className="w-6 h-6 text-emerald-400" />
                   </div>
-                  <p className="text-3xl font-bold text-emerald-900">{formatNairaSimple(todayEarnings)}</p>
+                  <p className="text-3xl font-bold text-white">{formatNairaSimple(todayEarnings)}</p>
                 </div>
-                <p className="text-sm font-semibold text-emerald-900">Today's Earnings</p>
-                <p className="text-xs text-emerald-700 mt-1">Current day income</p>
+                <p className="text-sm font-semibold text-white">Today's Earnings</p>
+                <p className="text-xs text-white/50 mt-1">Current day income</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-3xl p-6 border border-blue-200/50">
+              <div className="bg-white/5 rounded-3xl p-6 border border-white/10 shadow-md">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-white rounded-2xl shadow-sm">
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                  <div className="p-3 bg-blue-500/20 rounded-2xl">
+                    <Calendar className="w-6 h-6 text-blue-400" />
                   </div>
-                  <p className="text-3xl font-bold text-blue-900">{formatNairaSimple(totalEarnings)}</p>
+                  <p className="text-3xl font-bold text-white">{formatNairaSimple(totalEarnings)}</p>
                 </div>
-                <p className="text-sm font-semibold text-blue-900">Total Earnings</p>
-                <p className="text-xs text-blue-700 mt-1">All-time income</p>
+                <p className="text-sm font-semibold text-white">Total Earnings</p>
+                <p className="text-xs text-white/50 mt-1">All-time income</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-3xl p-6 border border-purple-200/50">
+              <div className="bg-white/5 rounded-3xl p-6 border border-white/10 shadow-md">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-white rounded-2xl shadow-sm">
-                    <CheckCircle className="w-6 h-6 text-purple-600" />
+                  <div className="p-3 bg-purple-500/20 rounded-2xl">
+                    <CheckCircle className="w-6 h-6 text-purple-400" />
                   </div>
-                  <p className="text-3xl font-bold text-purple-900">
+                  <p className="text-3xl font-bold text-white">
                     {completedDeliveries.filter((d) => d.status === 'delivered').length}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-purple-900">Completed Jobs</p>
-                <p className="text-xs text-purple-700 mt-1">Total deliveries</p>
+                <p className="text-sm font-semibold text-white">Completed Jobs</p>
+                <p className="text-xs text-white/50 mt-1">Total deliveries</p>
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@ const TrackCourierDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-black">
       <header>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -257,7 +257,6 @@ const TrackCourierDelivery = () => {
           {renderPage()}
         </main>
       </div>
-
 
       {(incomingOffer || accepting) && (
         <OfferBanner

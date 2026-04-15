@@ -32,49 +32,49 @@ export default function Setting() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-[18px] font-bold text-[#1a1a1a]">
+        <h2 className="text-[28px] font-black text-white leading-[1.08] tracking-[-0.02em] mb-2" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>
           Account Settings
         </h2>
-        <p className="text-[12px] text-gray-400 mt-0.5">
+        <p className="text-[14px] font-medium text-white/60 leading-[1.6]">
           Manage your Carrydey account
         </p>
       </div>
 
       {/* Profile summary — read only */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4">
+      <div className="bg-white/10 rounded-2xl border border-white/10 p-4 flex items-center gap-4 shadow-lg">
         <div className="w-14 h-14 bg-[#3A0A21] rounded-2xl flex items-center justify-center flex-shrink-0">
           <span className="text-white font-bold text-xl">{initial}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-[14px] font-bold text-[#1a1a1a] truncate">
+          <p className="text-[14px] font-bold text-white truncate">
             {name}
           </p>
-          <p className="text-[12px] text-gray-400 truncate">{user?.email}</p>
-          <p className="text-[11px] text-gray-300 mt-0.5">
+          <p className="text-[12px] text-white/50 truncate">{user?.email}</p>
+          <p className="text-[11px] text-white/30 mt-0.5">
             To update your info, contact support
           </p>
         </div>
       </div>
 
       {/* Delete account */}
-      <div className="bg-white rounded-2xl border border-red-100 overflow-hidden">
+      <div className="bg-white/10 rounded-2xl border border-red-500/20 overflow-hidden shadow-lg">
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-red-50">
-          <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-red-500/10">
+          <div className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <Trash2 size={15} className="text-red-400" />
           </div>
           <div className="flex-1">
-            <p className="text-[13.5px] font-bold text-red-500">
+            <p className="text-[13px] font-bold text-red-400">
               Delete Account
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-red-400/60">
               Permanent and cannot be undone
             </p>
           </div>
         </div>
 
         <div className="px-4 py-4 space-y-4">
-          <p className="text-[12.5px] text-gray-500 leading-relaxed">
+          <p className="text-[13px] text-white/60 leading-relaxed">
             Deleting your account will permanently remove all your data —
             deliveries, history, payment info, and profile. You will not be able
             to recover it.
@@ -102,12 +102,12 @@ export default function Setting() {
                 exit={{ opacity: 0 }}
                 className="space-y-3"
               >
-                <div className="flex gap-2.5 bg-red-50 rounded-xl p-3">
+                <div className="flex gap-2.5 bg-red-500/10 rounded-xl p-3">
                   <AlertTriangle
                     size={14}
                     className="text-red-400 flex-shrink-0 mt-0.5"
                   />
-                  <p className="text-[12px] text-red-500 leading-relaxed">
+                  <p className="text-[12px] text-red-400 leading-relaxed">
                     Type <span className="font-bold">delete my account</span>{' '}
                     below to confirm.
                   </p>
@@ -123,7 +123,7 @@ export default function Setting() {
                   placeholder="delete my account"
                   autoFocus
                   disabled={loading}
-                  className="w-full bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-[13px] text-[#1a1a1a] placeholder-red-200 focus:outline-none focus:border-red-400 transition-colors disabled:opacity-50"
+                  className="w-full bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-[13px] text-white placeholder-red-400/40 focus:outline-none focus:border-red-400 transition-colors disabled:opacity-50"
                 />
 
                 {/* API error */}
@@ -148,7 +148,7 @@ export default function Setting() {
                       setError('');
                     }}
                     disabled={loading}
-                    className="flex-1 py-3.5 rounded-xl border border-gray-200 bg-white text-[13px] font-semibold text-gray-500 disabled:opacity-50"
+                    className="flex-1 py-3.5 rounded-xl border border-white/10 bg-white/5 text-[13px] font-semibold text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
                   >
                     Cancel
                   </button>

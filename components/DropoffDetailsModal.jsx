@@ -61,23 +61,20 @@ export default function DropoffDetailsModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
         onClick={onClose}
       />
 
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="sticky top-0 bg-black/50 backdrop-blur border-b border-white/10 px-6 py-4">
             <div className="flex items-center justify-between">
-              <h2 
-                className="text-xl font-bold"
-                style={{ color: brandColors.primary }}
-              >
+              <h2 className="text-xl font-bold text-white">
                 Dropoff details
               </h2>
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-white/40 hover:text-white transition-colors"
               >
                 ✕
               </button>
@@ -87,7 +84,7 @@ export default function DropoffDetailsModal({
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* RECIPIENT INFORMATION */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-white mb-4">
                 Who's receiving the package?
               </h3>
               <div className="space-y-4">
@@ -98,15 +95,7 @@ export default function DropoffDetailsModal({
                   onChange={handleInputChange}
                   placeholder="Recipient's name"
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
-                  onFocus={(e) => {
-                    e.target.style.borderColor = brandColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#d1d5db';
-                    e.target.style.boxShadow = 'none';
-                  }}
+                  className="w-full px-4 py-3 border border-white/10 bg-white/5 rounded-xl focus:border-[#00C896] focus:bg-white/10 focus:outline-none transition-all text-white placeholder-white/30 backdrop-blur-sm"
                 />
                 <input
                   type="tel"
@@ -115,32 +104,24 @@ export default function DropoffDetailsModal({
                   onChange={handleInputChange}
                   placeholder="Recipient's phone number"
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
-                  onFocus={(e) => {
-                    e.target.style.borderColor = brandColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#d1d5db';
-                    e.target.style.boxShadow = 'none';
-                  }}
+                  className="w-full px-4 py-3 border border-white/10 bg-white/5 rounded-xl focus:border-[#00C896] focus:bg-white/10 focus:outline-none transition-all text-white placeholder-white/30 backdrop-blur-sm"
                 />
               </div>
             </div>
 
             {/* DELIVERY LOCATION */}
             <div>
-              <h3 className="font-semibold text-sm text-gray-900 mb-4">
+              <h3 className="font-semibold text-sm text-white mb-4">
                 Delivery Location
               </h3>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-start space-x-3">
-                  <MapPin className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <MapPin className="w-5 h-5 text-[#00C896] mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700 mb-1">
+                    <p className="text-sm font-medium text-white/70 mb-1">
                       Delivery Address
                     </p>
-                    <p className="text-gray-900">
+                    <p className="text-white">
                       {delivery.dropoff?.place_name || 'No address provided'}
                     </p>
                   </div>
@@ -148,7 +129,7 @@ export default function DropoffDetailsModal({
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">
                   Additional dropoff instructions (optional)
                 </label>
                 <input
@@ -157,17 +138,9 @@ export default function DropoffDetailsModal({
                   value={formData.dropoffInstructions}
                   onChange={handleInputChange}
                   placeholder="Near Central Mosque, call recipient before arrival"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all"
-                  onFocus={(e) => {
-                    e.target.style.borderColor = brandColors.primary;
-                    e.target.style.boxShadow = `0 0 0 3px ${brandColors.primary}10`;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#d1d5db';
-                    e.target.style.boxShadow = 'none';
-                  }}
+                  className="w-full px-4 py-3 border border-white/10 bg-white/5 rounded-xl focus:border-[#00C896] focus:bg-white/10 focus:outline-none transition-all text-white placeholder-white/30 backdrop-blur-sm"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-white/40 mt-1">
                   Add nearby landmarks, building names, or specific location details
                 </p>
               </div>
@@ -177,16 +150,7 @@ export default function DropoffDetailsModal({
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full text-sm text-white font-semibold py-4 rounded-lg transition"
-                style={{
-                  background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.01)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
+                className="w-full text-sm text-black font-bold py-4 rounded-xl bg-gradient-to-r from-[#00C896] to-[#00E5AD] hover:from-[#00E5AD] hover:to-[#00C896] transition-all duration-300 active:scale-[0.98] shadow-lg hover:shadow-xl shadow-[#00C896]/20"
               >
                 Save dropoff details
               </button>

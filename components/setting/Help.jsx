@@ -19,19 +19,19 @@ const Faq = ({ item, index }) => {
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      className="bg-white/10 rounded-2xl border border-white/10 overflow-hidden shadow-md"
     >
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between gap-3 px-4 py-4 text-left"
       >
-        <p className="text-[13px] font-semibold text-[#1a1a1a] leading-snug flex-1">{item.q}</p>
+        <p className="text-[13px] font-bold text-white leading-snug flex-1">{item.q}</p>
         <motion.div
           animate={{ rotate: open ? 45 : 0 }}
           transition={{ duration: 0.18 }}
           className="flex-shrink-0"
         >
-          <Plus size={15} className="text-[#3A0A21]" />
+          <Plus size={15} className="text-white/50" />
         </motion.div>
       </button>
       <AnimatePresence initial={false}>
@@ -43,7 +43,7 @@ const Faq = ({ item, index }) => {
             transition={{ duration: 0.2, ease: [0.04, 0.62, 0.23, 0.98] }}
             style={{ overflow: 'hidden' }}
           >
-            <p className="px-4 pb-4 pt-1 text-[12px] text-gray-500 leading-relaxed border-t border-gray-50">
+            <p className="px-4 pb-4 pt-1 text-[12px] text-white/60 leading-relaxed border-t border-white/10">
               {item.a}
             </p>
           </motion.div>
@@ -57,73 +57,73 @@ export default function Help() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-[18px] font-bold text-[#1a1a1a]">Help & Support</h2>
-        <p className="text-[12px] text-gray-400 mt-0.5">We're here when you need us</p>
+        <h2 className="text-[28px] font-black text-white leading-[1.08] tracking-[-0.02em] mb-2" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>Help & Support</h2>
+        <p className="text-[14px] font-medium text-white/60 leading-[1.6]">We're here when you need us</p>
       </div>
 
       {/* Contact */}
       <div className="space-y-2">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">Contact Us</p>
+        <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.12em] px-0.5">Contact Us</p>
 
         <a
           href="https://wa.me/2349124498160?text=Hi%20Carrydey%2C%20I%20need%20help"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3.5 p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors"
+          className="flex items-center gap-3.5 p-4 bg-white/10 rounded-2xl border border-white/10 hover:border-white/20 hover:bg-white/15 transition-colors shadow-md"
         >
           <div className="w-10 h-10 bg-[#25D366] rounded-xl flex items-center justify-center flex-shrink-0">
             <Phone size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="text-[13.5px] font-semibold text-[#1a1a1a]">WhatsApp</p>
-            <p className="text-[11px] text-gray-400">Fastest · usually under 30 mins</p>
+            <p className="text-[13px] font-bold text-white">WhatsApp</p>
+            <p className="text-[12px] text-white/50">Fastest · usually under 30 mins</p>
           </div>
-          <ArrowUpRight size={13} className="text-gray-300" />
+          <ArrowUpRight size={13} className="text-white/30" />
         </a>
 
         <a
           href="mailto:support@carrydey.tech"
-          className="flex items-center gap-3.5 p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors"
+          className="flex items-center gap-3.5 p-4 bg-white/10 rounded-2xl border border-white/10 hover:border-white/20 hover:bg-white/15 transition-colors shadow-md"
         >
-          <div className="w-10 h-10 bg-[#3A0A21]/8 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Mail size={16} className="text-[#3A0A21]" />
+          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Mail size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="text-[13.5px] font-semibold text-[#1a1a1a]">Email</p>
-            <p className="text-[11px] text-gray-400">support@carrydey.tech</p>
+            <p className="text-[13px] font-bold text-white">Email</p>
+            <p className="text-[12px] text-white/50">support@carrydey.tech</p>
           </div>
-          <ArrowUpRight size={13} className="text-gray-300" />
+          <ArrowUpRight size={13} className="text-white/30" />
         </a>
 
         <a
           href="https://www.instagram.com/carrydey.ng/"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3.5 p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors"
+          className="flex items-center gap-3.5 p-4 bg-white/10 rounded-2xl border border-white/10 hover:border-white/20 hover:bg-white/15 transition-colors shadow-md"
         >
           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366)' }}>
             <MessageSquare size={16} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="text-[13.5px] font-semibold text-[#1a1a1a]">Instagram</p>
-            <p className="text-[11px] text-gray-400">@carrydey.ng</p>
+            <p className="text-[13px] font-bold text-white">Instagram</p>
+            <p className="text-[12px] text-white/50">@carrydey.ng</p>
           </div>
-          <ArrowUpRight size={13} className="text-gray-300" />
+          <ArrowUpRight size={13} className="text-white/30" />
         </a>
       </div>
 
       {/* FAQs */}
       <div className="space-y-2">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">FAQs</p>
+        <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.12em] px-0.5">FAQs</p>
         {faqs.map((item, i) => <Faq key={i} item={item} index={i} />)}
       </div>
 
       {/* Hours */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center">
-        <p className="text-[12px] text-gray-400 leading-relaxed">
-          Support hours: <span className="font-semibold text-[#1a1a1a]">Mon–Sat, 8am–9pm</span><br />
-          <span className="text-[11px]">Urgent issues: WhatsApp only</span>
+      <div className="bg-white/10 rounded-2xl border border-white/10 p-4 text-center shadow-md">
+        <p className="text-[12px] text-white/60 leading-relaxed">
+          Support hours: <span className="font-bold text-white">Mon–Sat, 8am–9pm</span><br />
+          <span className="text-[11px] text-white/40">Urgent issues: WhatsApp only</span>
         </p>
       </div>
     </div>

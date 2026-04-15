@@ -12,7 +12,7 @@ export default function PaymentSection({ paymentMethod, onPaymentMethodChange, e
 
   return (
     <section>
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Payment</p>
+      <p className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-3">Payment</p>
 
       {/* Chips */}
       <div className="flex gap-2">
@@ -22,13 +22,16 @@ export default function PaymentSection({ paymentMethod, onPaymentMethodChange, e
             <button
               key={id}
               onClick={() => onPaymentMethodChange(id)}
-              className="flex-1 py-3 rounded-xl text-center transition-all"
-              style={{ background: on ? brandColors.primary : '#f3f4f6' }}
+              className="flex-1 py-3 rounded-xl text-center transition-all border"
+              style={{ 
+                background: on ? '#00C896' : 'rgba(255,255,255,0.05)',
+                borderColor: on ? '#00C896' : 'rgba(255,255,255,0.1)'
+              }}
             >
-              <p className={`text-sm font-bold ${on ? 'text-white' : 'text-gray-700'}`}>
+              <p className={`text-sm font-bold ${on ? 'text-black' : 'text-white'}`}>
                 {label}
               </p>
-              <p className={`text-[10px] mt-0.5 ${on ? 'text-white/70' : 'text-gray-400'}`}>
+              <p className={`text-[10px] mt-0.5 ${on ? 'text-black/70' : 'text-white/40'}`}>
                 {sub}
               </p>
             </button>

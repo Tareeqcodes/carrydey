@@ -32,7 +32,7 @@ export default function InputLocation({
 }) {
   const { brandColors } = useBrandColors();
   const MAROON = brandColors.primary;
-  const ORANGE = brandColors.accent;
+  const ORANGE = brandColors.secondary;
 
   const [pickupAddress, setPickupAddress] = useState('');
   const [calculatingRoute, setCalculatingRoute] = useState(false);
@@ -85,8 +85,8 @@ export default function InputLocation({
               if (data.features?.[0]) {
                 const f = data.features[0];
                 const loc = {
-                  ...f,
-                  geometry: {
+                  ...f, 
+                  geometry: { 
                     type: 'Point',
                     coordinates: [longitude, latitude],
                   },
@@ -343,7 +343,7 @@ export default function InputLocation({
   // ── SSR skeleton ───────────────────────────────────────────────────────
   if (!isClient) {
     return (
-      <div className="w-full rounded-2xl border border-gray-200 p-5 space-y-3 bg-white">
+      <div className="w-full rounded-2xl border border-gray-200 p-5 space-y-3 bg-black">
         {['Pickup', 'Drop-off 1'].map((label) => (
           <div key={label}>
             <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
@@ -356,11 +356,11 @@ export default function InputLocation({
     );
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────
+
   return (
     <div
       ref={containerRef}
-      className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4 shadow-sm"
+      className="bg-black rounded-2xl border border-gray-200 p-5 space-y-4 shadow-sm"
     >
       {/* ── Pickup ── */}
       <div className="relative">
@@ -395,7 +395,7 @@ export default function InputLocation({
               setActiveField('pickup');
               if (pickupAddress.length >= 3) setShowPickupSugg(true);
             }}
-            className="flex-1 py-3 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none min-w-0"
+            className="flex-1 py-3 text-sm text-white placeholder:text-white bg-transparent outline-none min-w-0"
           />
           <div className="flex items-center pr-1 gap-0.5">
             {pickupAddress && (
@@ -464,12 +464,7 @@ export default function InputLocation({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
-                  style={{ background: ORANGE }}
-                >
-                  {idx + 1}
-                </div>
+                
                 <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                   Drop-off {idx + 1}
                 </span>
@@ -488,7 +483,7 @@ export default function InputLocation({
 
             <div className="relative">
               <div
-                className="flex items-center border rounded-xl transition-all overflow-hidden bg-white"
+                className="flex items-center border rounded-xl transition-all overflow-hidden"
                 style={{
                   borderColor:
                     activeField === `dropoff-${idx}`
@@ -524,7 +519,7 @@ export default function InputLocation({
                         )
                       );
                   }}
-                  className="flex-1 py-3 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none min-w-0"
+                  className="flex-1 py-3 text-sm text-white placeholder-gray-400 bg-transparent outline-none min-w-0"
                 />
                 {d.address && (
                   <button

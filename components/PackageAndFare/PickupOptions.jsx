@@ -6,7 +6,7 @@ export default function PickupOptions({ packageDetails, onPackageDetailChange })
 
   return (
     <section>
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+      <p className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-3">
         Pickup time
       </p>
 
@@ -21,13 +21,16 @@ export default function PickupOptions({ packageDetails, onPackageDetailChange })
             <button
               key={id}
               onClick={() => onPackageDetailChange('pickupTime', id)}
-              className="flex-1 py-3 rounded-xl text-center transition-all"
-              style={{ background: on ? brandColors.primary : '#f3f4f6' }}
+              className="flex-1 py-3 rounded-xl text-center transition-all border"
+              style={{ 
+                background: on ? '#00C896' : 'rgba(255,255,255,0.05)',
+                borderColor: on ? '#00C896' : 'rgba(255,255,255,0.1)'
+              }}
             >
-              <p className={`text-sm font-bold ${on ? 'text-white' : 'text-gray-700'}`}>
+              <p className={`text-sm font-bold ${on ? 'text-black' : 'text-white'}`}>
                 {label}
               </p>
-              <p className={`text-[10px] mt-0.5 ${on ? 'text-white/70' : 'text-gray-400'}`}>
+              <p className={`text-[10px] mt-0.5 ${on ? 'text-black/70' : 'text-white/40'}`}>
                 {sub}
               </p>
             </button>
@@ -41,11 +44,11 @@ export default function PickupOptions({ packageDetails, onPackageDetailChange })
           <input
             type="date"
             min={new Date().toISOString().split('T')[0]}
-            className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none bg-gray-50 focus:border-violet-400 transition-colors"
+            className="text-sm border border-white/10 bg-white/5 rounded-xl px-3 py-2.5 outline-none focus:border-[#00C896] focus:bg-white/10 transition-colors text-white placeholder-white/30"
           />
-          <select className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none bg-gray-50 focus:border-violet-400 transition-colors">
+          <select className="text-sm border border-white/10 bg-white/5 rounded-xl px-3 py-2.5 outline-none focus:border-[#00C896] focus:bg-white/10 transition-colors text-white">
             {['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'].map((t) => (
-              <option key={t}>{t}</option>
+              <option key={t} className="bg-black text-white">{t}</option>
             ))}
           </select>
         </div>

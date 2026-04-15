@@ -77,21 +77,21 @@ const Field = ({
   <motion.div
     layout
     className={`group relative flex items-start gap-4 py-5 ${!isLast ? 'border-b' : ''}`}
-    style={{ borderColor: 'rgba(58,10,33,0.07)' }}
+    style={{ borderColor: 'rgba(255,255,255,0.1)' }}
   >
     <div
       className="mt-0.5 w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
       style={{
-        background: 'rgba(255,107,53,0.08)',
-        border: '1px solid rgba(255,107,53,0.15)',
+        background: 'rgba(0,200,150,0.15)',
+        border: '1px solid rgba(0,200,150,0.3)',
       }}
     >
-      <Icon className="w-4 h-4" style={{ color: '#FF6B35' }} />
+      <Icon className="w-4 h-4" style={{ color: '#00C896' }} />
     </div>
     <div className="flex-1 min-w-0">
       <p
-        className="text-[10px] font-semibold uppercase tracking-widest mb-1"
-        style={{ color: 'rgba(58,10,33,0.35)' }}
+        className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1"
+        style={{ color: 'rgba(255,255,255,0.4)' }}
       >
         {label}
       </p>
@@ -101,13 +101,13 @@ const Field = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-sm font-medium focus:outline-none"
-          style={{ color: '#3A0A21', caretColor: '#FF6B35' }}
+          className="w-full bg-transparent text-sm font-medium focus:outline-none text-white"
+          style={{ caretColor: '#00C896' }}
         />
       ) : (
         <p
           className="text-sm font-medium truncate"
-          style={{ color: hint ? 'rgba(58,10,33,0.3)' : '#3A0A21' }}
+          style={{ color: hint ? 'rgba(255,255,255,0.4)' : 'white' }}
         >
           {value || placeholder || '—'}
         </p>
@@ -115,7 +115,7 @@ const Field = ({
       {hint && (
         <p
           className="text-[10px] mt-0.5"
-          style={{ color: 'rgba(58,10,33,0.25)' }}
+          style={{ color: 'rgba(255,255,255,0.25)' }}
         >
           {hint}
         </p>
@@ -277,16 +277,16 @@ const Profile = () => {
         style={{ zIndex: 0 }}
       >
         <div
-          className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-[0.04]"
+          className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-[0.08]"
           style={{
-            background: 'radial-gradient(circle, #3A0A21 0%, transparent 70%)',
+            background: 'radial-gradient(circle, #00C896 0%, transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
         <div
-          className="absolute top-1/2 -right-20 w-64 h-64 rounded-full opacity-[0.05]"
+          className="absolute top-1/2 -right-20 w-64 h-64 rounded-full opacity-[0.06]"
           style={{
-            background: 'radial-gradient(circle, #FF6B35 0%, transparent 70%)',
+            background: 'radial-gradient(circle, #00C896 0%, transparent 70%)',
             filter: 'blur(70px)',
           }}
         />
@@ -328,7 +328,7 @@ const Profile = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 lg:p-12"
-          style={{ borderRight: '1px solid rgba(58,10,33,0.07)' }}
+          style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}
         >
           {/* Avatar + identity */}
           <div className="flex flex-col items-start gap-7 py-6 lg:py-0 lg:mt-8">
@@ -359,12 +359,12 @@ const Profile = () => {
                 />
                 {/* Avatar */}
                 <div
-                  className="relative w-28 h-28 lg:w-36 lg:h-36 rounded-3xl flex items-center justify-center text-4xl lg:text-5xl font-bold text-white select-none"
+                  className="relative w-28 h-28 lg:w-36 lg:h-36 rounded-3xl flex items-center justify-center text-4xl lg:text-5xl font-black text-white select-none"
                   style={{
                     background:
-                      'linear-gradient(135deg, #3A0A21 0%, #5A1A35 60%, #3A0A21 100%)',
+                      'linear-gradient(135deg, #00C896 0%, #00E5AD 60%, #00C896 100%)',
                     boxShadow:
-                      '0 20px 60px rgba(58,10,33,0.25), 0 0 0 1px rgba(255,107,53,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
+                      '0 20px 60px rgba(0,200,150,0.3), 0 0 0 1px rgba(0,200,150,0.25), inset 0 1px 0 rgba(255,255,255,0.2)',
                     fontFamily: "'Fraunces', serif",
                   }}
                 >
@@ -375,8 +375,8 @@ const Profile = () => {
                       animate={{ scale: 1 }}
                       className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center"
                       style={{
-                        background: '#10b981',
-                        boxShadow: '0 0 12px rgba(16,185,129,0.5)',
+                        background: '#00C896',
+                        boxShadow: '0 0 12px rgba(0,200,150,0.6)',
                       }}
                     >
                       <motion.div
@@ -396,18 +396,16 @@ const Profile = () => {
               transition={{ delay: 0.3, duration: 0.55 }}
             >
               <h1
-                className="text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight mb-1.5"
+                className="text-2xl lg:text-3xl xl:text-4xl font-black leading-tight mb-1.5 text-white"
                 style={{
-                  color: '#3A0A21',
                   fontFamily: "'Fraunces', serif",
-                  fontStyle: 'italic',
                 }}
               >
                 {profileData.userName || user.name || 'Your Name'}
               </h1>
               <p
                 className="text-sm mb-4"
-                style={{ color: 'rgba(58,10,33,0.4)' }}
+                style={{ color: 'rgba(255,255,255,0.5)' }}
               >
                 {profileData.email}
               </p>
@@ -417,9 +415,9 @@ const Profile = () => {
                 <span
                   className="text-xs px-3 py-1 rounded-full font-semibold capitalize"
                   style={{
-                    background: 'rgba(255,107,53,0.08)',
-                    border: '1px solid rgba(255,107,53,0.2)',
-                    color: '#FF6B35',
+                    background: 'rgba(0,200,150,0.15)',
+                    border: '1px solid rgba(0,200,150,0.3)',
+                    color: '#00C896',
                   }}
                 >
                   {role || 'User'}
@@ -429,20 +427,20 @@ const Profile = () => {
                     className="text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1.5"
                     style={{
                       background: profileData.isAvailable
-                        ? 'rgba(16,185,129,0.08)'
-                        : 'rgba(58,10,33,0.04)',
-                      border: `1px solid ${profileData.isAvailable ? 'rgba(16,185,129,0.25)' : 'rgba(58,10,33,0.1)'}`,
+                        ? 'rgba(0,200,150,0.15)'
+                        : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${profileData.isAvailable ? 'rgba(0,200,150,0.25)' : 'rgba(255,255,255,0.1)'}`,
                       color: profileData.isAvailable
-                        ? '#059669'
-                        : 'rgba(58,10,33,0.35)',
+                        ? '#00C896'
+                        : 'rgba(255,255,255,0.4)',
                     }}
                   >
                     <span
                       className="w-1.5 h-1.5 rounded-full inline-block"
                       style={{
                         background: profileData.isAvailable
-                          ? '#10b981'
-                          : 'rgba(58,10,33,0.2)',
+                          ? '#00C896'
+                          : 'rgba(255,255,255,0.2)',
                       }}
                     />
                     {profileData.isAvailable ? 'Available' : 'Unavailable'}
@@ -462,19 +460,19 @@ const Profile = () => {
             <div
               className="w-8 h-8 rounded-xl flex items-center justify-center"
               style={{
-                background: 'rgba(16,185,129,0.08)',
-                border: '1px solid rgba(16,185,129,0.18)',
+                background: 'rgba(0,200,150,0.15)',
+                border: '1px solid rgba(0,200,150,0.3)',
               }}
             >
-              <Shield className="w-4 h-4 text-emerald-500" />
+              <Shield className="w-4 h-4" style={{ color: '#00C896' }} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-emerald-600">
+              <p className="text-xs font-semibold" style={{ color: '#00C896' }}>
                 Verified Account
               </p>
               <p
                 className="text-[10px]"
-                style={{ color: 'rgba(58,10,33,0.3)' }}
+                style={{ color: 'rgba(255,255,255,0.3)' }}
               >
                 Email authentication active
               </p>
@@ -497,14 +495,14 @@ const Profile = () => {
             className="mb-8 lg:mb-10"
           >
             <p
-              className="text-[10px] font-semibold uppercase tracking-widest mb-1.5"
-              style={{ color: 'rgba(255,107,53,0.7)' }}
+              className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1.5"
+              style={{ color: 'rgba(0,200,150,0.7)' }}
             >
               Account Settings
             </p>
             <h2
-              className="text-xl lg:text-2xl font-bold"
-              style={{ color: '#3A0A21' }}
+              className="text-2xl lg:text-3xl font-black text-white"
+              style={{ fontFamily: "'Fraunces', serif" }}
             >
               {editMode ? 'Edit your details' : 'Personal Information'}
             </h2>
@@ -522,10 +520,10 @@ const Profile = () => {
             }}
             className="rounded-3xl p-6 lg:p-8 mb-5"
             style={{
-              background: 'rgba(58,10,33,0.02)',
-              border: '1px solid rgba(58,10,33,0.07)',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
               boxShadow:
-                '0 4px 24px rgba(58,10,33,0.05), inset 0 1px 0 rgba(255,255,255,0.8)',
+                '0 4px 24px rgba(0,200,150,0.05), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
           >
             <Field
@@ -567,23 +565,22 @@ const Profile = () => {
               className="rounded-3xl px-6 py-5 mb-5 flex items-center justify-between"
               style={{
                 background: profileData.isAvailable
-                  ? 'rgba(16,185,129,0.05)'
-                  : 'rgba(58,10,33,0.02)',
-                border: `1px solid ${profileData.isAvailable ? 'rgba(16,185,129,0.18)' : 'rgba(58,10,33,0.07)'}`,
+                  ? 'rgba(0,200,150,0.08)'
+                  : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${profileData.isAvailable ? 'rgba(0,200,150,0.25)' : 'rgba(255,255,255,0.1)'}`,
                 boxShadow: profileData.isAvailable
-                  ? '0 4px 20px rgba(16,185,129,0.08)'
-                  : '0 4px 20px rgba(58,10,33,0.04)',
+                  ? '0 4px 20px rgba(0,200,150,0.1)'
+                  : '0 4px 20px rgba(255,255,255,0.04)',
                 transition: 'all 0.4s ease',
               }}
             >
               <div>
                 <p
-                  className="text-sm font-semibold mb-0.5"
-                  style={{ color: '#3A0A21' }}
+                  className="text-sm font-semibold mb-0.5 text-white"
                 >
                   Availability
                 </p>
-                <p className="text-xs" style={{ color: 'rgba(58,10,33,0.4)' }}>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                   {profileData.isAvailable
                     ? 'Visible to customers'
                     : 'Turn on to receive delivery requests'}
@@ -595,10 +592,10 @@ const Profile = () => {
                 className="relative inline-flex h-7 w-14 items-center rounded-full transition-all focus:outline-none shrink-0"
                 style={{
                   background: profileData.isAvailable
-                    ? '#3A0A21'
-                    : 'rgba(58,10,33,0.12)',
+                    ? '#00C896'
+                    : 'rgba(255,255,255,0.12)',
                   boxShadow: profileData.isAvailable
-                    ? '0 0 16px rgba(58,10,33,0.25)'
+                    ? '0 0 16px rgba(0,200,150,0.3)'
                     : 'none',
                 }}
               >
@@ -638,9 +635,9 @@ const Profile = () => {
                     disabled={saving}
                     className="flex-1 py-4 rounded-2xl text-sm font-semibold transition-all disabled:opacity-40"
                     style={{
-                      background: 'rgba(58,10,33,0.04)',
-                      border: '1px solid rgba(58,10,33,0.1)',
-                      color: 'rgba(58,10,33,0.6)',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: 'rgba(255,255,255,0.6)',
                     }}
                   >
                     Cancel
@@ -651,8 +648,8 @@ const Profile = () => {
                     disabled={saving || !profileData.userName.trim()}
                     className="flex-1 py-4 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden"
                     style={{
-                      background: 'linear-gradient(135deg, #3A0A21, #FF6B35)',
-                      boxShadow: '0 10px 36px rgba(255,107,53,0.3)',
+                      background: 'linear-gradient(135deg, #00C896, #00E5AD)',
+                      boxShadow: '0 10px 36px rgba(0,200,150,0.3)',
                     }}
                   >
                     {/* Shimmer sweep */}
@@ -696,14 +693,14 @@ const Profile = () => {
                   onClick={() => setEditMode(true)}
                   className="w-full py-4 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
                   style={{
-                    background: 'rgba(58,10,33,0.03)',
-                    border: '1px solid rgba(58,10,33,0.12)',
-                    color: '#3A0A21',
-                    boxShadow: '0 2px 12px rgba(58,10,33,0.06)',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    color: 'white',
+                    boxShadow: '0 2px 12px rgba(0,200,150,0.1)',
                   }}
                   
                 >
-                  <Edit3 className="w-4 h-4" style={{ color: '#FF6B35' }} />
+                  <Edit3 className="w-4 h-4" style={{ color: '#00C896' }} />
                   Edit Profile
                 </motion.button>
               )}
@@ -715,11 +712,11 @@ const Profile = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="lg:hidden flex items-center gap-3 mt-8 pt-6"
-            style={{ borderTop: '1px solid rgba(58,10,33,0.06)' }}
+            className="lg:flex items-center gap-3 mt-8 pt-6"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
           >
-            <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
-            <p className="text-xs" style={{ color: 'rgba(58,10,33,0.3)' }}>
+            <Shield className="w-4 h-4" style={{ color: '#00C896' }} />
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
               Account secured with email verification
             </p>
           </motion.div>

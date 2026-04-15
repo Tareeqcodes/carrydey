@@ -345,7 +345,7 @@ const CourierActiveDelivery = ({
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          <h1 className="text-[28px] font-black text-white leading-[1.08] tracking-[-0.02em]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>
             Active Deliveries
           </h1>
         </div>
@@ -404,17 +404,17 @@ const CourierActiveDelivery = ({
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <div className="relative">
-            <div className="w-12 h-12 border-2 border-gray-200 rounded-full" />
-            <div className="absolute top-0 left-0 w-12 h-12 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+            <div className="w-12 h-12 border-2 border-white/10 rounded-full" />
+            <div className="absolute top-0 left-0 w-12 h-12 border-2 border-white/40 border-t-transparent rounded-full animate-spin" />
           </div>
         </div>
       ) : deliveries.length === 0 ? (
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-12 text-center">
-          <Truck className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+        <div className="bg-white/5 rounded-lg border border-white/10 p-12 text-center">
+          <Truck className="w-12 h-12 text-white/20 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-1">
             No Active Deliveries
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-white/50">
             Accept delivery requests to get started
           </p>
         </div>

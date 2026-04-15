@@ -511,7 +511,7 @@ export default function DeliveryBookingPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-black">
       {isAgencyBooking && agency && (
         <AgencyHeader
           agency={agency}
@@ -520,17 +520,17 @@ export default function DeliveryBookingPage({
         />
       )}
 
-      <div className="min-h-screen bg-white max-w-md pb-28 md:pb-0 mx-auto">
+      <div className="min-h-screen bg-black max-w-md pb-28 md:pb-0 mx-auto">
         <div className="max-w-3xl mx-auto px-4 py-5 space-y-6">
           {/* Only show the h1 when NOT embedded inside SendPage */}
           {!isAgencyBooking && !hideHeader && (
-            <h1 className="text-lg font-bold text-gray-900">New delivery</h1>
+            <h1 className="text-lg font-bold text-white">New delivery</h1>
           )}
 
           
 
           <section className="space-y-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
               Where to &amp; from
             </p>
             <InputLocation

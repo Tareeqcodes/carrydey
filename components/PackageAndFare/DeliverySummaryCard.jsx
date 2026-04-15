@@ -35,8 +35,8 @@ export default function DeliverySummaryCard({
   return (
     <>
       <div
-        className="rounded-2xl border overflow-hidden"
-        style={{ borderColor: `${brandColors.primary}18` }}
+        className="rounded-2xl border overflow-hidden bg-white/5 backdrop-blur-sm"
+        style={{ borderColor: `rgba(0,200,150,0.2)` }}
       >
         {/* ── Pickup row ── */}
         <ContactRow
@@ -53,11 +53,11 @@ export default function DeliverySummaryCard({
         <div className="relative flex items-center px-4 py-0">
           <div
             className="absolute left-[27px] top-0 bottom-0 w-px"
-            style={{ backgroundColor: `${brandColors.primary}15` }}
+            style={{ backgroundColor: `rgba(0,200,150,0.15)` }}
           />
           <div
             className="w-full h-px"
-            style={{ backgroundColor: `${brandColors.primary}10` }}
+            style={{ backgroundColor: `rgba(0,200,150,0.1)` }}
           />
         </div>
 
@@ -109,7 +109,7 @@ function ContactRow({
     <motion.button
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-gray-50 active:bg-gray-100"
+      className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/5 active:bg-white/10"
     >
       {/* ── Left dot ── */}
       <div className="flex-shrink-0 flex flex-col items-center">
@@ -125,7 +125,7 @@ function ContactRow({
       {/* ── Middle content ── */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider">
             {isPickup ? 'Pickup' : 'Dropoff'}
           </p>
           {isDone && (
@@ -138,17 +138,16 @@ function ContactRow({
 
         {isDone ? (
           <div className="mt-0.5">
-            <p className="text-sm font-semibold text-gray-900 truncate">
+            <p className="text-sm font-semibold text-white truncate">
               {contactName}
             </p>
             {contactPhone && (
-              <p className="text-xs text-gray-400 truncate">{contactPhone}</p>
+              <p className="text-xs text-white/40 truncate">{contactPhone}</p>
             )}
           </div>
         ) : (
           <p
-            className="text-sm font-semibold mt-0.5"
-            style={{ color: brandColors.primary }}
+            className="text-sm font-semibold mt-0.5 text-[#00C896]"
           >
             Add contact details
           </p>
@@ -160,18 +159,17 @@ function ContactRow({
         {isDone ? (
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#10b98115' }}
+            style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}
           >
             <UserCircle className="w-4 h-4 text-emerald-500" />
           </div>
         ) : (
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: `${brandColors.primary}10` }}
+            style={{ backgroundColor: `rgba(0, 200, 150, 0.1)` }}
           >
             <ChevronRight
-              className="w-4 h-4"
-              style={{ color: brandColors.primary }}
+              className="w-4 h-4 text-[#00C896]"
             />
           </div>
         )}

@@ -125,7 +125,7 @@ const TrackSenderDelivery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-black">
       {/* Header */}
       <header className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,9 +133,9 @@ const TrackSenderDelivery = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-colors"
               >
-                <Menu className="w-6 h-6 text-gray-700" />
+                <Menu className="w-6 h-6 text-white" />
               </button>
               
             </div>

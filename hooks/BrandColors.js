@@ -3,9 +3,9 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const BrandColorsContext = createContext({
   brandColors: {
-    primary: '#3A0A21',
-    secondary: '#5A1A41',
-    accent: '#8B2E5A',
+    primary: '#00C896',
+    secondary: '#00E5AD',
+    accent: '#00C896',
   },
   setBrandColors: () => {},
   isLoading: false,
@@ -14,9 +14,9 @@ const BrandColorsContext = createContext({
 export const BrandColorsProvider = ({ children, initialColors = null }) => {
   const [brandColors, setBrandColors] = useState(
     initialColors || {
-      primary: '#3A0A21',
-      secondary: '#5A1A41',
-      accent: '#8B2E5A',
+      primary: '#00C896',
+      secondary: '#00E5AD',
+      accent: '#00C896', 
     }
   );
   const [isLoading, setIsLoading] = useState(false);

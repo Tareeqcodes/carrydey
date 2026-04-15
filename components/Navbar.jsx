@@ -14,7 +14,6 @@ import { useAuth } from '@/hooks/Authcontext';
 import { useUserRole } from '@/hooks/useUserRole';
 import NavbarMorphism from '@/ui/NavbarMorphism';
 
-// ─── Nav link config per role ────────────────────────────────────────────────
 const getNavLinks = (user, role) => {
   if (!user) {
     return [
@@ -41,7 +40,6 @@ const getNavLinks = (user, role) => {
   ];
 };
 
-// ─── Desktop link ─────────────────────────────────────────────────────────────
 const DesktopNavLink = ({ href, label, icon: Icon, isActive, isEarn }) => (
   <Link
     href={href}
@@ -49,19 +47,22 @@ const DesktopNavLink = ({ href, label, icon: Icon, isActive, isEarn }) => (
       flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-semibold
       ${
         isEarn
-          ? 'bg-[#FF6B35] text-white hover:bg-[#e85e2a] shadow-sm shadow-orange-200'
+          ? 'bg-[#22c55e] text-black hover:bg-[#16a34a]'
           : isActive
-            ? 'text-[#3A0A21] bg-[#3A0A21]/8'
-            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            ? 'text-[#22c55e] bg-white/8'
+            : 'text-white/50 hover:text-white hover:bg-white/8'
       }
     `}
   >
-    <Icon size={16} strokeWidth={2} />
+    <Icon
+      size={16}
+      strokeWidth={2}
+      className={isActive ? 'text-[#22c55e]' : ''}
+    />
     <span>{label}</span>
   </Link>
 );
 
-// ─── Mobile bottom tab ────────────────────────────────────────────────────────
 const MobileNavItem = ({ href, label, icon: Icon, isActive }) => (
   <Link
     href={href}
@@ -72,8 +73,8 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive }) => (
         flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200
         ${
           isActive
-            ? 'bg-[#3A0A21] text-white shadow-lg shadow-[#3A0A21]/25 scale-105'
-            : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+            ? 'bg-[#22c55e]/15 text-[#22c55e] scale-105'
+            : 'text-white/30 hover:text-white hover:bg-white/8'
         }
       `}
     >
@@ -82,7 +83,7 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive }) => (
     <span
       className={`
         text-[10px] font-semibold mt-1 transition-colors duration-200
-        ${isActive ? 'text-[#3A0A21]' : 'text-gray-400'}
+        ${isActive ? 'text-[#22c55e]' : 'text-white/30'}
       `}
     >
       {label}
@@ -90,17 +91,10 @@ const MobileNavItem = ({ href, label, icon: Icon, isActive }) => (
   </Link>
 );
 
-// ─── Main Navbar ──────────────────────────────────────────────────────────────
 const Navbar = () => {
   const pathname = usePathname();
-
-  // ⚡ Use the shared auth loading state from AuthContext.
-  // This means we wait for exactly ONE async check (account.get()) rather
-  // than two separate loading cycles (auth + role), eliminating the double
-  // render jank entirely.
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
-
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -109,21 +103,16 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // ── Hidden routes — check before any loading guard so we never flash
-  // the skeleton on pages that hide the nav entirely.
   const hiddenRoutes = ['/AgencyBooking/', '/bookconfirm/', '/driver/', '/b/'];
   if (hiddenRoutes.some((r) => pathname?.startsWith(r))) return null;
 
-  // ── Show skeleton while auth OR role resolves.
-  // The skeleton holds the exact same h-16/h-14 space so there is
-  // zero layout shift when the real nav paints in.
   if (authLoading || roleLoading) return <NavbarMorphism />;
 
   const navLinks = getNavLinks(user, role);
 
   return (
     <>
-      {/* ── Desktop nav ──────────────────────────────────────────────────── */}
+      {/* Desktop nav */}
       <nav
         className={`
           hidden md:flex w-full fixed top-0 left-0 right-0 z-50
@@ -131,19 +120,17 @@ const Navbar = () => {
           transition-all duration-300
           ${
             scrolled
-              ? 'bg-white/95 backdrop-blur-md shadow-sm shadow-gray-100/80'
-              : 'bg-white border-b border-gray-100'
+              ? 'bg-black/90 backdrop-blur-md border-b border-white/10'
+              : 'bg-black border-b border-white/10'
           }
         `}
       >
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="text-lg font-bold text-[#3A0A21] tracking-tight">
+          <span className="text-lg font-bold text-white tracking-tight">
             Carrydey
           </span>
         </Link>
 
-        {/* Links + auth controls */}
         <div className="flex items-center gap-1">
           {navLinks.map((link) => (
             <DesktopNavLink
@@ -159,14 +146,14 @@ const Navbar = () => {
           {!user ? (
             <Link
               href="/login"
-              className="ml-2 flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-[#3A0A21] transition-colors px-3 py-2"
+              className="ml-2 flex items-center gap-2 text-sm font-semibold text-white/50 hover:text-white transition-colors px-3 py-2 border border-white/20 rounded-xl hover:border-white/40"
             >
               <LogIn size={16} />
               Login
             </Link>
           ) : (
             <div className="ml-3 flex items-center gap-2">
-              <button className="relative w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 transition-colors">
+              <button className="relative w-9 h-9 flex items-center justify-center rounded-xl text-white/40 hover:bg-white/8 transition-colors">
                 <Bell size={18} />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
               </button>
@@ -175,7 +162,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ── Mobile top bar ───────────────────────────────────────────────── */}
+      {/* Mobile top bar */}
       <div
         className={`
           md:hidden fixed top-0 left-0 right-0 z-40 h-14
@@ -183,13 +170,13 @@ const Navbar = () => {
           transition-all duration-300
           ${
             scrolled
-              ? 'bg-white/95 backdrop-blur-md shadow-sm'
-              : 'bg-white border-b border-gray-100'
+              ? 'bg-black/90 backdrop-blur-md border-b border-white/10'
+              : 'bg-black border-b border-white/10'
           }
         `}
       >
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-base font-bold text-[#3A0A21] tracking-tight">
+          <span className="text-base font-bold text-white tracking-tight">
             Carrydey
           </span>
         </Link>
@@ -198,13 +185,13 @@ const Navbar = () => {
           {!user ? (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 bg-[#3A0A21] text-white text-xs font-semibold px-3 py-2 cursor-pointer rounded-xl hover:bg-[#5C1438] transition-colors"
+              className="flex items-center gap-1.5 border border-white/20 text-white text-xs font-semibold px-3 py-2 cursor-pointer rounded-xl hover:bg-white/8 transition-colors"
             >
               <LogIn size={12} />
               Login
             </Link>
           ) : (
-            <button className="relative w-8 h-8 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 transition-colors">
+            <button className="relative w-8 h-8 flex items-center justify-center rounded-xl text-white/40 hover:bg-white/8 transition-colors">
               <Bell size={16} />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
             </button>
@@ -212,10 +199,10 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* ── Mobile bottom tab bar ─────────────────────────────────────────── */}
+      {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div
-          className="bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+          className="bg-black/95 backdrop-blur-xl border-t border-white/10"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}
         >
           <div className="flex items-center justify-around px-2 pt-1 pb-1">

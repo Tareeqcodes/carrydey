@@ -106,13 +106,13 @@ function DeliveryRow({ delivery, onTrack, index }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.22 }}
       onClick={() => onTrack(delivery)}
-      className="group bg-white border border-gray-100 rounded-2xl px-5 py-4 flex items-center gap-5 hover:border-gray-300 hover:shadow-sm cursor-pointer transition-all duration-200"
+      className="group bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-5 hover:border-white/20 hover:shadow-sm cursor-pointer transition-all duration-200"
     >
       {/* Status dot column */}
       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
         <div
           className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-            STATUS_CFG[delivery.status]?.dot ?? 'bg-gray-300'
+            STATUS_CFG[delivery.status]?.dot ?? 'bg-white/30'
           }`}
         />
       </div>
@@ -120,17 +120,17 @@ function DeliveryRow({ delivery, onTrack, index }) {
       {/* Route */}
       <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-6">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+          <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">
             From
           </p>
-          <p className="text-sm font-medium text-gray-800 truncate">
+          <p className="text-sm font-medium text-white truncate">
             {delivery.pickupAddress}
           </p>
         </div>
         <div className="min-w-0">
-  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">To</p>
+  <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">To</p>
   {delivery.isVendorBatch && delivery.mutipledropoff ? (
-    <p className="text-sm font-medium text-gray-800 truncate">
+    <p className="text-sm font-medium text-white truncate">
       {(() => {
         try {
           const s = JSON.parse(delivery.mutipledropoff);
@@ -139,7 +139,7 @@ function DeliveryRow({ delivery, onTrack, index }) {
       })()}
     </p>
   ) : (
-    <p className="text-sm font-medium text-gray-800 truncate">{delivery.dropoffAddress}</p>
+    <p className="text-sm font-medium text-white truncate">{delivery.dropoffAddress}</p>
   )}
 </div>
       </div>
@@ -147,19 +147,19 @@ function DeliveryRow({ delivery, onTrack, index }) {
       {/* Meta — hidden on small screens */}
       <div className="hidden md:flex items-center gap-6 flex-shrink-0">
         <div className="text-right">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+          <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">
             Fee
           </p>
-          <p className="text-sm font-bold text-gray-900 tabular-nums">
+          <p className="text-sm font-bold text-white tabular-nums">
             {formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
           </p>
         </div>
 
         <div className="text-right">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+          <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">
             Size
           </p>
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-white/70">
             {delivery.packageSize || 'Standard'}
           </p>
         </div>
@@ -171,8 +171,8 @@ function DeliveryRow({ delivery, onTrack, index }) {
       </div>
 
       {/* Arrow */}
-      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-gray-50 group-hover:bg-[#3A0A21] flex items-center justify-center transition-colors duration-200">
-        <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors duration-200" />
+      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-white/10 group-hover:bg-[#00C896] flex items-center justify-center transition-colors duration-200">
+        <ArrowUpRight className="w-4 h-4 text-white/40 group-hover:text-black transition-colors duration-200" />
       </div>
     </motion.div>
   );

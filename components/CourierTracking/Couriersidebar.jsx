@@ -38,7 +38,7 @@ const Couriersidebar = ({
 
   return (
     <aside
-      className={`fixed lg:sticky pt-5 top-10 left-0 h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] w-72 bg-white border-r border-gray-200 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+      className={`fixed lg:sticky pt-5 top-10 left-0 h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] w-72 bg-black border-r border-white/10 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
@@ -58,8 +58,8 @@ const Couriersidebar = ({
                 }}
                 className={`w-full group relative overflow-hidden rounded-2xl transition-all duration-300 ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white shadow-lg shadow-[#3A0A21]/20'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-white/10 text-[#00C896] border border-white/20 shadow-md shadow-white/10'
+                    : 'text-white/50 hover:bg-white/5 border border-transparent hover:border-white/10'
                 }`}
               >
                 <div className="relative z-10 flex items-start gap-4 p-4">
@@ -67,26 +67,26 @@ const Couriersidebar = ({
                     className={`p-2 rounded-xl transition-colors ${
                       isActive
                         ? 'bg-white/20'
-                        : 'bg-gray-100 group-hover:bg-gray-200'
+                        : 'bg-white/5 group-hover:bg-white/10'
                     }`}
                   >
                     <Icon
                       className={`w-5 h-5 ${
-                        isActive ? 'text-white' : 'text-gray-600'
+                        isActive ? 'text-[#00C896]' : 'text-white/50'
                       }`}
                     />
                   </div>
                   <div className="flex-1 text-left">
                     <p
                       className={`font-semibold text-sm ${
-                        isActive ? 'text-white' : 'text-gray-900'
+                        isActive ? 'text-white' : 'text-white/70'
                       }`}
                     >
                       {item.label}
                     </p>
                     <p
                       className={`text-xs mt-0.5 ${
-                        isActive ? 'text-white/70' : 'text-gray-500'
+                        isActive ? 'text-white/60' : 'text-white/40'
                       }`}
                     >
                       {item.description}

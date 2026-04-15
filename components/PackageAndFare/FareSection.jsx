@@ -88,7 +88,7 @@ function FareInput({
       <button
         type="button"
         onClick={decrement}
-        className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 active:scale-95 transition-all hover:border-gray-400 hover:text-gray-800 flex-shrink-0"
+        className="w-10 h-10 rounded-full border-2 border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 active:scale-95 transition-all flex-shrink-0"
       >
         <Minus className="w-5 h-5" />
       </button>
@@ -96,13 +96,13 @@ function FareInput({
       {/* Fare amount — centered, large */}
       <div className="flex-1 text-center">
         <div className="flex items-baseline justify-center gap-1">
-          <span className="text-2xl font-bold text-gray-300">₦</span>
+          <span className="text-2xl font-bold text-white/30">₦</span>
           <input
             type="number"
             value={value || ''}
             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
             placeholder={placeholder}
-            className="w-36 text-4xl font-bold text-gray-900 outline-none bg-transparent text-center placeholder-gray-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-36 text-4xl font-bold text-white outline-none bg-transparent text-center placeholder-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
       </div>
@@ -111,7 +111,7 @@ function FareInput({
       <button
         type="button"
         onClick={increment}
-        className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 active:scale-95 transition-all hover:border-gray-400 hover:text-gray-800 flex-shrink-0"
+        className="w-10 h-10 rounded-full border-2 border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 active:scale-95 transition-all flex-shrink-0"
       >
         <Plus className="w-5 h-5" />
       </button>
@@ -131,7 +131,7 @@ function ShortDistanceFare({
   return (
     <section className="space-y-1">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+        <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
           Your offer
         </p>
         <OfferQuality
@@ -149,10 +149,10 @@ function ShortDistanceFare({
         placeholder={String(suggestedFare)}
       />
 
-      <div className=" items-center pt-1 border-t border-gray-100">
-        <span className="text-xs text-gray-400">
+      <div className="flex items-center pt-1 border-t border-white/10">
+        <span className="text-xs text-white/40">
           Min{' '}
-          <span className="font-medium text-gray-600">
+          <span className="font-medium text-white/60">
             {formatNairaSimple(fareFloor)}
           </span>
         </span>
@@ -174,12 +174,12 @@ function LongDistanceFare({ fareDetails, onFareChange, minFare, errors }) {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+        <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
           Your offer
         </p>
         <div className="flex items-center gap-1.5">
-          <Truck className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-xs font-medium text-gray-500">
+          <Truck className="w-3.5 h-3.5 text-white/40" />
+          <span className="text-xs font-medium text-white/50">
             Long distance
           </span>
         </div>
@@ -195,16 +195,16 @@ function LongDistanceFare({ fareDetails, onFareChange, minFare, errors }) {
       />
 
       {/* Quality indicator + min fare */}
-      <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-1 border-t border-white/10">
         <OfferQuality
           offered={fareDetails.offeredFare}
           minFare={minFare}
           isLongDistance
         />
         {minFare > 0 && (
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-white/40">
             Min{' '}
-            <span className="font-medium text-gray-600">
+            <span className="font-medium text-white/60">
               {formatNairaSimple(minFare)}
             </span>
           </span>

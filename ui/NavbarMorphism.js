@@ -2,16 +2,16 @@
 
 
 const shimmer =
-  'animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 rounded-lg';
+  'animate-pulse bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-lg';
 
 export default function NavbarMorphism() {
   return (
     <>
       {/* ── Desktop skeleton (md+) ── */}
-      <nav className="hidden md:flex w-full fixed top-0 left-0 right-0 z-50 items-center justify-between h-16 px-6 bg-white border-b border-gray-100">
+      <nav className="hidden md:flex w-full fixed top-0 left-0 right-0 z-50 items-center justify-between h-16 px-6 bg-black border-b border-white/10">
         {/* Logo — always visible, no shimmer */}
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-[#3A0A21] tracking-tight">
+          <span className="text-lg font-bold text-white tracking-tight">
             Carrydey
           </span>
         </div>
@@ -27,10 +27,10 @@ export default function NavbarMorphism() {
       </nav>
 
       {/* ── Mobile top bar skeleton ── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 bg-white border-b border-gray-100">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 bg-black border-b border-white/10">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <span className="text-base font-bold text-[#3A0A21] tracking-tight">
+          <span className="text-base font-bold text-white tracking-tight">
             Carrydey
           </span>
         </div>
@@ -41,7 +41,7 @@ export default function NavbarMorphism() {
       {/* ── Mobile bottom nav skeleton ── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div
-          className="bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+          className="bg-black/95 backdrop-blur-xl border-t border-white/10"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}
         >
           <div className="flex items-center justify-around px-2 pt-1 pb-1">

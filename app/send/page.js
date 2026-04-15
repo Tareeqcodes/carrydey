@@ -9,9 +9,9 @@ import DeliveryBookingPage from '@/components/DeliveryBookingPage';
 import VendorBookingPage from '@/components/VendorBookingPage';
 
 const DEFAULT_BRAND = {
-  primary: '#3A0A21',
-  secondary: '#5A1A41',
-  accent: '#FF6B35',
+    primary: '#00C896',
+    secondary: '#00E5AD',
+    accent: '#00C896',
 };
 
 const APPWRITE_BASE = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT?.replace(
@@ -41,7 +41,7 @@ function TabStrip({ active, onChange }) {
     { id: 'vendor', label: 'Batch orders' },
   ];
   return (
-    <div className="relative flex border-b" style={{ borderColor: '#ede8e6' }}>
+    <div className="relative flex border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
       {tabs.map((tab) => {
         const isActive = active === tab.id;
         return (
@@ -52,7 +52,7 @@ function TabStrip({ active, onChange }) {
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: isActive ? 600 : 400,
-              color: isActive ? '#3A0A21' : '#aaa',
+              color: isActive ? '#00C896' : 'rgba(255,255,255,0.4)',
             }}
           >
             {tab.label}
@@ -60,7 +60,7 @@ function TabStrip({ active, onChange }) {
               <motion.div
                 layoutId="tab-underline"
                 className="absolute bottom-0 left-0 right-0 h-0.5"
-                style={{ background: '#3A0A21', borderRadius: 2 }}
+                style={{ background: '#00C896', borderRadius: 2 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 40 }}
               />
             )}
@@ -74,7 +74,7 @@ function TabStrip({ active, onChange }) {
 function PageHeader({ tab, onTabChange }) {
   return (
     <div className="max-w-md mx-auto px-4 pt-6 pb-0">
-      <h1 className="mb-4 text-2xl font-bold text-gray-900 tracking-tight">
+      <h1 className="mb-4 text-2xl font-bold text-white tracking-tight">
         New <em>delivery</em>
       </h1>
       <TabStrip active={tab} onChange={onTabChange} />
@@ -343,7 +343,6 @@ const handleVendorConfirmed = async ({
         driverId: null,
         driverToken: null,
         trackingToken: null,
-
         isVendorBatch: true,
         batchId: batchId,
         orderRef: (primary.orderRef || '').substring(0, 100) || null,
@@ -366,12 +365,11 @@ const handleVendorConfirmed = async ({
   if (!hydrated || tab === null) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: '#faf9f7' }}
+        className="min-h-screen flex items-center justify-center bg-black"
       >
         <div
           className="w-5 h-5 rounded-full animate-spin"
-          style={{ border: '2px solid #3A0A21', borderTopColor: 'transparent' }}
+          style={{ border: '2px solid #00C896', borderTopColor: 'transparent' }}
         />
       </div>
     );
@@ -379,7 +377,7 @@ const handleVendorConfirmed = async ({
 
   return (
     <BrandColorsProvider initialColors={DEFAULT_BRAND}>
-      <div className="min-h-screen" style={{ background: '#faf9f7' }}>
+      <div className="min-h-screen bg-black">
         <PageHeader tab={tab} onTabChange={handleTabChange} />
 
         <AnimatePresence mode="wait">

@@ -52,12 +52,12 @@ export default function StickyConfirmBar({
   return (
     <div
       className="sticky bottom-0 left-0 right-0 px-5 pt-6 pb-6 max-w-md mx-auto"
-      style={{ background: 'linear-gradient(to top, white 75%, transparent)' }}
+      style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8) 75%, transparent)' }}
     >
       {isValid && paymentLabel && (
         <div className="flex justify-between items-center mb-3 px-1">
-          <p className="text-xs text-gray-400">{paymentLabel}</p>
-          <p className="text-sm font-bold text-gray-900">
+          <p className="text-xs text-white/40">{paymentLabel}</p>
+          <p className="text-sm font-bold text-white">
             {formatNairaSimple(fareDetails?.offeredFare)}
           </p>
         </div>
@@ -65,10 +65,11 @@ export default function StickyConfirmBar({
       <button
         onClick={handleClick}
         disabled={!isValid || loading}
-        className="w-full py-4 rounded-2xl text-sm font-bold transition-all disabled:cursor-not-allowed"
+        className="w-full py-4 rounded-2xl text-sm font-bold transition-all disabled:cursor-not-allowed active:scale-[0.98]"
         style={{
-          background: isValid && !loading ? brandColors.primary : '#e5e7eb',
-          color: isValid && !loading ? 'white' : '#9ca3af',
+          background: isValid && !loading ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(255,255,255,0.1)',
+          color: isValid && !loading ? '#000' : '#9ca3af',
+          boxShadow: isValid && !loading ? '0 8px 24px rgba(0, 200, 150, 0.2)' : 'none',
         }}
       >
         {loading
@@ -82,7 +83,7 @@ export default function StickyConfirmBar({
               : 'Find couriers'}
       </button>
       {isValid && !user && (
-        <p className="text-center text-xs text-gray-400 mt-2">
+        <p className="text-center text-xs text-white/40 mt-2">
           Your delivery details will be saved
         </p>
       )}

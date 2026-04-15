@@ -276,7 +276,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={`${inter.variable} ${fraunces.variable}`}>
         <AuthProvider>
-          <main className="min-h-screen">
+          <main>
             <Navbar />
             {children}
             <Analytics />
