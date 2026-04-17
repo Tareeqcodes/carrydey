@@ -17,23 +17,13 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      {/* Header */}
       <div className="text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-          className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 mb-4 shadow-xl shadow-purple-500/30"
-        >
-          <MapPin className="w-8 h-8 text-white" />
-        </motion.div>
-        <h2 className="text-2xl sm:text-sm font-semibold text-gray-800 mb-2 tracking-tight">
-          Primary business location for official correspondence
+       
+        <h2 className="text-xl uppercase sm:text-sm font-semibold text-black dark:text-white mb-2 tracking-tight">
+          Primary business location
         </h2>
-        
       </div>
 
-      {/* Form Fields */}
       <div className="space-y-6">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -43,6 +33,7 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
           <Input
             label="Street Address"
             value={formData.street}
+            className="w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:outline-none transition-all font-medium placeholder:text-black/30 dark:placeholder:text-white/30 bg-white dark:bg-black text-black dark:text-white"
             onChange={(e) => onInputChange('street', e.target.value)}
             placeholder="123 Business Street"
             icon={Building}
@@ -51,19 +42,18 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
           />
         </motion.div>
 
-        {/* Service Cities Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="pt-6 border-t border-gray-200"
+          className="pt-6 border-t border-black/10 dark:border-white/10"
         >
           <div className="mb-6">
-            <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-emerald-600" />
+            <h3 className="text-base font-bold text-black dark:text-white mb-1 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#00C896]" />
               Service Areas
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-black/50 dark:text-white/50">
               List all cities where you provide delivery services
             </p>
           </div>
@@ -71,6 +61,7 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
           <Input
             label="Service Cities"
             value={formData.serviceCities}
+            className="w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:outline-none transition-all font-medium placeholder:text-black/30 dark:placeholder:text-white/30 bg-white dark:bg-black text-black dark:text-white"
             onChange={(e) => onInputChange('serviceCities', e.target.value)}
             placeholder="e.g., Lagos, Abuja, Kano, Kaduna"
             error={errors['serviceCities']}
@@ -89,7 +80,7 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4 + index * 0.05 }}
-                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-200/50 rounded-full text-sm font-medium shadow-sm"
+                  className="inline-flex items-center px-4 py-2 bg-[#00C896]/10 text-[#00C896] border border-[#00C896]/20 rounded-full text-sm font-medium shadow-sm"
                 >
                   <MapPin className="w-3.5 h-3.5 mr-1.5" />
                   {city}
@@ -97,9 +88,8 @@ const AddressStep = ({ formData, errors, onInputChange }) => {
               ))}
             </motion.div>
           )}
-
-          <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <p className="text-xs text-black/40 dark:text-white/40 mt-3 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-black/30 dark:bg-white/30" />
             Separate multiple cities with commas
           </p>
         </motion.div>

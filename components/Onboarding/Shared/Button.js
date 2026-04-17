@@ -21,8 +21,8 @@ const Button = ({
   };
   
   const variantClasses = {
-    primary: 'bg-[#3A0A21] text-white hover:opacity-90 disabled:opacity-50',
-    secondary: 'bg-white text-[#3A0A21] border border-[#3A0A21] hover:bg-gray-50 disabled:opacity-50',
+    primary: 'bg-[#00C896] text-white hover:opacity-90 disabled:opacity-50',
+    secondary: 'bg-white text-[#00C896] border border-[#00C896] hover:bg-gray-50 disabled:opacity-50',
     danger: 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50',
     success: 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 disabled:opacity-50'

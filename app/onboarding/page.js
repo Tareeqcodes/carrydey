@@ -27,9 +27,6 @@ const roles = [
   },
 ];
 
-// Reads the pending redirect (set by StickyConfirmBar before pushing to /login),
-// clears it immediately so it doesn't bleed into future sessions, then returns
-// the destination. Falls back to role-based routing when nothing is pending.
 function consumePostOnboardingRoute(role) {
   const pendingRedirect = localStorage.getItem('postAuthRedirect');
   if (pendingRedirect) {
@@ -70,9 +67,7 @@ export default function Onboarding() {
         tableId: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
         queries: [Query.equal('userId', user.$id)],
       });
-
       if (response.rows.length > 0 && response.rows[0].onboardingCompleted) {
-        // Already onboarded — consume redirect and go
         router.push(consumePostOnboardingRoute(response.rows[0].role));
       }
     } catch (err) {
@@ -99,10 +94,6 @@ export default function Onboarding() {
           isAvailable: true,
         },
       });
-
-      // consumePostOnboardingRoute clears 'postAuthRedirect' from localStorage.
-      // CreateDelivery's useEffect is responsible for reading + clearing
-      // 'pendingDelivery' and firing the Appwrite write — we must NOT touch it here.
       router.push(consumePostOnboardingRoute(role));
     } catch (err) {
       console.error('Failed to save onboarding:', err);
@@ -114,15 +105,15 @@ export default function Onboarding() {
 
   if (loading || checkingProfile || !user) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[#faf9f7]">
-        <div className="w-5 h-5 border-2 border-[#3A0A21] border-t-transparent rounded-full animate-spin" />
+      <div className="h-screen flex items-center justify-center bg-white dark:bg-black">
+        <div className="w-5 h-5 border-2 border-[#00C896] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <div
-      className="min-h-screen bg-[#faf9f7] flex items-center justify-center px-6 py-16"
+      className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-6 py-16"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <link
@@ -137,11 +128,11 @@ export default function Onboarding() {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-black/30 dark:text-white/30 mb-4">
             Welcome
           </p>
           <h1
-            className="text-[2.2rem] font-normal leading-[1.15] text-[#1a1a1a]"
+            className="text-[2.2rem] font-normal leading-[1.15] text-black dark:text-white"
             style={{
               fontFamily: "'DM Serif Display', serif",
               letterSpacing: '-0.02em',
@@ -172,32 +163,36 @@ export default function Onboarding() {
                 whileTap={{ scale: 0.985 }}
                 className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all duration-200 text-left ${
                   isActive
-                    ? 'bg-[#3A0A21] border-[#3A0A21]'
-                    : 'bg-white border-[#e8e2e5] hover:border-[#3A0A21]/30'
+                    ? 'bg-[#00C896] border-[#00C896]'
+                    : 'bg-white dark:bg-black border-black/10 dark:border-white/10 hover:border-[#00C896]/30'
                 }`}
               >
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isActive ? 'bg-white/15' : 'bg-[#3A0A21]/7'}`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isActive ? 'bg-black/10' : 'bg-black/5 dark:bg-white/10'}`}
                 >
                   <Icon
                     size={17}
-                    className={isActive ? 'text-white' : 'text-[#3A0A21]'}
+                    className={
+                      isActive
+                        ? 'text-black'
+                        : 'text-black/60 dark:text-white/60'
+                    }
                   />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`text-sm font-semibold leading-tight ${isActive ? 'text-white' : 'text-[#1a1a1a]'}`}
+                    className={`text-sm font-semibold leading-tight ${isActive ? 'text-black' : 'text-black dark:text-white'}`}
                   >
                     {item.title}
                   </p>
                   <p
-                    className={`text-xs mt-0.5 leading-snug ${isActive ? 'text-white/60' : 'text-[#aaa]'}`}
+                    className={`text-xs mt-0.5 leading-snug ${isActive ? 'text-black/60' : 'text-black/40 dark:text-white/40'}`}
                   >
                     {item.sub}
                   </p>
                 </div>
                 <div
-                  className={`w-4 h-4 rounded-full border-2 shrink-0 transition-all duration-200 ${isActive ? 'border-white bg-white' : 'border-[#ddd] bg-transparent'}`}
+                  className={`w-4 h-4 rounded-full border-2 shrink-0 transition-all duration-200 ${isActive ? 'border-black bg-black' : 'border-black/20 dark:border-white/20 bg-transparent'}`}
                 >
                   <AnimatePresence>
                     {isActive && (
@@ -206,7 +201,7 @@ export default function Onboarding() {
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="w-full h-full rounded-full bg-[#3A0A21]"
+                        className="w-full h-full rounded-full bg-[#00C896]"
                       />
                     )}
                   </AnimatePresence>
@@ -222,24 +217,24 @@ export default function Onboarding() {
           whileTap={role ? { scale: 0.97 } : {}}
           className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-semibold transition-all duration-200 ${
             !role
-              ? 'bg-[#f0ecee] text-[#ccc] cursor-not-allowed'
-              : 'bg-[#3A0A21] text-white hover:bg-[#521229]'
+              ? 'bg-black/5 dark:bg-white/10 text-black/30 dark:text-white/30 cursor-not-allowed'
+              : 'bg-[#00C896] text-black hover:bg-[#00E5AD]'
           }`}
         >
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
           ) : (
-            <> Continue {role && <ArrowRight size={15} />} </>
+            <>Continue {role && <ArrowRight size={15} />}</>
           )}
         </motion.button>
 
-        <p className="text-center text-xs text-[#bbb] mt-5 leading-relaxed">
+        <p className="text-center text-xs text-black/30 dark:text-white/30 mt-5 leading-relaxed">
           By continuing you agree to our{' '}
-          <a href="/terms" className="text-[#3A0A21] hover:underline">
+          <a href="/terms" className="text-[#00C896] hover:underline">
             Terms
           </a>{' '}
           and{' '}
-          <a href="/privacy" className="text-[#3A0A21] hover:underline">
+          <a href="/privacy" className="text-[#00C896] hover:underline">
             Privacy Policy
           </a>
         </p>

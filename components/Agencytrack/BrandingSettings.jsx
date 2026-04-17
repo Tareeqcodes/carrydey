@@ -282,7 +282,7 @@ const BrandingSettings = ({
                         handleColorChange(colorKey, e.target.value)
                       }
                       className="flex-1 px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-mono text-gray-900 dark:text-white"
-                    />
+                    />   
                   </div>
                 </div>
               ))}

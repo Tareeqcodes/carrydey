@@ -12,26 +12,26 @@ const ProgressSidebar = ({ currentStep }) => {
   return (
     <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
       <div className="sticky top-8 space-y-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-black rounded-2xl p-6 shadow-sm border border-black/10 dark:border-white/10">
           <div className="space-y-4">
             {steps.map((step) => (
               <div
                 key={step.number}
                 className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                   currentStep === step.number
-                    ? 'bg-[#3A0A21] text-white'
+                    ? 'bg-[#00C896] text-black'
                     : currentStep > step.number
-                      ? 'bg-green-50 text-green-700'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : 'text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/5'
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
                     currentStep === step.number
-                      ? 'bg-white text-[#3A0A21]'
+                      ? 'bg-black/10 text-black'
                       : currentStep > step.number
-                        ? 'bg-green-100 text-green-600'
-                        : 'bg-gray-100 text-gray-400'
+                        ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
+                        : 'bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40'
                   }`}
                 >
                   {currentStep > step.number ? (
@@ -41,7 +41,7 @@ const ProgressSidebar = ({ currentStep }) => {
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs">{step.title}</p>
+                  <p className="text-xs font-semibold">{step.title}</p>
                 </div>
                 {currentStep > step.number && (
                   <CheckCircle className="w-5 h-5" />
@@ -51,16 +51,6 @@ const ProgressSidebar = ({ currentStep }) => {
           </div>
         </div>
 
-        <div className="bg-white/90 border border-blue-200 rounded-2xl p-6">
-          <h4 className="font-bold text-shadow-gray-500 mb-3">Need Help?</h4>
-          <p className="text-xs font-semibold text-shadow-gray-500 mb-4">
-            Our support team is here to assist you with the registration
-            process.
-          </p>
-          <button className="w-full py-2 border border-blue-300 text-blue-700 rounded-xl text-sm hover:bg-blue-100 transition-colors">
-            Contact Support
-          </button>
-        </div>
       </div>
     </div>
   );
