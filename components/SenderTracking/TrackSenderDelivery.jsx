@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import Sendertrackingview from './Sendertrackingview';
@@ -22,9 +22,7 @@ const TrackSenderDelivery = () => {
   const [showTrackingModal, setShowTrackingModal] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchUserDeliveries();
-    }
+    if (user) fetchUserDeliveries();
   }, [user]);
 
   const fetchUserDeliveries = async () => {
@@ -39,7 +37,6 @@ const TrackSenderDelivery = () => {
           Query.limit(50),
         ],
       });
-
       setDeliveries(response.rows || []);
     } catch (error) {
       console.error('Error fetching deliveries:', error);
@@ -56,15 +53,12 @@ const TrackSenderDelivery = () => {
         rowId: deliveryId,
         data: { status: newStatus },
       });
-
       setDeliveries((prev) =>
         prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
-
       if (selectedDelivery?.$id === deliveryId) {
         setSelectedDelivery((prev) => ({ ...prev, ...response }));
       }
-
       return response;
     } catch (error) {
       console.error('Error updating delivery:', error);
@@ -80,9 +74,7 @@ const TrackSenderDelivery = () => {
   const activeDeliveries = deliveries.filter(
     (d) => !['delivered', 'cancelled'].includes(d.status)
   );
-
   const completedDeliveries = deliveries.filter((d) => d.status === 'delivered');
-
   const filteredActiveDeliveries = activeDeliveries.filter(
     (d) =>
       searchQuery === '' ||
@@ -106,7 +98,6 @@ const TrackSenderDelivery = () => {
             onNewDelivery={() => router.push('/send')}
           />
         );
-
       case 'history':
         return (
           <SenderHistory
@@ -115,59 +106,48 @@ const TrackSenderDelivery = () => {
             onTrackDelivery={handleTrackDelivery}
           />
         );
-
       case 'profile':
         return <Profile />;
-
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="">
+    <div className="min-h-screen bg-white dark:bg-black">
+      <header>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-colors"
+                className="lg:hidden p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors"
               >
-                <Menu className="w-6 h-6 text-white" />
+                <Menu className="w-6 h-6 text-black dark:text-white" />
               </button>
-              
             </div>
-
           </div>
         </div>
       </header>
 
       <div className="flex max-w-7xl mx-auto">
-        {/* Sidebar Overlay */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
-
-        {/* Sidebar */}
         <SenderSidebar
           activePage={activePage}
           setActivePage={setActivePage}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
-
-        {/* Main Content */}
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 pb-40 lg:pb-8">
           {renderPage()}
         </main>
       </div>
 
-      {/* Tracking Modal */}
       {showTrackingModal && selectedDelivery && (
         <Sendertrackingview
           delivery={selectedDelivery}
@@ -179,7 +159,7 @@ const TrackSenderDelivery = () => {
           onUpdateDelivery={handleUpdateDelivery}
         />
       )}
-    </div> 
+    </div>
   );
 };
 

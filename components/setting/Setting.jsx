@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/Authcontext';
 
 export default function Setting() {
   const { user, deleteAccount } = useAuth();
-
   const [step, setStep] = useState('idle');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +21,6 @@ export default function Setting() {
     setError('');
     try {
       await deleteAccount();
-      // redirect happens inside deleteAccount — nothing needed here
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
       setLoading(false);
@@ -32,41 +30,41 @@ export default function Setting() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-[28px] font-black text-white leading-[1.08] tracking-[-0.02em] mb-2" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>
+        <h2
+          className="text-[23px] font-black text-black dark:text-white leading-[1.08] tracking-[-0.02em] mb-2"
+        
+        >
           Account Settings
         </h2>
-        <p className="text-[14px] font-medium text-white/60 leading-[1.6]">
-          Manage your Carrydey account
-        </p>
+       
       </div>
 
-      {/* Profile summary — read only */}
-      <div className="bg-white/10 rounded-2xl border border-white/10 p-4 flex items-center gap-4 shadow-lg">
+      {/* Profile summary */}
+      <div className="bg-black/5 dark:bg-white/10 rounded-2xl border border-black/10 dark:border-white/10 p-4 flex items-center gap-4 shadow-lg">
         <div className="w-14 h-14 bg-[#3A0A21] rounded-2xl flex items-center justify-center flex-shrink-0">
           <span className="text-white font-bold text-xl">{initial}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-[14px] font-bold text-white truncate">
+          <p className="text-[14px] font-bold text-black dark:text-white truncate">
             {name}
           </p>
-          <p className="text-[12px] text-white/50 truncate">{user?.email}</p>
-          <p className="text-[11px] text-white/30 mt-0.5">
+          <p className="text-[12px] text-black/50 dark:text-white/50 truncate">
+            {user?.email}
+          </p>
+          <p className="text-[11px] text-black/30 dark:text-white/30 mt-0.5">
             To update your info, contact support
           </p>
         </div>
       </div>
 
       {/* Delete account */}
-      <div className="bg-white/10 rounded-2xl border border-red-500/20 overflow-hidden shadow-lg">
-        {/* Header */}
+      <div className="bg-black/5 dark:bg-white/10 rounded-2xl border border-red-500/20 overflow-hidden shadow-lg">
         <div className="flex items-center gap-3 px-4 py-4 border-b border-red-500/10">
           <div className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <Trash2 size={15} className="text-red-400" />
           </div>
           <div className="flex-1">
-            <p className="text-[13px] font-bold text-red-400">
-              Delete Account
-            </p>
+            <p className="text-[13px] font-bold text-red-400">Delete Account</p>
             <p className="text-[11px] text-red-400/60">
               Permanent and cannot be undone
             </p>
@@ -74,14 +72,13 @@ export default function Setting() {
         </div>
 
         <div className="px-4 py-4 space-y-4">
-          <p className="text-[13px] text-white/60 leading-relaxed">
+          <p className="text-[13px] text-black/60 dark:text-white/60 leading-relaxed">
             Deleting your account will permanently remove all your data —
             deliveries, history, payment info, and profile. You will not be able
             to recover it.
           </p>
 
           <AnimatePresence mode="wait">
-            {/* Step 1 — idle */}
             {step === 'idle' && (
               <motion.button
                 key="idle"
@@ -93,7 +90,6 @@ export default function Setting() {
               </motion.button>
             )}
 
-            {/* Step 2 — confirm + type */}
             {step === 'confirm' && (
               <motion.div
                 key="confirm"
@@ -123,10 +119,9 @@ export default function Setting() {
                   placeholder="delete my account"
                   autoFocus
                   disabled={loading}
-                  className="w-full bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-[13px] text-white placeholder-red-400/40 focus:outline-none focus:border-red-400 transition-colors disabled:opacity-50"
+                  className="w-full bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-[13px] text-black dark:text-white placeholder-red-400/40 focus:outline-none focus:border-red-400 transition-colors disabled:opacity-50"
                 />
 
-                {/* API error */}
                 <AnimatePresence>
                   {error && (
                     <motion.p
@@ -148,26 +143,20 @@ export default function Setting() {
                       setError('');
                     }}
                     disabled={loading}
-                    className="flex-1 py-3.5 rounded-xl border border-white/10 bg-white/5 text-[13px] font-semibold text-white disabled:opacity-50 hover:bg-white/10 transition-colors"
+                    className="flex-1 py-3.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-[13px] font-semibold text-black dark:text-white disabled:opacity-50 hover:bg-black/8 dark:hover:bg-white/10 transition-colors"
                   >
                     Cancel
                   </button>
-
                   <motion.button
                     onClick={handleDelete}
                     disabled={!canDelete || loading}
                     whileTap={canDelete && !loading ? { scale: 0.97 } : {}}
                     className={`flex-1 py-3.5 rounded-xl text-[13px] font-bold transition-all duration-200 flex items-center justify-center gap-2
-                      ${
-                        canDelete && !loading
-                          ? 'bg-red-500 text-white'
-                          : 'bg-red-100 text-red-300 cursor-not-allowed'
-                      }`}
+                      ${canDelete && !loading ? 'bg-red-500 text-white' : 'bg-red-100 text-red-300 cursor-not-allowed'}`}
                   >
                     {loading ? (
                       <>
-                        <Loader2 size={13} className="animate-spin" />
-                        Deleting…
+                        <Loader2 size={13} className="animate-spin" /> Deleting…
                       </>
                     ) : (
                       'Delete Forever'

@@ -222,17 +222,17 @@ function StoreAddressStep({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-5"
     >
-      <h2 className="text-lg text-white font-bold">Your store address</h2>
+      <h2 className="text-lg text-black dark:text-white font-bold">Your store address</h2>
 
       <div ref={containerRef} className="relative">
         <div
-          className="flex items-center border-2 rounded-2xl overflow-hidden transition-all bg-black/40 backdrop-blur-xl"
+          className="flex items-center border-2 rounded-2xl overflow-hidden transition-all bg-white/40 dark:bg-black/40 backdrop-blur-xl"
           style={{
             borderColor: active
               ? TEAL
               : pickupLoc
                 ? `rgba(0,200,150,0.3)`
-                : 'rgba(255,255,255,0.1)',
+                : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
           }}
         >
           <div className="pl-4 pr-3">
@@ -256,7 +256,7 @@ function StoreAddressStep({
             placeholder={
               gettingLoc ? 'Detecting your location…' : 'Search store address…'
             }
-            className="flex-1 py-3.5 text-sm text-white placeholder-white/50 bg-transparent outline-none"
+            className="flex-1 py-3.5 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/50 bg-transparent outline-none"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
           <div className="flex items-center pr-2 gap-1">
@@ -266,15 +266,15 @@ function StoreAddressStep({
                   setPickupAddress('');
                   setPickupLoc(null);
                 }}
-                className="p-2 rounded-xl hover:bg-white/10"
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10"
               >
-                <X className="w-3.5 h-3.5 text-white/40" />
+                <X className="w-3.5 h-3.5 text-black/40 dark:text-white/40" />
               </button>
             )}
             <button
               onClick={useMyLocation}
               disabled={gettingLoc}
-              className="p-2 rounded-xl hover:bg-white/10 disabled:opacity-40"
+              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-40"
               style={{ color: TEAL }}
               title="Use my current location"
             >
@@ -288,22 +288,22 @@ function StoreAddressStep({
         </div>
 
         {showSugg && suggestions.length > 0 && (
-          <div className="absolute z-50 w-full mt-1.5 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+          <div className="absolute z-50 w-full mt-1.5 bg-white dark:bg-black/40 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden">
             {suggestions.map((s, i) => (
               <button
                 key={`${s.id}-${i}`}
                 onClick={() => handleSelect(s)}
-                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/5 border-b border-white/5 last:border-b-0 text-left"
+                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 border-b border-black/5 dark:border-white/5 last:border-b-0 text-left"
               >
                 <MapPin
                   className="w-4 h-4 mt-0.5 flex-shrink-0"
                   style={{ color: TEAL }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">
+                  <p className="text-sm font-semibold text-black dark:text-white truncate">
                     {s.text}
                   </p>
-                  <p className="text-xs text-white/50 truncate mt-0.5">
+                  <p className="text-xs text-black/50 dark:text-white/50 truncate mt-0.5">
                     {s.place_name}
                   </p>
                 </div>
@@ -324,7 +324,7 @@ function StoreAddressStep({
             className="w-4 h-4 flex-shrink-0"
             style={{ color: TEAL }}
           />
-          <p className="text-xs font-medium text-white/70 truncate">
+          <p className="text-xs font-medium text-black/70 dark:text-white/70 truncate">
             {pickupAddress}
           </p>
         </motion.div>
@@ -335,8 +335,8 @@ function StoreAddressStep({
         disabled={!pickupLoc}
         className="w-full py-4 rounded-full font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         style={{
-          background: pickupLoc ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(255,255,255,0.1)',
-          color: pickupLoc ? 'black' : 'rgba(255,255,255,0.3)',
+          background: pickupLoc ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
+          color: pickupLoc ? 'black' : 'rgba(0,0,0,0.3) dark:rgba(255,255,255,0.3)',
           fontFamily: "'DM Sans', sans-serif",
         }}
       >
@@ -358,23 +358,22 @@ function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
       transition={{ duration: 0.18 }}
       className="rounded-2xl overflow-hidden"
       style={{
-        border: `1.5px solid ${isValid ? `rgba(255,165,0,0.3)` : 'rgba(255,255,255,0.1)'}`,
-        background: 'rgba(0,0,0,0.3)',
+        border: `1.5px solid ${isValid ? `rgba(255,165,0,0.3)` : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)'}`,
+        background: 'rgba(0,0,0,0.05) dark:rgba(0,0,0,0.3)',
       }}
     >
       {/* Row header */}
       <div
         className="flex items-center justify-between px-3.5 py-2.5"
         style={{
-          background: isValid ? 'rgba(255,165,0,0.1)' : 'rgba(255,255,255,0.05)',
-          borderBottom: `1px solid ${isValid ? `rgba(255,165,0,0.2)` : 'rgba(255,255,255,0.1)'}`,
+          background: isValid ? 'rgba(255,165,0,0.1)' : 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)',
+          borderBottom: `1px solid ${isValid ? `rgba(255,165,0,0.2)` : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)'}`,
         }}
       >
         <div className="flex items-center gap-2">
-          
           <span
             className="text-xs font-semibold uppercase"
-            style={{ color: isValid ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)' }}
+            style={{ color: isValid ? 'rgba(0,0,0,0.8) dark:rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.4) dark:rgba(255,255,255,0.4)' }}
           >
             Order {index + 1}
           </span>
@@ -382,9 +381,9 @@ function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
         {canRemove && (
           <button
             onClick={onRemove}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors group"
+            className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors group"
           >
-            <Trash2 className="w-3.5 h-3.5 text-white/40 group-hover:text-white/70 transition-colors" />
+            <Trash2 className="w-3.5 h-3.5 text-black/40 dark:text-white/40 group-hover:text-black/70 dark:group-hover:text-white/70 transition-colors" />
           </button>
         )}
       </div>
@@ -395,20 +394,20 @@ function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
         <div
           className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all"
           style={{
-            background: recipient.area ? 'rgba(255,165,0,0.1)' : 'rgba(255,255,255,0.05)',
-            border: `1.5px solid ${recipient.area ? `rgba(255,165,0,0.3)` : 'rgba(255,255,255,0.1)'}`,
+            background: recipient.area ? 'rgba(255,165,0,0.1)' : 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)',
+            border: `1.5px solid ${recipient.area ? `rgba(255,165,0,0.3)` : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)'}`,
           }}
         >
           <MapPin
             className="w-3.5 h-3.5 flex-shrink-0"
-            style={{ color: recipient.area ? ORANGE : 'rgba(255,255,255,0.3)' }}
+            style={{ color: recipient.area ? ORANGE : 'rgba(0,0,0,0.3) dark:rgba(255,255,255,0.3)' }}
           />
           <input
             type="text"
             value={recipient.area}
             onChange={(e) => onUpdate({ area: e.target.value })}
             placeholder="Area / neighborhood  (e.g. Sabon Gari, Kano) *"
-            className="flex-1 text-sm text-white placeholder-white/40 bg-transparent outline-none"
+            className="flex-1 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 bg-transparent outline-none"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
           {recipient.area && (
@@ -416,7 +415,7 @@ function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
               onClick={() => onUpdate({ area: '' })}
               className="flex-shrink-0"
             >
-              <X className="w-3 h-3 text-white/40 hover:text-white/60" />
+              <X className="w-3 h-3 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60" />
             </button>
           )}
         </div>
@@ -425,29 +424,29 @@ function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
         <div className="grid grid-cols-2 gap-2">
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.1)' }}
+            style={{ background: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)', border: '1.5px solid rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)' }}
           >
-            <User className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+            <User className="w-3.5 h-3.5 text-black/40 dark:text-white/40 flex-shrink-0" />
             <input
               type="text"
               value={recipient.recipientName}
               onChange={(e) => onUpdate({ recipientName: e.target.value })}
               placeholder="Name"
-              className="flex-1 text-sm text-white placeholder-white/40 bg-transparent outline-none min-w-0"
+              className="flex-1 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 bg-transparent outline-none min-w-0"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
           </div>
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.1)' }}
+            style={{ background: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)', border: '1.5px solid rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)' }}
           >
-            <Phone className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+            <Phone className="w-3.5 h-3.5 text-black/40 dark:text-white/40 flex-shrink-0" />
             <input
               type="tel"
               value={recipient.recipientPhone}
               onChange={(e) => onUpdate({ recipientPhone: e.target.value })}
               placeholder="Phone"
-              className="flex-1 text-sm text-white placeholder-white/40 bg-transparent outline-none min-w-0"
+              className="flex-1 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 bg-transparent outline-none min-w-0"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
           </div>
@@ -456,15 +455,15 @@ function RecipientRow({ recipient, index, onUpdate, onRemove, canRemove }) {
         {/* Order ref */}
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.1)' }}
+          style={{ background: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)', border: '1.5px solid rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)' }}
         >
-          <Hash className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+          <Hash className="w-3.5 h-3.5 text-black/40 dark:text-white/40 flex-shrink-0" />
           <input
             type="text"
             value={recipient.orderRef}
             onChange={(e) => onUpdate({ orderRef: e.target.value })}
             placeholder="Order ref / note (optional)"
-            className="flex-1 text-sm text-white placeholder-white/40 bg-transparent outline-none"
+            className="flex-1 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 bg-transparent outline-none"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
         </div>
@@ -483,7 +482,7 @@ function PasteModal({ onParsed, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -492,33 +491,32 @@ function PasteModal({ onParsed, onClose }) {
         exit={{ y: 40, opacity: 0 }}
         transition={{ type: 'spring', damping: 28 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-black/40 backdrop-blur-xl rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10"
+        className="bg-white dark:bg-black/40 backdrop-blur-xl rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-black/10 dark:border-white/10"
       >
         {/* Header */}
         <div
-          className="px-5 py-4 flex items-center justify-between border-b"
-          style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+          className="px-5 py-4 flex items-center justify-between border-b border-black/10 dark:border-white/10"
         >
           <div>
-            <p className="text-sm font-bold text-white">Paste order list</p>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-sm font-bold text-black dark:text-white">Paste order list</p>
+            <p className="text-xs text-black/50 dark:text-white/50 mt-0.5">
               One order per line Name, Phone, Area, Ref
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-white/10"
+            className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10"
           >
-            <X className="w-4 h-4 text-white/50" />
+            <X className="w-4 h-4 text-black/50 dark:text-white/50" />
           </button>
         </div>
 
         {/* Hint */}
         <div
-          className="mx-5 mt-4 px-3 py-2.5 rounded-xl text-xs text-white/40 font-mono leading-relaxed"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+          className="mx-5 mt-4 px-3 py-2.5 rounded-xl text-xs text-black dark:text-white/60 font-mono leading-relaxed"
+          style={{ background: 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)', border: '1px solid rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)' }}
         >
-          <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wide mb-1.5">
+          <p className="text-[10px] font-semibold text-black dark:text-white/70 uppercase tracking-wide mb-1.5">
             Example
           </p>
           <p>Aminu Hassan / 08012345678 / Sabon Gari/ ORD-001</p>
@@ -532,11 +530,11 @@ function PasteModal({ onParsed, onClose }) {
             onChange={(e) => setRaw(e.target.value)}
             placeholder="Paste your orders here…"
             rows={6}
-            className="w-full rounded-2xl px-4 py-3 text-sm text-white placeholder-white/40 outline-none resize-none"
+            className="w-full rounded-2xl px-4 py-3 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 outline-none resize-none"
             style={{
               fontFamily: "'DM Sans', sans-serif",
-              border: `2px solid ${raw ? TEAL : 'rgba(255,255,255,0.1)'}`,
-              background: raw ? 'rgba(0,200,150,0.1)' : 'rgba(255,255,255,0.05)',
+              border: `2px solid ${raw ? TEAL : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)'}`,
+              background: raw ? 'rgba(0,200,150,0.1)' : 'rgba(0,0,0,0.05) dark:rgba(255,255,255,0.05)',
               transition: 'border-color 0.15s, background 0.15s',
             }}
           />
@@ -554,7 +552,7 @@ function PasteModal({ onParsed, onClose }) {
               className="w-4 h-4 flex-shrink-0"
               style={{ color: TEAL }}
             />
-            <p className="text-xs font-semibold text-white/70">
+            <p className="text-xs font-semibold text-black/70 dark:text-white/70">
               {preview.length} order{preview.length > 1 ? 's' : ''} detected
             </p>
           </motion.div>
@@ -564,7 +562,7 @@ function PasteModal({ onParsed, onClose }) {
         <div className="px-5 py-4 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-full text-sm font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition-all"
+            className="flex-1 py-3 rounded-full text-sm font-semibold bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/20 transition-all"
           >
             Cancel
           </button>
@@ -578,8 +576,8 @@ function PasteModal({ onParsed, onClose }) {
             disabled={preview.length === 0}
             className="flex-[2] py-3 rounded-full text-sm font-bold text-black transition-all disabled:opacity-40"
             style={{
-              background: preview.length > 0 ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(255,255,255,0.1)',
-              color: preview.length > 0 ? 'black' : 'rgba(255,255,255,0.3)',
+              background: preview.length > 0 ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
+              color: preview.length > 0 ? 'black' : 'rgba(0,0,0,0.3) dark:rgba(255,255,255,0.3)',
             }}
           >
             Add {preview.length > 0 ? `${preview.length} orders` : 'orders'}
@@ -629,7 +627,7 @@ function RecipientsStep({ recipients, setRecipients, onNext, onBack }) {
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base text-white font-bold">Add orders</h2>
+            <h2 className="text-base text-black dark:text-white font-bold">Add orders</h2>
           </div>
           {/* Paste shortcut */}
           <button
@@ -663,8 +661,8 @@ function RecipientsStep({ recipients, setRecipients, onNext, onBack }) {
         {/* Add row */}
         <button
           onClick={addRecipient}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-white/40 hover:text-white/60 hover:bg-white/5 transition-all"
-          style={{ border: '2px dashed rgba(255,255,255,0.2)' }}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold text-black dark:text-white hover:text-black/60 dark:hover:text-white/60 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+          style={{ border: '2px dashed rgba(0,0,0,0.2) dark:rgba(255,255,255,0.2)' }}
         >
           <Plus className="w-4 h-4" />
           Add order
@@ -691,7 +689,7 @@ function RecipientsStep({ recipients, setRecipients, onNext, onBack }) {
         <div className="flex gap-3 pt-2">
           <button
             onClick={onBack}
-            className="flex-1 py-3.5 rounded-full font-semibold text-sm bg-white/10 text-white/70 hover:bg-white/20 transition-all"
+            className="flex-1 py-3.5 rounded-full font-semibold text-sm bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/20 transition-all"
           >
             Back
           </button>
@@ -700,8 +698,8 @@ function RecipientsStep({ recipients, setRecipients, onNext, onBack }) {
             disabled={!canNext}
             className="flex-[2] py-3.5 rounded-full font-bold text-sm text-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: canNext ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(255,255,255,0.1)',
-              color: canNext ? 'black' : 'rgba(255,255,255,0.3)',
+              background: canNext ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
+              color: canNext ? 'black' : 'rgba(0,0,0,0.3) dark:rgba(255,255,255,0.3)',
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
@@ -746,7 +744,7 @@ function DetailsStep({
     >
       <div>
         <h2
-          className="text-md font-semibold text-white"
+          className="text-md font-semibold text-black dark:text-white"
           style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
           Payment Applies to all {recipients.length} order
@@ -756,16 +754,15 @@ function DetailsStep({
 
       {/* Batch summary card */}
       <div
-        className="bg-black/40 backdrop-blur-xl border rounded-2xl overflow-hidden"
-        style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+        className="bg-white dark:bg-black/20 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden"
       >
         {/* Card header */}
         <div
-          className="px-4 py-3 border-b flex items-center justify-between"
-          style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,200,150,0.1)' }}
+          className="px-4 py-3 border-b border-black/10 dark:border-white/10 flex items-center justify-between"
+          style={{ background: 'rgba(0,200,150,0.1)' }}
         >
           <p
-            className="text-sm font-bold text-white"
+            className="text-sm font-bold text-black dark:text-white"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             Batch summary
@@ -780,23 +777,22 @@ function DetailsStep({
 
         {/* Pickup row */}
         <div
-          className="px-4 py-3 border-b flex items-center gap-3"
-          style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+          className="px-4 py-3 border-b border-black/10 dark:border-white/10 flex items-center gap-3"
         >
           <div
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ background: TEAL }}
           />
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wide mb-0.5">
+            <p className="text-[10px] font-semibold text-black/50 dark:text-white/50 uppercase tracking-wide mb-0.5">
               Pickup
             </p>
-            <p className="text-sm text-white truncate">{pickupAddress}</p>
+            <p className="text-sm text-black dark:text-white truncate">{pickupAddress}</p>
           </div>
         </div>
 
         {/* Recipient rows */}
-        <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+        <div className="divide-y divide-black/10 dark:divide-white/10">
           {recipients.map((r, i) => (
             <div key={r.id} className="px-4 py-2.5 flex items-center gap-3">
               <div
@@ -806,17 +802,17 @@ function DetailsStep({
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-white truncate">
-                  {r.area || <span className="text-white/40">No area set</span>}
+                <p className="text-sm text-black dark:text-white truncate">
+                  {r.area || <span className="text-black/40 dark:text-white/40">No area set</span>}
                 </p>
                 {r.recipientName && (
-                  <p className="text-xs text-white/50 truncate">
+                  <p className="text-xs text-black/50 dark:text-white/50 truncate">
                     {r.recipientName}
                     {r.recipientPhone ? ` · ${r.recipientPhone}` : ''}
                   </p>
                 )}
                 {r.orderRef && (
-                  <p className="text-[10px] text-white/40 font-mono">
+                  <p className="text-[10px] text-black dark:text-white font-mono">
                     {r.orderRef}
                   </p>
                 )}
@@ -825,7 +821,6 @@ function DetailsStep({
           ))}
         </div>
 
-        
         <div
           className="px-4 py-3 space-y-2.5"
           style={{
@@ -835,36 +830,29 @@ function DetailsStep({
         >
           {/* Pickup phone input */}
           <div
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-black/30"
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-black/5 dark:bg-black/30"
             style={{
-              border: `1.5px solid ${pickupPhone ? `rgba(0,200,150,0.3)` : 'rgba(255,255,255,0.1)'}`,
+              border: `1.5px solid ${pickupPhone ? `rgba(0,200,150,0.3)` : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)'}`,
             }}
           >
             <Phone
               className="w-3.5 h-3.5 flex-shrink-0"
-              style={{ color: pickupPhone ? TEAL : 'rgba(255,255,255,0.3)' }}
+              style={{ color: pickupPhone ? TEAL : 'rgba(0,0,0,0.3) dark:rgba(255,255,255,0.3)' }}
             />
             <input
               type="tel"
               value={pickupPhone}
               onChange={(e) => setPickupPhone(e.target.value)}
               placeholder="Your pickup phone number"
-              className="flex-1 text-sm text-white placeholder-white/40 bg-transparent outline-none"
+              className="flex-1 text-sm text-black dark:text-white placeholder-black/40 dark:placeholder-white/40 bg-transparent outline-none"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
             {pickupPhone && (
               <button onClick={() => setPickupPhone('')}>
-                <X className="w-3 h-3 text-white/40 hover:text-white/60" />
+                <X className="w-3 h-3 text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60" />
               </button>
             )}
           </div>
-          {/* <p className="text-xs text-gray-400 leading-relaxed flex items-center gap-1.5">
-            <Phone
-              className="w-3 h-3 flex-shrink-0"
-              style={{ color: MAROON }}
-            />
-            Courier will confirm exact fare per order before pickup.
-          </p> */}
         </div>
       </div>
 
@@ -886,7 +874,7 @@ function DetailsStep({
       <div className="flex gap-3">
         <button
           onClick={onBack}
-          className="flex-1 py-3.5 rounded-full font-semibold text-sm bg-white/10 text-white/70 hover:bg-white/20 transition-all"
+          className="flex-1 py-3.5 rounded-full font-semibold text-sm bg-black/5 dark:bg-white/10 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/20 transition-all"
         >
           Back
         </button>
@@ -895,8 +883,8 @@ function DetailsStep({
           disabled={!canConfirm || loading}
           className="flex-[2] py-3.5 rounded-full font-bold text-sm text-black transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           style={{
-            background: canConfirm && !loading ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(255,255,255,0.1)',
-            color: canConfirm && !loading ? 'black' : 'rgba(255,255,255,0.3)',
+            background: canConfirm && !loading ? 'linear-gradient(135deg, #00C896 0%, #00E5AD 100%)' : 'rgba(0,0,0,0.1) dark:rgba(255,255,255,0.1)',
+            color: canConfirm && !loading ? 'black' : 'rgba(0,0,0,0.3) dark:rgba(255,255,255,0.3)',
             fontFamily: "'DM Sans', sans-serif",
           }}
         >
@@ -921,7 +909,7 @@ function DetailsStep({
 
 export default function VendorBookingPage({ loading = false, onConfirmed }) {
   const [step, setStep] = useState(1);
-  
+
   const { userData } = useUserRole();
   const [pickupLoc, setPickupLoc] = useState(null);
   const [pickupAddress, setPickupAddress] = useState('');
@@ -972,7 +960,7 @@ export default function VendorBookingPage({ loading = false, onConfirmed }) {
             height: 6,
             borderRadius: 3,
             background:
-              s === step ? TEAL : s < step ? `rgba(0,200,150,0.4)` : 'rgba(255,255,255,0.2)',
+              s === step ? TEAL : s < step ? `rgba(0,200,150,0.4)` : 'rgba(0,0,0,0.2) dark:rgba(255,255,255,0.2)',
           }}
         />
       ))}
@@ -980,7 +968,7 @@ export default function VendorBookingPage({ loading = false, onConfirmed }) {
   );
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-white dark:bg-black/20">
       <div className="max-w-md mx-auto px-4 pt-5 pb-36">
         <StepDots />
         <AnimatePresence mode="wait">

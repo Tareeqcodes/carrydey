@@ -39,7 +39,7 @@ export default function AgencySettingLoading() {
   return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-6">
         {/* Skeleton for Booking Link */}
-        <div className="bg-gradient-to-br from-[#3A0A21] via-[#4A0A31] to-[#5A1A41] rounded-2xl p-6 sm:p-8 shadow-2xl animate-pulse">
+        <div className="bg-gradient-to-br from-[#00C896] via-[#0d755b] to-[#177860] rounded-2xl p-6 sm:p-8 shadow-2xl animate-pulse">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-14 h-14 bg-white/20 rounded-xl" />
             <div className="flex-1 space-y-2">

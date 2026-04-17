@@ -106,7 +106,7 @@ function DeliveryRow({ delivery, onTrack, index }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.22 }}
       onClick={() => onTrack(delivery)}
-      className="group bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-5 hover:border-white/20 hover:shadow-sm cursor-pointer transition-all duration-200"
+      className="group bg-black/10 backdrop-blur-xl border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-5 hover:border-white/20 hover:shadow-sm cursor-pointer transition-all duration-200"
     >
       {/* Status dot column */}
       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
@@ -120,17 +120,17 @@ function DeliveryRow({ delivery, onTrack, index }) {
       {/* Route */}
       <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-6">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">
+          <p className="text-[10px] font-semibold text-black dark:text-white/60 uppercase tracking-wider mb-0.5">
             From
           </p>
-          <p className="text-sm font-medium text-white truncate">
+          <p className="text-sm font-medium text-black dark:text-white truncate">
             {delivery.pickupAddress}
           </p>
         </div>
         <div className="min-w-0">
-  <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">To</p>
+  <p className="text-[10px] font-semibold text-black dark:text-white/60 uppercase tracking-wider mb-0.5">To</p>
   {delivery.isVendorBatch && delivery.mutipledropoff ? (
-    <p className="text-sm font-medium text-white truncate">
+    <p className="text-sm font-medium text-black dark:text-white truncate">
       {(() => {
         try {
           const s = JSON.parse(delivery.mutipledropoff);
@@ -139,7 +139,7 @@ function DeliveryRow({ delivery, onTrack, index }) {
       })()}
     </p>
   ) : (
-    <p className="text-sm font-medium text-white truncate">{delivery.dropoffAddress}</p>
+    <p className="text-sm font-medium text-black dark:text-white truncate">{delivery.dropoffAddress}</p>
   )}
 </div>
       </div>
@@ -147,19 +147,19 @@ function DeliveryRow({ delivery, onTrack, index }) {
       {/* Meta — hidden on small screens */}
       <div className="hidden md:flex items-center gap-6 flex-shrink-0">
         <div className="text-right">
-          <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">
+          <p className="text-[10px] font-semibold text-black dark:text-white/60 uppercase tracking-wider mb-0.5">
             Fee
           </p>
-          <p className="text-sm font-bold text-white tabular-nums">
+          <p className="text-sm font-bold text-black dark:text-white tabular-nums">
             {formatNairaSimple(delivery.offeredFare || delivery.suggestedFare)}
           </p>
         </div>
 
         <div className="text-right">
-          <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">
+          <p className="text-[10px] font-semibold text-black dark:text-white/70 uppercase tracking-wider mb-0.5">
             Size
           </p>
-          <p className="text-sm font-medium text-white/70">
+          <p className="text-sm font-medium text-black dark:text-white/70">
             {delivery.packageSize || 'Standard'}
           </p>
         </div>
@@ -309,7 +309,7 @@ const SenderActiveDelivery = ({
         <div className="flex flex-col items-center justify-center py-32 gap-3">
           <div className="relative w-8 h-8">
             <div className="absolute inset-0 rounded-full border-[3px] border-gray-200" />
-            <div className="absolute inset-0 rounded-full border-[3px] border-[#3A0A21] border-t-transparent animate-spin" />
+            <div className="absolute inset-0 rounded-full border-[3px] border-[#00C896] border-t-transparent animate-spin" />
           </div>
           <p className="text-sm text-gray-400">Loading…</p>
         </div>
@@ -330,7 +330,7 @@ const SenderActiveDelivery = ({
                   setSearchQuery('');
                   setActiveFilter('all');
                 }}
-                className="mt-2 text-xs text-[#3A0A21] font-semibold hover:underline"
+                className="mt-2 text-xs text-[#00C896] font-semibold hover:underline"
               >
                 Clear filters
               </button>
@@ -348,7 +348,7 @@ const SenderActiveDelivery = ({
               </p>
               <button
                 onClick={onNewDelivery}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3A0A21] text-white rounded-xl font-semibold text-sm hover:bg-[#5A0A31] transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00C896] text-white rounded-xl font-semibold text-sm hover:bg-[#00A87D] transition-all"
               >
                 <Plus className="w-4 h-4" />
                 New Delivery

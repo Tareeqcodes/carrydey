@@ -28,12 +28,12 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-black border-t border-white/10">
+    <footer className="bg-white dark:bg-black border-t border-black/10 dark:border-white/10">
       <div className="max-w-7xl mx-auto px-5 lg:px-8 py-12 lg:py-16">
         <div className="flex flex-col gap-8 md:flex-row md:justify-between items-start">
 
           <div className="w-full md:w-auto">
-            <h3 className="font-semibold text-white mb-4 text-center md:text-left text-sm">
+            <h3 className="font-semibold text-black dark:text-white mb-4 text-center md:text-left text-sm">
               Quick links
             </h3>
             <div className="grid grid-cols-1 gap-2 md:flex md:flex-col">
@@ -41,7 +41,7 @@ export default function Footer() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-white/40 hover:text-white transition-colors duration-200 text-sm text-center md:text-left"
+                  className="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors duration-200 text-sm text-center md:text-left"
                 >
                   {link.label}
                 </Link>
@@ -50,7 +50,7 @@ export default function Footer() {
           </div>
 
           <div className="w-full md:w-auto">
-            <h3 className="font-semibold text-white mb-4 text-center md:text-left text-sm">
+            <h3 className="font-semibold text-black dark:text-white mb-4 text-center md:text-left text-sm">
               Connect
             </h3>
             <div className="flex justify-center md:justify-start space-x-3">
@@ -61,7 +61,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-white/40 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all duration-200"
+                  className="w-9 h-9 rounded-full border border-black/15 dark:border-white/15 flex items-center justify-center text-black/40 dark:text-white/40 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-all duration-200"
                 >
                   {social.icon}
                 </a>
@@ -71,8 +71,8 @@ export default function Footer() {
 
         </div>
 
-        <div className="mt-8 pt-8 border-t border-white/10">
-          <p className="text-white/30 text-sm text-center">
+        <div className="mt-8 pt-8 border-t border-black/10 dark:border-white/10">
+          <p className="text-black/30 dark:text-white/30 text-sm text-center">
             © {currentYear} Carrydey. All rights reserved.
           </p>
         </div>

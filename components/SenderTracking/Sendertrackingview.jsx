@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package,
@@ -65,34 +65,34 @@ function ProgressBar({ progress }) {
 }
 
 /** Single timeline row */
-function TimelineRow({ step, isActive, isCurrent, isLast }) {
+function TimelineRow({ step, isActive, isCurrent, isLast, isDark }) {
   const Icon = step.icon;
   return (
     <div className="relative flex items-center gap-4">
       {!isLast && (
         <div
           className={`absolute left-[15px] top-10 w-0.5 h-7 transition-colors ${
-            isActive ? 'bg-[#3A0A21]' : 'bg-gray-200'
+            isActive ? 'bg-[#00C896]' : isDark ? 'bg-gray-700' : 'bg-gray-200'
           }`}
         />
       )}
       <div
         className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-xl border-2 flex-shrink-0 transition-all ${
           isActive
-            ? 'bg-[#3A0A21] border-[#3A0A21] text-white shadow-md shadow-[#3A0A21]/30'
-            : 'bg-gray-50 border-gray-200 text-gray-400'
+            ? 'bg-[#00C896] border-[#00C896] text-white shadow-md shadow-[#00C896]/30'
+            : isDark ? 'bg-gray-800 border-gray-700 text-gray-500' : 'bg-gray-50 border-gray-200 text-gray-400'
         }`}
       >
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1">
         <p
-          className={`font-semibold text-sm ${isActive ? 'text-gray-900' : 'text-gray-400'}`}
+          className={`font-semibold text-sm ${isActive ? isDark ? 'text-white' : 'text-gray-900' : isDark ? 'text-gray-500' : 'text-gray-400'}`}
         >
           {step.label}
         </p>
         {isCurrent && (
-          <p className="text-xs text-[#3A0A21] font-medium mt-0.5">
+          <p className="text-xs text-[#00C896] font-medium mt-0.5">
             In Progress
           </p>
         )}
@@ -174,6 +174,16 @@ const SenderTrackingView = ({
   const [favourite, setFavourite] = useState(initialFav);
   const [copiedPickup, copyPickup] = useCopy();
   const [copiedDropoff, copyDropoff] = useCopy();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   const progress = STATUS_PROGRESS[delivery?.status] ?? 0;
   const isDelivered = delivery?.status === 'delivered';
@@ -233,7 +243,7 @@ const SenderTrackingView = ({
         className="space-y-5"
       >
         {/* Status Banner */}
-        <div className="bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-3xl p-6 text-white">
+        <div className="bg-gradient-to-br from-[#00C896] to-[#00A87D] rounded-3xl p-6 text-white">
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-1">
@@ -255,8 +265,8 @@ const SenderTrackingView = ({
         </div>
 
         {/* Timeline */}
-        <div className="bg-white rounded-3xl border border-gray-200 p-6">
-          <h3 className="text-base font-bold text-gray-900 mb-5">
+        <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} rounded-3xl border p-6`}>
+          <h3 className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-5`}>
             Delivery Timeline
           </h3>
           <div className="space-y-5">
@@ -267,14 +277,15 @@ const SenderTrackingView = ({
                 isActive={progress >= step.progress}
                 isCurrent={i === currentStepIndex}
                 isLast={i === TIMELINE_STEPS.length - 1}
+                isDark={isDark}
               />
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-gray-200 p-6 space-y-3">
+        <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} rounded-3xl border p-6 space-y-3`}>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-base font-bold text-gray-900">Route</h3>
+            <h3 className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Route</h3>
             {isVendorBatch && (
               <span
                 className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white"
@@ -298,19 +309,19 @@ const SenderTrackingView = ({
 
           {/* Dropoffs */}
           {isVendorBatch ? (
-            <div className="rounded-2xl border border-gray-200 overflow-hidden">
+            <div className={`rounded-2xl border ${isDark ? 'border-gray-700' : 'border-gray-200'} overflow-hidden`}>
               {stops.map((stop, i) => {
                 const isDone = i < currentStopIdx;
                 const isCurrent = i === currentStopIdx;
                 return (
                   <div
                     key={i}
-                    className={`flex gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0 ${
+                    className={`flex gap-3 px-4 py-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'} last:border-b-0 ${
                       isCurrent
-                        ? 'bg-orange-50'
+                        ? isDark ? 'bg-orange-900/20' : 'bg-orange-50'
                         : isDone
-                          ? 'bg-gray-50'
-                          : 'bg-white'
+                          ? isDark ? 'bg-gray-800/50' : 'bg-gray-50'
+                          : isDark ? 'bg-black/40' : 'bg-white'
                     }`}
                   >
                     {/* Stop indicator */}
@@ -322,7 +333,7 @@ const SenderTrackingView = ({
                             ? '#10b981'
                             : isCurrent
                               ? '#FF6B35'
-                              : '#d1d5db',
+                              : isDark ? '#4b5563' : '#d1d5db',
                         }}
                       >
                         {isDone ? '✓' : i + 1}
@@ -332,7 +343,7 @@ const SenderTrackingView = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p
-                          className={`text-sm font-semibold truncate ${isDone ? 'text-gray-400 line-through' : 'text-gray-900'}`}
+                          className={`text-sm font-semibold truncate ${isDone ? isDark ? 'text-gray-600 line-through' : 'text-gray-400 line-through' : isDark ? 'text-white' : 'text-gray-900'}`}
                         >
                           {stop.dropoffAddress}
                         </p>
@@ -348,12 +359,12 @@ const SenderTrackingView = ({
                         )}
                       </div>
                       {stop.dropoffContactName && (
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                           {stop.dropoffContactName}
                         </p>
                       )}
                       {stop.orderRef && (
-                        <p className="text-[10px] text-gray-400 font-mono mt-0.5">
+                        <p className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-gray-400'} font-mono mt-0.5`}>
                           {stop.orderRef}
                         </p>
                       )}
@@ -363,13 +374,13 @@ const SenderTrackingView = ({
               })}
             </div>
           ) : (
-            <div className="flex gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
-              <MapPin className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <div className={`flex gap-3 p-4 ${isDark ? 'bg-emerald-900/20 border-emerald-800' : 'bg-emerald-50 border-emerald-200'} rounded-2xl border`}>
+              <MapPin className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'} mt-0.5 flex-shrink-0`} />
               <div>
-                <p className="text-xs font-semibold text-emerald-900 mb-0.5">
+                <p className={`text-xs font-semibold ${isDark ? 'text-emerald-300' : 'text-emerald-900'} mb-0.5`}>
                   Dropoff
                 </p>
-                <p className="text-sm text-emerald-800">
+                <p className={`text-sm ${isDark ? 'text-emerald-200' : 'text-emerald-800'}`}>
                   {delivery?.dropoffAddress}
                 </p>
               </div>
@@ -488,10 +499,10 @@ const SenderTrackingView = ({
       className="space-y-5"
     >
       {/* Courier Card */}
-      <div className="bg-white rounded-3xl border border-gray-200 p-6">
+      <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} rounded-3xl border p-6`}>
         <div className="flex items-center gap-4 mb-5">
           {/* Avatar */}
-          <div className="relative w-10 h-10 bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-[#3A0A21]/20 flex-shrink-0">
+          <div className="relative w-10 h-10 bg-gradient-to-br from-[#00C896] to-[#00A87D] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-[#00C896]/20 flex-shrink-0">
             {delivery?.driverName?.charAt(0).toUpperCase()}
             {/* Verified badge */}
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
@@ -500,7 +511,7 @@ const SenderTrackingView = ({
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-gray-900 text-lg leading-tight">
+            <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-lg leading-tight`}>
               {delivery?.driverName}
             </p>
           </div>
@@ -523,18 +534,18 @@ const SenderTrackingView = ({
         {delivery?.driverPhone && (
           <a
             href={`tel:${delivery.driverPhone}`}
-            className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors group"
+            className={`flex items-center gap-3 p-4 ${isDark ? 'bg-gray-800/50 hover:bg-gray-800' : 'bg-gray-50 hover:bg-gray-100'} rounded-2xl transition-colors group`}
           >
-            <div className="p-2 bg-[#3A0A21] rounded-xl">
+            <div className="p-2 bg-[#00C896] rounded-xl">
               <Phone className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-gray-500 font-medium">Phone</p>
-              <p className="text-sm font-bold text-gray-900">
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} font-medium`}>Phone</p>
+              <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {delivery.driverPhone}
               </p>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className={`w-4 h-4 ${isDark ? 'text-gray-600' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`} />
           </a>
         )}
 
@@ -561,36 +572,36 @@ const SenderTrackingView = ({
 
       {/* Rebook Section — only when delivered */}
       {isDelivered && (
-        <div className="bg-gradient-to-br from-[#3A0A21]/5 to-[#3A0A21]/10 rounded-3xl border border-[#3A0A21]/20 p-6 space-y-4">
+        <div className={`${isDark ? 'bg-gray-900/50 border-gray-700' : 'bg-[#00C896]/5 border-[#00C896]/20'} rounded-3xl border p-6 space-y-4`}>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#3A0A21] rounded-xl">
+            <div className="p-2 bg-[#00C896] rounded-xl">
               <Repeat2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900">
+              <h4 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Rebook {delivery?.driverName?.split(' ')[0]}
               </h4>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                 Start a new delivery with the same courier
               </p>
             </div>
           </div>
 
           {/* Route preview of last delivery */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-2">
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-3">
+          <div className={`${isDark ? 'bg-black/60 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl border p-4 space-y-2`}>
+            <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'} font-semibold uppercase tracking-wide mb-3`}>
               Last Route
             </p>
             <div className="flex items-start gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-              <p className="text-sm text-gray-700 line-clamp-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'} line-clamp-1`}>
                 {delivery?.pickupAddress}
               </p>
             </div>
-            <div className="ml-[3px] w-px h-3 bg-gray-200" />
+            <div className={`ml-[3px] w-px h-3 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`} />
             <div className="flex items-start gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
-              <p className="text-sm text-gray-700 line-clamp-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'} line-clamp-1`}>
                 {delivery?.dropoffAddress}
               </p>
             </div>
@@ -598,7 +609,7 @@ const SenderTrackingView = ({
 
           <button
             onClick={handleRebook}
-            className="w-full py-4 bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 bg-gradient-to-r from-[#00C896] to-[#00C896] text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-5 h-5" />
             Rebook This Courier
@@ -632,11 +643,11 @@ const SenderTrackingView = ({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-4"
     >
-      <div className="bg-white rounded-3xl border border-gray-200 p-6">
-        <h3 className="text-base font-semibold text-gray-600 mb-5">
+      <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} rounded-3xl border p-6`}>
+        <h3 className={`text-base font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-5`}>
           Delivery Information
         </h3>
-        <div className="divide-y divide-gray-100">
+        <div className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-100'}`}>
           {[
             {
               label: 'Package Size',
@@ -678,10 +689,10 @@ const SenderTrackingView = ({
                 key={label}
                 className="flex items-center justify-between py-3.5"
               >
-                <span className="text-gray-500 font-medium text-sm">
+                <span className={`${isDark ? 'text-gray-400' : 'text-gray-500'} font-medium text-sm`}>
                   {label}
                 </span>
-                <span className="font-bold text-gray-900 text-sm">{value}</span>
+                <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-sm`}>{value}</span>
               </div>
             ))}
         </div>
@@ -689,15 +700,15 @@ const SenderTrackingView = ({
 
       {/* Batch stops breakdown */}
       {isVendorBatch && (
-        <div className="bg-white rounded-3xl border border-gray-200 p-6">
-          <h3 className="text-base font-semibold text-gray-600 mb-4">
+        <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} rounded-3xl border p-6`}>
+          <h3 className={`text-base font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
             All Orders
           </h3>
           <div className="space-y-2">
             {stops.map((stop, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl"
+                className={`flex items-start gap-3 p-3 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'} rounded-2xl`}
               >
                 <div
                   className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5"
@@ -708,16 +719,16 @@ const SenderTrackingView = ({
                   {i < currentStopIdx ? '✓' : i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
                     {stop.dropoffAddress}
                   </p>
                   {stop.dropoffContactName && (
-                    <p className="text-xs text-gray-500">
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                       {stop.dropoffContactName}
                     </p>
                   )}
                   {stop.orderRef && (
-                    <p className="text-[10px] text-gray-400 font-mono">
+                    <p className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-gray-400'} font-mono`}>
                       {stop.orderRef}
                     </p>
                   )}
@@ -737,25 +748,25 @@ const SenderTrackingView = ({
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="bg-gray-50 rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className={`${isDark ? 'bg-black/80' : 'bg-gray-50'} rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col`}
       >
         {/* ── Header ── */}
-        <div className="bg-white border-b border-gray-200 px-6 py-5 flex items-center justify-between flex-shrink-0">
+        <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} border-b px-6 py-5 flex items-center justify-between flex-shrink-0`}>
           <div>
-            <h2 className="text-lg font-bold text-gray-700">
+            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-700'}`}>
               Delivery Tracking
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+            className={`p-2 ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'} rounded-xl transition-colors`}
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
           </button>
         </div>
 
         {/* ── Tabs ── */}
-        <div className="bg-white px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <div className={`${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-gray-200'} px-4 py-3 border-b flex-shrink-0`}>
           <div className="flex gap-1.5">
             {TABS.map((tab) => (
               <button
@@ -763,8 +774,8 @@ const SenderTrackingView = ({
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative px-4 py-2 rounded-xl text-sm font-bold transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white shadow-md'
-                    : 'text-gray-500 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-[#00C896] to-[#00C896] text-white shadow-md'
+                    : isDark ? 'text-gray-400 hover:bg-white/10' : 'text-gray-500 hover:bg-gray-100'
                 }`}
               >
                 {tab.label}
@@ -778,7 +789,7 @@ const SenderTrackingView = ({
         </div>
 
         {/* ── Content ── */}
-        <div className="flex-1 overflow-y-auto p-5">
+        <div className={`flex-1 overflow-y-auto p-5 ${isDark ? 'bg-black' : ''}`}>
           <AnimatePresence mode="wait">
             {activeTab === 'tracking' && renderTracking()}
             {activeTab === 'security' && renderSecurity()}
@@ -806,7 +817,7 @@ const SenderTrackingView = ({
               className="bg-white rounded-3xl p-8 max-w-sm w-full"
             >
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#3A0A21] to-[#5A0A31] rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#00C896] to-[#00A87D] rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg">
                   {delivery?.driverName?.charAt(0).toUpperCase()}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">

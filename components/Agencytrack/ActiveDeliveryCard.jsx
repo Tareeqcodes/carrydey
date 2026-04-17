@@ -16,8 +16,11 @@ import { formatNairaSimple } from '@/hooks/currency';
 
 function parseStops(raw) {
   if (!raw) return [];
-  try { return typeof raw === 'string' ? JSON.parse(raw) : raw; }
-  catch { return []; }
+  try {
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch {
+    return [];
+  }
 }
 
 const getStatusConfig = (status) => {
@@ -58,9 +61,6 @@ const getStatusConfig = (status) => {
       ringColor: '#A5B4FC',
     },
   };
-
-  
-
   return (
     configs[status] || {
       dot: '#6B7280',
@@ -72,26 +72,32 @@ const getStatusConfig = (status) => {
   );
 };
 
-const RouteVisual = ({ pickup, dropoff, dropoffInstructions, mutipledropoff, isVendorBatch }) => {
+const RouteVisual = ({
+  pickup,
+  dropoff,
+  dropoffInstructions,
+  mutipledropoff,
+  isVendorBatch,
+}) => {
   const stops = isVendorBatch ? parseStops(mutipledropoff) : [];
-
   return (
-    <div className="rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
-      {/* Pickup — unchanged */}
+    <div className="rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
       <div className="flex items-start gap-2.5 px-3 py-2.5">
         <div className="flex flex-col items-center gap-0.5 pt-0.5">
           <div className="w-2.5 h-2.5 rounded-full border-2 border-green-500 bg-green-100 flex-shrink-0" />
-          <div className="w-px h-5 border-l border-dashed border-gray-300" />
+          <div className="w-px h-5 border-l border-dashed border-black/20 dark:border-white/20" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Pickup</p>
-          <p className="text-xs text-gray-900 font-medium leading-snug">{pickup}</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40 mb-0.5">
+            Pickup
+          </p>
+          <p className="text-xs text-black dark:text-white font-medium leading-snug">
+            {pickup}
+          </p>
         </div>
       </div>
-
-      {/* Dropoffs */}
       {isVendorBatch && stops.length > 0 ? (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-black/5 dark:divide-white/5">
           {stops.map((stop, i) => (
             <div key={i} className="flex items-start gap-2.5 px-3 py-2">
               <div className="flex flex-col items-center gap-0.5 pt-0.5 flex-shrink-0">
@@ -99,24 +105,34 @@ const RouteVisual = ({ pickup, dropoff, dropoffInstructions, mutipledropoff, isV
                   className="w-2.5 h-2.5 rounded-full border-2 flex items-center justify-center"
                   style={{ borderColor: '#FF6B35', backgroundColor: '#FFF7F3' }}
                 >
-                  <span className="text-[7px] font-bold" style={{ color: '#FF6B35' }}>{i + 1}</span>
+                  <span
+                    className="text-[7px] font-bold"
+                    style={{ color: '#FF6B35' }}
+                  >
+                    {i + 1}
+                  </span>
                 </div>
                 {i < stops.length - 1 && (
-                  <div className="w-px h-3 border-l border-dashed border-gray-300" />
+                  <div className="w-px h-3 border-l border-dashed border-black/20 dark:border-white/20" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40 mb-0.5">
                   Stop {i + 1}
                 </p>
-                <p className="text-xs text-gray-900 font-medium leading-snug">{stop.dropoffAddress}</p>
+                <p className="text-xs text-black dark:text-white font-medium leading-snug">
+                  {stop.dropoffAddress}
+                </p>
                 {stop.dropoffContactName && (
-                  <p className="text-[10px] text-gray-500 mt-0.5">
-                    {stop.dropoffContactName}{stop.dropoffPhone ? ` · ${stop.dropoffPhone}` : ''}
+                  <p className="text-[10px] text-black/50 dark:text-white/50 mt-0.5">
+                    {stop.dropoffContactName}
+                    {stop.dropoffPhone ? ` · ${stop.dropoffPhone}` : ''}
                   </p>
                 )}
                 {stop.orderRef && (
-                  <p className="text-[10px] text-gray-400 font-mono mt-0.5">{stop.orderRef}</p>
+                  <p className="text-[10px] text-black/40 dark:text-white/40 font-mono mt-0.5">
+                    {stop.orderRef}
+                  </p>
                 )}
               </div>
             </div>
@@ -128,12 +144,18 @@ const RouteVisual = ({ pickup, dropoff, dropoffInstructions, mutipledropoff, isV
             <div className="w-2.5 h-2.5 rounded-full border-2 border-red-400 bg-red-100" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Dropoff</p>
-            <p className="text-xs text-gray-900 font-medium leading-snug">{dropoff}</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40 mb-0.5">
+              Dropoff
+            </p>
+            <p className="text-xs text-black dark:text-white font-medium leading-snug">
+              {dropoff}
+            </p>
             {dropoffInstructions && (
-              <div className="mt-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1.5 bg-amber-50 border border-amber-200">
+              <div className="mt-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30">
                 <Navigation className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-amber-600" />
-                <p className="text-[10px] leading-snug text-amber-900">{dropoffInstructions}</p>
+                <p className="text-[10px] leading-snug text-amber-900 dark:text-amber-300">
+                  {dropoffInstructions}
+                </p>
               </div>
             )}
           </div>
@@ -143,13 +165,10 @@ const RouteVisual = ({ pickup, dropoff, dropoffInstructions, mutipledropoff, isV
   );
 };
 
-// Driver link share panel — shown when delivery is assigned (or beyond)
 const DriverLinkPanel = ({ delivery }) => {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
-
   if (!delivery.driverToken) return null;
-
   const driverUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/driver/${delivery.driverToken}`;
 
   const handleCopy = (e) => {
@@ -158,7 +177,6 @@ const DriverLinkPanel = ({ delivery }) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
   const handleShare = async (e) => {
     e.stopPropagation();
     if (navigator.share) {
@@ -171,38 +189,38 @@ const DriverLinkPanel = ({ delivery }) => {
         setShared(true);
         setTimeout(() => setShared(false), 2000);
       } catch {
-        // fallback to copy
         handleCopy(e);
       }
     } else {
       handleCopy(e);
     }
   };
-
   const handleWhatsApp = (e) => {
     e.stopPropagation();
     const text = encodeURIComponent(
       `Hi ${delivery.driverName || 'Driver'}, you have a new delivery assignment. Open this link to view details and confirm pickup/dropoff:\n${driverUrl}`
     );
-    window.open(`https://wa.me/${delivery.driverPhone?.replace(/\D/g, '')}?text=${text}`, '_blank');
+    window.open(
+      `https://wa.me/${delivery.driverPhone?.replace(/\D/g, '')}?text=${text}`,
+      '_blank'
+    );
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-blue-200 bg-blue-50">
-      <div className="px-3 py-2 border-b border-blue-200 flex items-center gap-1.5">
-        <Link2 className="w-3 h-3 text-blue-600" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">
+    <div className="rounded-xl overflow-hidden border border-blue-200 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/10">
+      <div className="px-3 py-2 border-b border-blue-200 dark:border-blue-900/30 flex items-center gap-1.5">
+        <Link2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 dark:text-blue-400">
           Driver Portal Link
         </span>
       </div>
       <div className="px-3 py-2.5">
-        <p className="text-[10px] text-blue-600 mb-2 leading-snug">
-          Share this link with the driver so they can confirm pickup &amp; delivery themselves.
+        <p className="text-[10px] text-blue-600 dark:text-blue-400 mb-2 leading-snug">
+          Share this link with the driver so they can confirm pickup &amp;
+          delivery themselves.
         </p>
-
-        {/* URL display */}
-        <div className="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 mb-2">
-          <p className="flex-1 text-[10px] text-gray-500 font-mono truncate">
+        <div className="flex items-center gap-1.5 p-2 rounded-lg bg-white dark:bg-black border border-blue-200 dark:border-blue-900/30 mb-2">
+          <p className="flex-1 text-[10px] text-black/50 dark:text-white/50 font-mono truncate">
             /driver/{delivery.driverToken?.slice(0, 16)}...
           </p>
           <button
@@ -214,14 +232,15 @@ const DriverLinkPanel = ({ delivery }) => {
               border: `1px solid ${copied ? '#BBF7D0' : '#BFDBFE'}`,
             }}
           >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            {copied ? (
+              <Check className="w-3 h-3" />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
-
-        {/* Action buttons */}
         <div className="flex gap-2">
-          {/* WhatsApp — primary CTA */}
           {delivery.driverPhone && (
             <button
               onClick={handleWhatsApp}
@@ -232,24 +251,29 @@ const DriverLinkPanel = ({ delivery }) => {
               WhatsApp
             </button>
           )}
-
-          {/* Share / Open */}
           <button
             onClick={handleShare}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all hover:bg-blue-100"
-            style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all hover:bg-blue-100 dark:hover:bg-blue-900/30"
+            style={{
+              background: '#EFF6FF',
+              color: '#2563EB',
+              border: '1px solid #BFDBFE',
+            }}
           >
             <Share2 className="w-3.5 h-3.5" />
             Share
           </button>
-
           <a
             href={driverUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all hover:bg-gray-100"
-            style={{ background: '#F3F4F6', color: '#374151', border: '1px solid #E5E7EB' }}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all hover:bg-black/5 dark:hover:bg-white/10"
+            style={{
+              background: 'rgba(0,0,0,0.05)',
+              color: '#374151',
+              border: '1px solid rgba(0,0,0,0.1)',
+            }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Preview
@@ -260,17 +284,23 @@ const DriverLinkPanel = ({ delivery }) => {
   );
 };
 
-
-const ActiveDeliveryCard = ({ delivery, showAssignButton = false, onAssign }) => {
+const ActiveDeliveryCard = ({
+  delivery,
+  showAssignButton = false,
+  onAssign,
+}) => {
   const [expanded, setExpanded] = useState(false);
   const statusConfig = getStatusConfig(delivery.status);
-
-  // Parse batch data once at card level
   const isVendorBatch = delivery.isVendorBatch;
   const stops = isVendorBatch ? parseStops(delivery.mutipledropoff) : [];
   const currentStopIdx = delivery.currentStopIdx ?? 0;
-
-  const isExpandable = ['accepted','pending_assignment','assigned','picked_up','in_transit'].includes(delivery.status);
+  const isExpandable = [
+    'accepted',
+    'pending_assignment',
+    'assigned',
+    'picked_up',
+    'in_transit',
+  ].includes(delivery.status);
 
   const statusProgressLabel = {
     assigned: 'Waiting for driver to confirm pickup',
@@ -279,20 +309,17 @@ const ActiveDeliveryCard = ({ delivery, showAssignButton = false, onAssign }) =>
       ? `On stop ${currentStopIdx + 1} of ${stops.length}`
       : 'Package is on the way',
   }[delivery.status];
-  
 
   const renderActionButton = () => {
-    const baseClass =
-      'w-full py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 mt-2';
-
     if (
-      (delivery.status === 'accepted' || delivery.status === 'pending_assignment') &&
+      (delivery.status === 'accepted' ||
+        delivery.status === 'pending_assignment') &&
       showAssignButton
     ) {
       return (
         <button
           onClick={() => onAssign(delivery)}
-          className={baseClass}
+          className="w-full py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 mt-2"
           style={{ background: '#3A0A21', color: 'white' }}
         >
           <User className="w-3 h-3" />
@@ -300,29 +327,28 @@ const ActiveDeliveryCard = ({ delivery, showAssignButton = false, onAssign }) =>
         </button>
       );
     }
-
     return null;
   };
 
   return (
     <div
-      className="bg-white rounded-xl overflow-hidden transition-all"
+      className="bg-white dark:bg-black rounded-xl overflow-hidden transition-all"
       style={{
-        border: `1px solid ${expanded ? statusConfig.ringColor : '#E5E7EB'}`,
+        border: `1px solid ${expanded ? statusConfig.ringColor : 'rgba(0,0,0,0.1)'}`,
         boxShadow: expanded ? `0 0 0 3px ${statusConfig.ringColor}40` : 'none',
       }}
     >
-      {/* Compact Header */}
       <div
-        className="flex items-center gap-2.5 p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2.5 p-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
         onClick={() => isExpandable && setExpanded(!expanded)}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-semibold text-gray-900">
-              {isVendorBatch ? `${stops.length} stops` : (delivery.packageSize || 'Medium')}
+            <span className="text-xs font-semibold text-black dark:text-white">
+              {isVendorBatch
+                ? `${stops.length} stops`
+                : delivery.packageSize || 'Medium'}
             </span>
-            {/* Batch badge */}
             {isVendorBatch && (
               <span
                 className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white"
@@ -333,42 +359,44 @@ const ActiveDeliveryCard = ({ delivery, showAssignButton = false, onAssign }) =>
             )}
             <span
               className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full"
-              style={{ background: statusConfig.badgeBg, color: statusConfig.badgeText }}
+              style={{
+                background: statusConfig.badgeBg,
+                color: statusConfig.badgeText,
+              }}
             >
               {statusConfig.label}
             </span>
           </div>
-
-          {/* Route preview — for batch show first stop */}
-          <p className="text-[10px] text-gray-400 truncate mt-0.5">
+          <p className="text-[10px] text-black/40 dark:text-white/40 truncate mt-0.5">
             {delivery.pickupAddress?.split(',')[0]} →{' '}
             {isVendorBatch && stops.length > 0
               ? `${stops[currentStopIdx]?.dropoffAddress || stops[0]?.dropoffAddress} (+${stops.length - 1} more)`
               : delivery.dropoffAddress?.split(',')[0]}
           </p>
-
           {statusProgressLabel && !expanded && (
-            <p className="text-[10px] text-blue-500 mt-0.5 font-medium">{statusProgressLabel}</p>
+            <p className="text-[10px] text-blue-500 mt-0.5 font-medium">
+              {statusProgressLabel}
+            </p>
           )}
         </div>
-
         <div className="text-right flex-shrink-0">
           <p className="text-sm font-bold text-green-600">
             {formatNairaSimple(delivery.suggestedFare || delivery.offeredFare)}
           </p>
         </div>
-
         {isExpandable && (
-          <div className="flex-shrink-0 text-gray-400">
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          <div className="flex-shrink-0 text-black/40 dark:text-white/40">
+            {expanded ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
           </div>
         )}
       </div>
 
-      {/* Expanded panel */}
       {expanded && isExpandable && (
-        <div className="border-t border-gray-100 px-3 pb-3 pt-2.5 space-y-2.5 bg-gray-50">
-          {/* Route — now batch-aware */}
+        <div className="border-t border-black/10 dark:border-white/10 px-3 pb-3 pt-2.5 space-y-2.5 bg-black/5 dark:bg-white/5">
           <RouteVisual
             pickup={delivery.pickupAddress}
             dropoff={delivery.dropoffAddress}
@@ -376,55 +404,65 @@ const ActiveDeliveryCard = ({ delivery, showAssignButton = false, onAssign }) =>
             mutipledropoff={delivery.mutipledropoff}
             isVendorBatch={isVendorBatch}
           />
-
-          {/* Stop progress pill for in_transit batch */}
           {isVendorBatch && delivery.status === 'in_transit' && (
-            <div className="flex items-center gap-2 p-2.5 rounded-xl border"
-              style={{ background: '#FFF7F3', borderColor: '#FF6B3540' }}>
-              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#FF6B35' }} />
-              <p className="text-[11px] font-semibold" style={{ color: '#FF6B35' }}>
+            <div
+              className="flex items-center gap-2 p-2.5 rounded-xl border"
+              style={{ background: '#FFF7F3', borderColor: '#FF6B3540' }}
+            >
+              <div
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ background: '#FF6B35' }}
+              />
+              <p
+                className="text-[11px] font-semibold"
+                style={{ color: '#FF6B35' }}
+              >
                 Driver is on stop {currentStopIdx + 1} of {stops.length}
               </p>
             </div>
           )}
-
-          {/* Driver Portal Link */}
-          {['assigned', 'picked_up', 'in_transit'].includes(delivery.status) && (
-            <DriverLinkPanel delivery={delivery} />
-          )}
-
+          {['assigned', 'picked_up', 'in_transit'].includes(
+            delivery.status
+          ) && <DriverLinkPanel delivery={delivery} />}
           {statusProgressLabel && (
-            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 border border-blue-200">
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/30">
               <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
-              <p className="text-[11px] text-blue-700 font-medium">{statusProgressLabel}</p>
+              <p className="text-[11px] text-blue-700 dark:text-blue-400 font-medium">
+                {statusProgressLabel}
+              </p>
             </div>
           )}
-
-          {/* Driver info — unchanged */}
           {delivery.driverName && (
-            <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-gray-200">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-black border border-black/10 dark:border-white/10">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                  style={{ background: '#3A0A21' }}>
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{ background: '#3A0A21' }}
+                >
                   {delivery.driverName[0]}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-900 truncate">{delivery.driverName}</p>
+                  <p className="text-xs font-semibold text-black dark:text-white truncate">
+                    {delivery.driverName}
+                  </p>
                   {delivery.driverPhone && (
-                    <p className="text-[10px] text-gray-500">{delivery.driverPhone}</p>
+                    <p className="text-[10px] text-black/50 dark:text-white/50">
+                      {delivery.driverPhone}
+                    </p>
                   )}
                 </div>
               </div>
               {delivery.driverPhone && (
-                <a href={`tel:${delivery.driverPhone}`}
+                <a
+                  href={`tel:${delivery.driverPhone}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center bg-green-50 border border-green-200 hover:bg-green-100">
+                  className="w-8 h-8 rounded-xl flex items-center justify-center bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 hover:bg-green-100"
+                >
                   <Phone className="w-3.5 h-3.5 text-green-600" />
                 </a>
               )}
             </div>
           )}
-
           {renderActionButton()}
         </div>
       )}

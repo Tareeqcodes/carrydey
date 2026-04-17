@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // No redirects needed - handle at Vercel level
+  
   async headers() {
     return [
       {

@@ -343,7 +343,7 @@ export default function InputLocation({
   // ── SSR skeleton ───────────────────────────────────────────────────────
   if (!isClient) {
     return (
-      <div className="w-full rounded-2xl border border-gray-200 p-5 space-y-3 bg-black">
+      <div className="w-full  border border-black/10 dark:border-gray-200 p-5 space-y-3 bg-black">
         {['Pickup', 'Drop-off 1'].map((label) => (
           <div key={label}>
             <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
@@ -360,7 +360,7 @@ export default function InputLocation({
   return (
     <div
       ref={containerRef}
-      className="bg-black rounded-2xl border border-gray-200 p-5 space-y-4 shadow-sm"
+      className="bg-white dark:bg-black  rounded-2xl border border-black/10 dark:border-gray-200  p-5 space-y-4 shadow-sm"
     >
       {/* ── Pickup ── */}
       <div className="relative">
@@ -395,7 +395,7 @@ export default function InputLocation({
               setActiveField('pickup');
               if (pickupAddress.length >= 3) setShowPickupSugg(true);
             }}
-            className="flex-1 py-3 text-sm text-white placeholder:text-white bg-transparent outline-none min-w-0"
+            className="flex-1 py-3 text-sm text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 bg-transparent outline-none min-w-0"
           />
           <div className="flex items-center pr-1 gap-0.5">
             {pickupAddress && (
@@ -519,7 +519,7 @@ export default function InputLocation({
                         )
                       );
                   }}
-                  className="flex-1 py-3 text-sm text-white placeholder-gray-400 bg-transparent outline-none min-w-0"
+                  className="flex-1 py-3 text-sm text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 bg-transparent outline-none min-w-0"
                 />
                 {d.address && (
                   <button

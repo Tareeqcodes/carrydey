@@ -56,7 +56,9 @@ const renderContent = (id) =>
     help: <Help />,
   })[id] ?? (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <p className="text-sm font-semibold text-gray-400">Coming soon</p>
+      <p className="text-sm font-semibold text-black/40 dark:text-white/40">
+        Coming soon
+      </p>
     </div>
   );
 
@@ -85,36 +87,38 @@ export default function Hub() {
   };
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-black relative overflow-hidden">
       <div className="max-w-lg mx-auto px-4 pt-6 pb-36">
         {/* PROFILE CARD */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/10 rounded-3xl p-5 mb-6 relative overflow-hidden"
+          className="bg-black/5 dark:bg-white/10 rounded-3xl p-5 mb-6 relative overflow-hidden"
         >
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
               backgroundImage:
-                'radial-gradient(circle, white 1px, transparent 1px)',
+                'radial-gradient(circle, black 1px, transparent 1px)',
               backgroundSize: '18px 18px',
             }}
           />
           <div className="relative z-10 flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/15 rounded-2xl flex items-center justify-center border border-white/20 flex-shrink-0">
-              <span className="text-white font-bold text-xl">{initial}</span>
+            <div className="w-14 h-14 bg-black/10 dark:bg-white/15 rounded-2xl flex items-center justify-center border border-black/10 dark:border-white/20 flex-shrink-0">
+              <span className="text-black dark:text-white font-bold text-xl">
+                {initial}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <p className="text-white font-bold text-[17px] truncate">
+                <p className="text-black dark:text-white font-bold text-[17px] truncate">
                   {name}
                 </p>
-                <span className="bg-white/15 text-white/70 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-white/15 uppercase tracking-widest flex-shrink-0">
+                <span className="bg-black/10 dark:bg-white/15 text-black/70 dark:text-white/70 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-black/10 dark:border-white/15 uppercase tracking-widest flex-shrink-0">
                   {badge}
                 </span>
               </div>
-              <p className="text-white/50 text-[12px] truncate font-medium">
+              <p className="text-black/50 dark:text-white/50 text-[12px] truncate font-medium">
                 {email}
               </p>
             </div>
@@ -133,18 +137,22 @@ export default function Hub() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05, duration: 0.22 }}
                 whileTap={{ scale: 0.985 }}
-                className="w-full flex items-center gap-3.5 p-4 bg-white/10 rounded-2xl  hover:shadow-sm transition-all duration-150 text-left"
+                className="w-full flex items-center gap-3.5 p-4 bg-black/5 dark:bg-white/10 rounded-2xl hover:shadow-sm transition-all duration-150 text-left"
               >
-                <div className="w-9 h-9 bg-white/10 border border-white/10 rounded-xl flex items-center justify-center">
-                  <Icon size={16} className="text-white" />
+                <div className="w-9 h-9 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-xl flex items-center justify-center">
+                  <Icon size={16} className="text-black dark:text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-white">{item.label}</p>
-                  <p className="text-[12px] text-white/50 mt-0.5">{item.desc}</p>
+                  <p className="text-[13px] font-bold text-black dark:text-white">
+                    {item.label}
+                  </p>
+                  <p className="text-[12px] text-black/50 dark:text-white/50 mt-0.5">
+                    {item.desc}
+                  </p>
                 </div>
                 <ChevronRight
                   size={14}
-                  className="text-white/30 flex-shrink-0"
+                  className="text-black/30 dark:text-white/30 flex-shrink-0"
                 />
               </motion.button>
             );
@@ -159,18 +167,23 @@ export default function Hub() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="flex items-center gap-3 w-full bg-white/10 border border-white/10 rounded-2xl p-4 mb-3 hover:border-white/20 hover:bg-white/15 transition-colors shadow-md"
+          className="flex items-center gap-3 w-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-2xl p-4 mb-3 hover:border-black/20 dark:hover:border-white/20 hover:bg-black/8 dark:hover:bg-white/15 transition-colors shadow-md"
         >
           <div className="w-9 h-9 bg-[#25D366] rounded-xl flex items-center justify-center flex-shrink-0">
             <Phone size={15} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="text-[13px] font-bold text-white">
+            <p className="text-[13px] font-bold text-black dark:text-white">
               Chat with us
             </p>
-            <p className="text-[12px] text-white/50">WhatsApp support</p>
+            <p className="text-[12px] text-black/50 dark:text-white/50">
+              WhatsApp support
+            </p>
           </div>
-          <ChevronRight size={14} className="text-gray-300" />
+          <ChevronRight
+            size={14}
+            className="text-black/30 dark:text-white/30"
+          />
         </motion.a>
 
         {/* LOGOUT */}
@@ -182,11 +195,10 @@ export default function Hub() {
           whileTap={{ scale: 0.97 }}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-red-500/20 bg-red-500/10 text-red-400 text-[13px] font-bold hover:bg-red-500/20 transition-colors shadow-md"
         >
-          <LogOut size={14} />
-          Log out
+          <LogOut size={14} /> Log out
         </motion.button>
 
-        <p className="text-center text-[10px] text-white/30 mt-6">
+        <p className="text-center text-[10px] text-black/30 dark:text-white/30 mt-6">
           Carrydey · Made for Nigeria 🇳🇬
         </p>
       </div>
@@ -200,23 +212,24 @@ export default function Hub() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute inset-0 z-30 bg-black overflow-y-auto"
+            className="absolute inset-0 z-30 bg-white dark:bg-black overflow-y-auto"
           >
-            {/* FIXED: sticky bar full-width, inner wrapper matches content width */}
-            <div className="sticky top-0 bg-black/80 backdrop-blur-sm border-b border-white/10">
+            <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-black/10 dark:border-white/10">
               <div className="max-w-lg mx-auto px-4 pt-4 pb-3">
                 <button
                   onClick={() => setActive(null)}
-                  className="flex items-center gap-2.5 text-white text-[13px] font-bold"
+                  className="flex items-center gap-2.5 text-black dark:text-white text-[13px] font-bold"
                 >
-                  <div className="w-8 h-8 bg-white/10 border border-white/10 rounded-xl flex items-center justify-center">
-                    <ArrowLeft size={13} className="text-white" />
+                  <div className="w-8 h-8 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-xl flex items-center justify-center">
+                    <ArrowLeft
+                      size={13}
+                      className="text-black dark:text-white"
+                    />
                   </div>
                   Back
                 </button>
               </div>
             </div>
-
             <div className="max-w-lg mx-auto px-4 pt-4 pb-32">
               {renderContent(active)}
             </div>

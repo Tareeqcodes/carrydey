@@ -17,6 +17,7 @@ import {
   AlertCircle,
   CheckCircle,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { tablesDB, ID, Query } from '@/lib/config/Appwriteconfig';
 import { useAuth } from '@/hooks/Authcontext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -38,7 +39,6 @@ const TiltCard = ({ children, className = '' }) => {
     stiffness: 300,
     damping: 30,
   });
-
   const handleMouse = (e) => {
     const rect = ref.current.getBoundingClientRect();
     x.set((e.clientX - rect.left) / rect.width - 0.5);
@@ -48,7 +48,6 @@ const TiltCard = ({ children, className = '' }) => {
     x.set(0);
     y.set(0);
   };
-
   return (
     <motion.div
       ref={ref}
@@ -62,7 +61,6 @@ const TiltCard = ({ children, className = '' }) => {
   );
 };
 
-/* ── Field row ── */
 const Field = ({
   icon: Icon,
   label,
@@ -76,8 +74,7 @@ const Field = ({
 }) => (
   <motion.div
     layout
-    className={`group relative flex items-start gap-4 py-5 ${!isLast ? 'border-b' : ''}`}
-    style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+    className={`group relative flex items-start gap-4 py-5 ${!isLast ? 'border-b border-black/10 dark:border-white/10' : ''}`}
   >
     <div
       className="mt-0.5 w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -89,10 +86,7 @@ const Field = ({
       <Icon className="w-4 h-4" style={{ color: '#00C896' }} />
     </div>
     <div className="flex-1 min-w-0">
-      <p
-        className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1"
-        style={{ color: 'rgba(255,255,255,0.4)' }}
-      >
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1 text-black/40 dark:text-white/40">
         {label}
       </p>
       {editable ? (
@@ -101,32 +95,30 @@ const Field = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-sm font-medium focus:outline-none text-white"
+          className="w-full bg-transparent text-sm font-medium focus:outline-none text-black dark:text-white"
           style={{ caretColor: '#00C896' }}
         />
       ) : (
         <p
-          className="text-sm font-medium truncate"
-          style={{ color: hint ? 'rgba(255,255,255,0.4)' : 'white' }}
+          className={`text-sm font-medium truncate ${hint ? 'text-black/40 dark:text-white/40' : 'text-black dark:text-white'}`}
         >
           {value || placeholder || '—'}
         </p>
       )}
       {hint && (
-        <p
-          className="text-[10px] mt-0.5"
-          style={{ color: 'rgba(255,255,255,0.25)' }}
-        >
+        <p className="text-[10px] mt-0.5 text-black/25 dark:text-white/25">
           {hint}
         </p>
       )}
     </div>
-    
   </motion.div>
 );
 
 const Profile = () => {
   const { user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme === 'dark';
+
   const [docId, setDocId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -148,7 +140,7 @@ const Profile = () => {
     .toUpperCase();
 
   useEffect(() => {
-    if (!user || !user.email) {
+    if (!user?.email) {
       setLoading(false);
       return;
     }
@@ -255,23 +247,54 @@ const Profile = () => {
     }
   };
 
-  /* ── Skeleton ── */
   if (loading) return <ProfileSkeleton />;
-
-  /* ── No user ── */
   if (!user)
     return (
       <div className="w-full flex flex-col items-center justify-center gap-3 py-24">
         <AlertCircle className="w-10 h-10 text-red-400" />
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-black/40 dark:text-white/40">
           Please log in to view your profile
         </p>
       </div>
     );
 
+  // Inline style tokens for values that can't be expressed with Tailwind dark: classes
+  const panelBg = dark ? '#000000' : '#ffffff';
+  const borderCol = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const cardBg = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+  const cardBorder = dark
+    ? '1px solid rgba(255,255,255,0.1)'
+    : '1px solid rgba(0,0,0,0.1)';
+  const headColor = dark ? 'white' : '#000000';
+  const mutedColor = dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+  const mutedColor2 = dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+  const btnBg = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+  const btnBorder = dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
+  const btnColor = dark ? 'white' : '#111111';
+  const togBg = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
+  const togBorder = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+  const availBadgeBorder = profileData.isAvailable
+    ? 'rgba(0,200,150,0.25)'
+    : togBorder;
+  const availBadgeBg = profileData.isAvailable
+    ? 'rgba(0,200,150,0.15)'
+    : dark
+      ? 'rgba(255,255,255,0.05)'
+      : 'rgba(0,0,0,0.04)';
+  const availBadgeColor = profileData.isAvailable
+    ? '#00C896'
+    : dark
+      ? 'rgba(255,255,255,0.4)'
+      : 'rgba(0,0,0,0.4)';
+  const availDot = profileData.isAvailable
+    ? '#00C896'
+    : dark
+      ? 'rgba(255,255,255,0.2)'
+      : 'rgba(0,0,0,0.2)';
+
   return (
     <div className="w-full" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Ambient blobs — subtle on white */}
+      {/* Ambient blobs */}
       <div
         className="absolute inset-0 pointer-events-none overflow-hidden"
         style={{ zIndex: 0 }}
@@ -320,17 +343,19 @@ const Profile = () => {
         )}
       </AnimatePresence>
 
-      {/* Two-col layout */}
-      <div className="relative z-10 w-full flex flex-col lg:flex-row">
-        {/* ── LEFT PANEL ── */}
+      {/* Layout */}
+      <div
+        className="relative z-10 w-full flex flex-col lg:flex-row"
+        style={{ background: panelBg }}
+      >
+        {/* LEFT PANEL */}
         <motion.div
           initial={{ opacity: 0, x: -32 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 lg:p-12"
-          style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ borderRight: `1px solid ${borderCol}` }}
         >
-          {/* Avatar + identity */}
           <div className="flex flex-col items-start gap-7 py-6 lg:py-0 lg:mt-8">
             <TiltCard className="cursor-default">
               <motion.div
@@ -343,7 +368,6 @@ const Profile = () => {
                 }}
                 className="relative"
               >
-                {/* Glow ring */}
                 <motion.div
                   animate={{ opacity: [0.3, 0.7, 0.3] }}
                   transition={{
@@ -357,7 +381,6 @@ const Profile = () => {
                       'radial-gradient(circle, rgba(255,107,53,0.12) 0%, transparent 70%)',
                   }}
                 />
-                {/* Avatar */}
                 <div
                   className="relative w-28 h-28 lg:w-36 lg:h-36 rounded-3xl flex items-center justify-center text-4xl lg:text-5xl font-black text-white select-none"
                   style={{
@@ -396,21 +419,14 @@ const Profile = () => {
               transition={{ delay: 0.3, duration: 0.55 }}
             >
               <h1
-                className="text-2xl lg:text-3xl xl:text-4xl font-black leading-tight mb-1.5 text-white"
-                style={{
-                  fontFamily: "'Fraunces', serif",
-                }}
+                className="text-2xl lg:text-3xl xl:text-4xl font-black leading-tight mb-1.5"
+                style={{ fontFamily: "'Fraunces', serif", color: headColor }}
               >
                 {profileData.userName || user.name || 'Your Name'}
               </h1>
-              <p
-                className="text-sm mb-4"
-                style={{ color: 'rgba(255,255,255,0.5)' }}
-              >
+              <p className="text-sm mb-4" style={{ color: mutedColor }}>
                 {profileData.email}
               </p>
-
-              {/* Badges */}
               <div className="flex flex-wrap gap-2">
                 <span
                   className="text-xs px-3 py-1 rounded-full font-semibold capitalize"
@@ -426,22 +442,14 @@ const Profile = () => {
                   <span
                     className="text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1.5"
                     style={{
-                      background: profileData.isAvailable
-                        ? 'rgba(0,200,150,0.15)'
-                        : 'rgba(255,255,255,0.05)',
-                      border: `1px solid ${profileData.isAvailable ? 'rgba(0,200,150,0.25)' : 'rgba(255,255,255,0.1)'}`,
-                      color: profileData.isAvailable
-                        ? '#00C896'
-                        : 'rgba(255,255,255,0.4)',
+                      background: availBadgeBg,
+                      border: `1px solid ${availBadgeBorder}`,
+                      color: availBadgeColor,
                     }}
                   >
                     <span
                       className="w-1.5 h-1.5 rounded-full inline-block"
-                      style={{
-                        background: profileData.isAvailable
-                          ? '#00C896'
-                          : 'rgba(255,255,255,0.2)',
-                      }}
+                      style={{ background: availDot }}
                     />
                     {profileData.isAvailable ? 'Available' : 'Unavailable'}
                   </span>
@@ -450,7 +458,6 @@ const Profile = () => {
             </motion.div>
           </div>
 
-          {/* Security badge — desktop only */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -470,24 +477,20 @@ const Profile = () => {
               <p className="text-xs font-semibold" style={{ color: '#00C896' }}>
                 Verified Account
               </p>
-              <p
-                className="text-[10px]"
-                style={{ color: 'rgba(255,255,255,0.3)' }}
-              >
+              <p className="text-[10px]" style={{ color: mutedColor2 }}>
                 Email authentication active
               </p>
             </div>
           </motion.div>
         </motion.div>
 
-        {/* ── RIGHT PANEL ── */}
+        {/* RIGHT PANEL */}
         <motion.div
           initial={{ opacity: 0, x: 32 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
           className="flex-1 flex flex-col justify-center p-6 sm:p-8 lg:p-12 xl:p-16"
         >
-          {/* Section header */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -501,14 +504,13 @@ const Profile = () => {
               Account Settings
             </p>
             <h2
-              className="text-2xl lg:text-3xl font-black text-white"
-              style={{ fontFamily: "'Fraunces', serif" }}
+              className="text-2xl lg:text-3xl font-black"
+              style={{ fontFamily: "'Fraunces', serif", color: headColor }}
             >
               {editMode ? 'Edit your details' : 'Personal Information'}
             </h2>
           </motion.div>
 
-          {/* Fields card */}
           <motion.div
             layout
             initial={{ opacity: 0, y: 20 }}
@@ -520,10 +522,11 @@ const Profile = () => {
             }}
             className="rounded-3xl p-6 lg:p-8 mb-5"
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              boxShadow:
-                '0 4px 24px rgba(0,200,150,0.05), inset 0 1px 0 rgba(255,255,255,0.08)',
+              background: cardBg,
+              border: cardBorder,
+              boxShadow: dark
+                ? '0 4px 24px rgba(0,200,150,0.05), inset 0 1px 0 rgba(255,255,255,0.08)'
+                : '0 4px 24px rgba(0,200,150,0.05), inset 0 1px 0 rgba(0,0,0,0.04)',
             }}
           >
             <Field
@@ -555,7 +558,6 @@ const Profile = () => {
             />
           </motion.div>
 
-          {/* Availability toggle — couriers only */}
           {!isSender && (
             <motion.div
               layout
@@ -566,21 +568,18 @@ const Profile = () => {
               style={{
                 background: profileData.isAvailable
                   ? 'rgba(0,200,150,0.08)'
-                  : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${profileData.isAvailable ? 'rgba(0,200,150,0.25)' : 'rgba(255,255,255,0.1)'}`,
-                boxShadow: profileData.isAvailable
-                  ? '0 4px 20px rgba(0,200,150,0.1)'
-                  : '0 4px 20px rgba(255,255,255,0.04)',
+                  : dark
+                    ? 'rgba(255,255,255,0.05)'
+                    : 'rgba(0,0,0,0.03)',
+                border: `1px solid ${profileData.isAvailable ? 'rgba(0,200,150,0.25)' : togBorder}`,
                 transition: 'all 0.4s ease',
               }}
             >
               <div>
-                <p
-                  className="text-sm font-semibold mb-0.5 text-white"
-                >
+                <p className="text-sm font-semibold mb-0.5 text-black dark:text-white">
                   Availability
                 </p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <p className="text-xs" style={{ color: mutedColor }}>
                   {profileData.isAvailable
                     ? 'Visible to customers'
                     : 'Turn on to receive delivery requests'}
@@ -591,9 +590,7 @@ const Profile = () => {
                 onChange={handleAvailabilityToggle}
                 className="relative inline-flex h-7 w-14 items-center rounded-full transition-all focus:outline-none shrink-0"
                 style={{
-                  background: profileData.isAvailable
-                    ? '#00C896'
-                    : 'rgba(255,255,255,0.12)',
+                  background: profileData.isAvailable ? '#00C896' : togBg,
                   boxShadow: profileData.isAvailable
                     ? '0 0 16px rgba(0,200,150,0.3)'
                     : 'none',
@@ -611,7 +608,6 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* Action buttons */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -635,9 +631,9 @@ const Profile = () => {
                     disabled={saving}
                     className="flex-1 py-4 rounded-2xl text-sm font-semibold transition-all disabled:opacity-40"
                     style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      color: 'rgba(255,255,255,0.6)',
+                      background: btnBg,
+                      border: `1px solid ${btnBorder}`,
+                      color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
                     }}
                   >
                     Cancel
@@ -652,17 +648,6 @@ const Profile = () => {
                       boxShadow: '0 10px 36px rgba(0,200,150,0.3)',
                     }}
                   >
-                    {/* Shimmer sweep */}
-                    <motion.div
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{
-                        duration: 2.2,
-                        repeat: Infinity,
-                        repeatDelay: 1.2,
-                      }}
-                      className="absolute inset-0 -skew-x-12"
-                      
-                    />
                     {saving ? (
                       <>
                         <motion.span
@@ -693,12 +678,11 @@ const Profile = () => {
                   onClick={() => setEditMode(true)}
                   className="w-full py-4 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
                   style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    color: 'white',
+                    background: btnBg,
+                    border: `1px solid ${btnBorder}`,
+                    color: btnColor,
                     boxShadow: '0 2px 12px rgba(0,200,150,0.1)',
                   }}
-                  
                 >
                   <Edit3 className="w-4 h-4" style={{ color: '#00C896' }} />
                   Edit Profile
@@ -707,16 +691,15 @@ const Profile = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Mobile-only security badge */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             className="lg:flex items-center gap-3 mt-8 pt-6"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ borderTop: `1px solid ${borderCol}` }}
           >
             <Shield className="w-4 h-4" style={{ color: '#00C896' }} />
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-xs" style={{ color: mutedColor2 }}>
               Account secured with email verification
             </p>
           </motion.div>

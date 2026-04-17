@@ -59,18 +59,12 @@ const MotorcycleSVG = ({ size = 26 }) => (
         />
       </filter>
     </defs>
-
-    {/* ── Rear wheel ── */}
     <circle cx="14" cy="44" r="9" fill="url(#mwheel)" />
     <circle cx="14" cy="44" r="5" fill="#4B5563" />
     <circle cx="14" cy="44" r="2" fill="#9CA3AF" />
-
-    {/* ── Front wheel ── */}
     <circle cx="50" cy="44" r="9" fill="url(#mwheel)" />
     <circle cx="50" cy="44" r="5" fill="#4B5563" />
     <circle cx="50" cy="44" r="2" fill="#9CA3AF" />
-
-    {/* ── Frame / body ── */}
     <path
       d="M14 44 L22 28 L36 28 L50 44"
       stroke="url(#mframe)"
@@ -79,7 +73,6 @@ const MotorcycleSVG = ({ size = 26 }) => (
       filter="url(#mf)"
       fill="none"
     />
-    {/* Engine block */}
     <rect
       x="22"
       y="30"
@@ -89,7 +82,6 @@ const MotorcycleSVG = ({ size = 26 }) => (
       fill="url(#mframe)"
       filter="url(#mf)"
     />
-    {/* Exhaust */}
     <path
       d="M14 40 Q10 42 8 46"
       stroke="#9CA3AF"
@@ -97,19 +89,14 @@ const MotorcycleSVG = ({ size = 26 }) => (
       strokeLinecap="round"
       fill="none"
     />
-    {/* Handlebar */}
     <path
       d="M44 28 L52 24"
       stroke="#93C5FD"
       strokeWidth="2.5"
       strokeLinecap="round"
     />
-    {/* Seat */}
     <rect x="24" y="24" width="14" height="5" rx="2.5" fill="#1E40AF" />
-    {/* Headlight */}
     <circle cx="52" cy="30" r="3" fill="#FDE68A" opacity="0.9" />
-
-    {/* ── Delivery box on rear ── */}
     <rect x="6" y="28" width="13" height="11" rx="2" fill="url(#mpack)" />
     <line
       x1="12"
@@ -129,9 +116,6 @@ const MotorcycleSVG = ({ size = 26 }) => (
       strokeWidth="1"
       opacity="0.5"
     />
-
-    {/* ── Rider body ── */}
-    {/* Torso leaning forward */}
     <path
       d="M32 26 Q36 18 44 20"
       stroke="#F59E0B"
@@ -139,7 +123,6 @@ const MotorcycleSVG = ({ size = 26 }) => (
       strokeLinecap="round"
       fill="none"
     />
-    {/* Head / helmet */}
     <circle cx="44" cy="18" r="5" fill="#1D4ED8" />
     <path
       d="M40 16 Q44 12 48 16"
@@ -148,7 +131,6 @@ const MotorcycleSVG = ({ size = 26 }) => (
       fill="none"
       strokeLinecap="round"
     />
-    {/* Visor shine */}
     <path
       d="M41 19 Q44 16 47 19"
       stroke="#DBEAFE"
@@ -156,105 +138,17 @@ const MotorcycleSVG = ({ size = 26 }) => (
       fill="none"
       opacity="0.7"
     />
-    {/* Arms */}
     <path
       d="M38 22 L44 26"
       stroke="#F59E0B"
       strokeWidth="3"
       strokeLinecap="round"
     />
-    {/* Legs */}
     <path
       d="M32 26 L28 34 L22 34"
       stroke="#374151"
       strokeWidth="3"
       strokeLinecap="round"
-    />
-  </svg>
-);
-
-const PinSVG = () => (
-  <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
-    <defs>
-      <linearGradient
-        id="pg"
-        x1="0"
-        y1="0"
-        x2="0"
-        y2="48"
-        gradientUnits="userSpaceOnUse"
-      >
-        <stop stopColor="#F87171" />
-        <stop offset="1" stopColor="#DC2626" />
-      </linearGradient>
-      <filter id="ps">
-        <feDropShadow
-          dx="0"
-          dy="2"
-          stdDeviation="3"
-          floodColor="#EF4444"
-          floodOpacity="0.5"
-        />
-      </filter>
-    </defs>
-    <path
-      d="M24 4C18.5 4 14 8.5 14 14c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z"
-      fill="url(#pg)"
-      filter="url(#ps)"
-    />
-    <circle cx="24" cy="14" r="4" fill="white" opacity="0.65" />
-    <ellipse
-      cx="19"
-      cy="10"
-      rx="3"
-      ry="1.5"
-      fill="white"
-      opacity="0.3"
-      transform="rotate(-30 19 10)"
-    />
-  </svg>
-);
-
-const CheckSVG = () => (
-  <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
-    <defs>
-      <linearGradient
-        id="cg"
-        x1="0"
-        y1="0"
-        x2="48"
-        y2="48"
-        gradientUnits="userSpaceOnUse"
-      >
-        <stop stopColor="#34D399" />
-        <stop offset="1" stopColor="#059669" />
-      </linearGradient>
-      <filter id="cs">
-        <feDropShadow
-          dx="0"
-          dy="2"
-          stdDeviation="3"
-          floodColor="#10B981"
-          floodOpacity="0.45"
-        />
-      </filter>
-    </defs>
-    <circle cx="24" cy="24" r="20" fill="url(#cg)" filter="url(#cs)" />
-    <ellipse
-      cx="18"
-      cy="14"
-      rx="5"
-      ry="2.5"
-      fill="white"
-      opacity="0.22"
-      transform="rotate(-30 18 14)"
-    />
-    <path
-      d="M14 24l7 7 13-14"
-      stroke="white"
-      strokeWidth="3.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </svg>
 );
@@ -283,9 +177,7 @@ const CoinSVG = ({ size = 26 }) => (
         />
       </filter>
     </defs>
-    {/* 3D side */}
     <ellipse cx="24" cy="33" rx="17" ry="4" fill="#92400E" opacity="0.55" />
-    {/* Face */}
     <ellipse
       cx="24"
       cy="20"
@@ -294,7 +186,6 @@ const CoinSVG = ({ size = 26 }) => (
       fill="url(#cf)"
       filter="url(#cshadow)"
     />
-    {/* Shine */}
     <ellipse
       cx="17"
       cy="15"
@@ -331,11 +222,6 @@ const DashboardPage = ({
   onNavigateToTracking,
 }) => {
   const activeDrivers = drivers.filter((d) => d.status === 'on_delivery');
-  // const availableDrivers = drivers.filter((d) => d.status === 'available');
-  // const inTransit = activeDeliveries.filter(
-  //   (d) => !['delivered', 'pending_assignment'].includes(d.status)
-  // ).length;
-
   const today = new Date().toDateString();
 
   const todayEarnings = completedDeliveries
@@ -353,24 +239,16 @@ const DashboardPage = ({
   const fmt = (n) =>
     n >= 1000 ? `₦${(n / 1000).toFixed(1)}k` : `₦${n.toLocaleString()}`;
 
-  // const stats = [
-  //   { icon: <MotorcycleSVG />, value: activeDrivers.length,    label: 'On Delivery', bg: 'from-blue-50 to-indigo-50',   border: 'border-blue-100',   color: 'text-blue-900' },
-  //   { icon: <PinSVG />,   value: inTransit,                label: 'In Transit',  bg: 'from-green-50 to-emerald-50', border: 'border-green-100',  color: 'text-green-900' },
-  //   { icon: <CheckSVG />, value: availableDrivers.length,  label: 'Available',   bg: 'from-purple-50 to-pink-50',   border: 'border-purple-100', color: 'text-purple-900' },
-  // ];
-
   return (
     <div className="space-y-5 px-3 pb-16">
-      {/* Header */}
       <motion.h1
         initial={{ opacity: 0, y: -14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-xl pt-5 pl-1 font-semibold text-gray-900 tracking-tight"
+        className="text-xl pt-5 pl-1 font-semibold text-black dark:text-white tracking-tight"
       >
         Dashboard
       </motion.h1>
 
-      {/* Existing summary cards */}
       <DashboardSummary activeDeliveries={activeDeliveries} drivers={drivers} />
 
       <motion.div
@@ -410,19 +288,21 @@ const DashboardPage = ({
         </div>
       </motion.div>
 
+      {/* Live Routes card */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden"
+        className="bg-white dark:bg-black rounded-3xl shadow-sm border border-black/10 dark:border-white/10 overflow-hidden"
       >
-        {/* Card header */}
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <p className="text-sm font-semibold text-gray-800">Live Routes</p>
+        <div className="px-5 py-4 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
+          <p className="text-sm font-semibold text-black dark:text-white">
+            Live Routes
+          </p>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={onNavigateToTracking}
-            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-[#3A0A21] to-[#5A0A31] text-white rounded-xl text-xs font-semibold shadow shadow-[#3A0A21]/20"
+            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-[#00C896] to-[#00C896] text-white rounded-xl text-xs font-semibold shadow shadow-[#00C896]/20"
           >
             <NavSVG />
             Full Map
@@ -430,25 +310,20 @@ const DashboardPage = ({
         </div>
 
         <div className="p-4">
-          {/* Map area */}
           <div
-            className="relative rounded-2xl h-52 overflow-hidden border border-indigo-100"
+            className="relative rounded-2xl h-52 overflow-hidden border border-black/10 dark:border-white/10"
             style={{
               background:
                 'linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 55%,#F5F3FF 100%)',
             }}
           >
-            {/* Grid */}
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: `
-                linear-gradient(to right,rgba(99,102,241,.1) 1px,transparent 1px),
-                linear-gradient(to bottom,rgba(99,102,241,.1) 1px,transparent 1px)`,
+                backgroundImage: `linear-gradient(to right,rgba(99,102,241,.1) 1px,transparent 1px),linear-gradient(to bottom,rgba(99,102,241,.1) 1px,transparent 1px)`,
                 backgroundSize: '36px 36px',
               }}
             />
-
             {activeDrivers.length > 0 ? (
               activeDrivers.map((driver, i) => (
                 <motion.div
@@ -469,7 +344,7 @@ const DashboardPage = ({
                       <MotorcycleSVG size={32} />
                     </div>
                   </div>
-                  <div className="bg-white px-2.5 py-1 rounded-lg text-[10px] font-bold mt-1.5 shadow border border-gray-100 whitespace-nowrap">
+                  <div className="bg-white dark:bg-black px-2.5 py-1 rounded-lg text-[10px] font-bold mt-1.5 shadow border border-black/10 dark:border-white/10 whitespace-nowrap text-black dark:text-white">
                     {driver.name.split(' ')[0]}
                   </div>
                 </motion.div>
@@ -477,7 +352,9 @@ const DashboardPage = ({
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-40">
                 <MotorcycleSVG />
-                <p className="text-xs text-gray-500">No active drivers</p>
+                <p className="text-xs text-black dark:text-white">
+                  No active drivers
+                </p>
               </div>
             )}
           </div>

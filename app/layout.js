@@ -3,6 +3,7 @@ import { Inter, Fraunces } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/hooks/Authcontext';
 import Navbar from '@/components/Navbar';
+import Provider from '@/hooks/Provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -256,7 +257,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -275,13 +276,15 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={`${inter.variable} ${fraunces.variable}`}>
-        <AuthProvider>
-          <main>
-            <Navbar />
-            {children}
-            <Analytics />
-          </main>
-        </AuthProvider>
+        <Provider> 
+          <AuthProvider>
+            <main className="bg-[rgb(var(--bg))] text-[rgb(var(--text))] min-h-screen">
+              <Navbar />
+              {children}
+              <Analytics />
+            </main>
+          </AuthProvider>
+        </Provider>
       </body>
     </html>
   );

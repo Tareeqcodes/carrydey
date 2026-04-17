@@ -33,18 +33,10 @@ const getStatusConfig = (status) => {
 };
 
 const SkeletonCard = () => (
-  <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm overflow-hidden">
+  <div className="bg-white dark:bg-black rounded-2xl p-5 border border-black/10 dark:border-white/10 shadow-sm overflow-hidden">
     <style>{`
-      @keyframes shimmer {
-        0%   { background-position: -400px 0; }
-        100% { background-position:  400px 0; }
-      }
-      .skeleton {
-        background: linear-gradient(90deg, #F3F4F6 25%, #E9EAEB 50%, #F3F4F6 75%);
-        background-size: 400px 100%;
-        animation: shimmer 1.4s ease-in-out infinite;
-        border-radius: 6px;
-      }
+      @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+      .skeleton { background: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.06) 75%); background-size: 400px 100%; animation: shimmer 1.4s ease-in-out infinite; border-radius: 6px; }
     `}</style>
     <div className="flex items-center gap-3 mb-5">
       <div className="skeleton w-11 h-11 rounded-full flex-shrink-0" />
@@ -68,6 +60,7 @@ const SkeletonCard = () => (
     </div>
   </div>
 );
+
 const DriverCard = ({
   driver,
   activeDeliveries,
@@ -77,7 +70,6 @@ const DriverCard = ({
 }) => {
   const status = getStatusConfig(driver.status);
   const initial = (driver.name || '?')[0].toUpperCase();
-
   const handleAssign = () => {
     const pendingDelivery = activeDeliveries?.find(
       (d) => d.status === 'accepted'
@@ -86,23 +78,22 @@ const DriverCard = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-black rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 shadow-sm hover:shadow-md transition-shadow">
       <div className="p-5">
         <div className="flex items-start gap-3 mb-4">
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center text-base font-black text-white flex-shrink-0"
-            style={{ background: '#3A0A21' }}
+            style={{ background: '#00C896' }}
           >
             {initial}
           </div>
-
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-gray-900 truncate">
+            <h3 className="text-sm font-bold text-black dark:text-white truncate">
               {driver.name}
             </h3>
             <a
               href={`tel:${driver.phone}`}
-              className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-blue-600 transition-colors mt-0.5 w-fit"
+              className="flex items-center gap-1 text-[10px] text-black/50 dark:text-white/50 hover:text-blue-600 transition-colors mt-0.5 w-fit"
             >
               <Phone className="w-2.5 h-2.5" />
               {driver.phone}
@@ -110,17 +101,15 @@ const DriverCard = ({
           </div>
           <button
             onClick={() => onEditDriver(driver)}
-            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-            title="Edit driver"
+            className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
           >
-            <MoreVertical className="w-4 h-4 text-gray-400" />
+            <MoreVertical className="w-4 h-4 text-black/40 dark:text-white/40" />
           </button>
         </div>
 
-        {/* Info rows */}
         <div className="space-y-2.5 mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40">
               Status
             </span>
             <span
@@ -134,35 +123,19 @@ const DriverCard = ({
               {status.label}
             </span>
           </div>
-
           {driver.vehicleType && (
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40">
                 Vehicle
               </span>
-              <span className="text-xs font-semibold text-gray-700 capitalize">
+              <span className="text-xs font-semibold text-black dark:text-white capitalize">
                 {driver.vehicleType}
               </span>
             </div>
           )}
-
-          {/* {driver.assignedDelivery && (
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                Delivery
-              </span>
-              <span
-                className="text-xs font-bold truncate max-w-[120px]"
-                style={{ color: '#3A0A21' }}
-              >
-                {driver.assignedDelivery}
-              </span>
-            </div>
-          )} */}
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-dashed border-gray-200 mb-4" />
+        <div className="border-t border-dashed border-black/10 dark:border-white/10 mb-4" />
 
         <div className="flex gap-2">
           <button
@@ -171,7 +144,7 @@ const DriverCard = ({
             className="flex-1 py-2 rounded-xl text-xs font-bold transition-all disabled:cursor-not-allowed"
             style={
               driver.status === 'on_delivery'
-                ? { background: '#F3F4F6', color: '#9CA3AF' }
+                ? { background: 'rgba(0,0,0,0.05)', color: 'rgba(0,0,0,0.3)' }
                 : driver.status === 'available'
                   ? {
                       background: '#FEF2F2',
@@ -191,14 +164,13 @@ const DriverCard = ({
                 ? 'On Delivery'
                 : 'Set Available'}
           </button>
-
           {driver.status !== 'offline' && (
             <button
               onClick={handleAssign}
               disabled={!activeDeliveries?.find((d) => d.status === 'accepted')}
               className="flex-1 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: '#3A0A21',
+                background: '#00C896',
                 boxShadow: '0 2px 8px rgba(58,10,33,0.25)',
               }}
             >
@@ -217,7 +189,7 @@ const DriversPage = ({
   error,
   activeDeliveries,
   onAddDriver,
-  onToggleStatus, 
+  onToggleStatus,
   onAssignDelivery,
   onEditDriver,
 }) => {
@@ -228,24 +200,21 @@ const DriversPage = ({
   const offline = drivers?.filter((d) => d.status === 'offline').length ?? 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-white dark:bg-black">
+      <div className="sticky top-0 z-20 bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1
-                className="text-lg font-black text-gray-900"
-                style={{ letterSpacing: '-0.5px' }}
-              >
-                Fleet
-              </h1>
-            </div>
+            <h1
+              className="text-lg font-black text-black dark:text-white"
+              style={{ letterSpacing: '-0.5px' }}
+            >
+              Fleet
+            </h1>
             <button
               onClick={onAddDriver}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
               style={{
-                background: '#3A0A21',
+                background: '#00C896',
                 boxShadow: '0 2px 8px rgba(58,10,33,0.25)',
               }}
             >
@@ -253,8 +222,6 @@ const DriversPage = ({
               Add Driver
             </button>
           </div>
-
-          {/* Stats row */}
           {!loading && !error && drivers.length > 0 && (
             <div className="flex gap-2 mt-3">
               {[
@@ -264,17 +231,14 @@ const DriversPage = ({
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-gray-50 border border-gray-200"
+                  className="flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10"
                 >
-                  <div
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: stat.dot }}
-                  />
+                 
                   <div>
-                    <p className="text-base font-black text-gray-900 leading-none">
+                    <p className="text-base font-black text-black dark:text-white leading-none">
                       {stat.count}
                     </p>
-                    <p className="text-[9px] text-gray-400 font-medium">
+                    <p className="text-[9px] text-black/40 dark:text-white/40 font-medium">
                       {stat.label}
                     </p>
                   </div>
@@ -285,7 +249,6 @@ const DriversPage = ({
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-4 pb-24">
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -294,7 +257,6 @@ const DriversPage = ({
             ))}
           </div>
         )}
-
         {error && !loading && (
           <div className="flex flex-col items-center justify-center py-16">
             <div
@@ -303,35 +265,34 @@ const DriversPage = ({
             >
               <WifiOff className="w-6 h-6 text-red-400" />
             </div>
-            <h3 className="text-sm font-bold text-gray-900 mb-1">
+            <h3 className="text-sm font-bold text-black dark:text-white mb-1">
               Failed to load drivers
             </h3>
-            <p className="text-xs text-gray-500 text-center max-w-[200px]">
+            <p className="text-xs text-black/50 dark:text-white/50 text-center max-w-[200px]">
               {error}
             </p>
           </div>
         )}
-
         {!loading && !error && drivers.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100">
+          <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-black rounded-2xl border border-black/10 dark:border-white/10">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
               style={{ background: '#F9F0F3', border: '1px solid #F3D5E1' }}
             >
-              <Truck className="w-7 h-7" style={{ color: '#3A0A21' }} />
+              <Truck className="w-7 h-7" style={{ color: '#00C896' }} />
             </div>
-            <h3 className="text-sm font-bold text-gray-900 mb-1">
+            <h3 className="text-sm font-bold text-black dark:text-white mb-1">
               No Drivers Yet
             </h3>
-            <p className="text-xs text-gray-500 mb-5">
+            <p className="text-xs text-black/50 dark:text-white/50 mb-5">
               Get started by adding your first driver
             </p>
             <button
               onClick={onAddDriver}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
               style={{
-                background: '#3A0A21',
-                boxShadow: '0 2px 8px rgba(58,10,33,0.25)',
+                background: '#00C896',
+                boxShadow: '0 2px 8px rgba(0,200,150,0.25)',
               }}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -339,7 +300,6 @@ const DriversPage = ({
             </button>
           </div>
         )}
-
         {!loading && !error && drivers.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {drivers.map((driver) => (

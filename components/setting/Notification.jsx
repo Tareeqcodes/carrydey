@@ -2,15 +2,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, MessageSquare, Tag, AlertCircle } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 const groups = [
   {
     title: 'Delivery Updates',
     items: [
-      { id: 'pickup',    label: 'Rider picked up package', icon: Bell,          on: true  },
-      { id: 'transit',   label: 'Package in transit',      icon: Bell,          on: true  },
-      { id: 'delivered', label: 'Package delivered',       icon: Bell,          on: true  },
-      { id: 'delay',     label: 'Delivery delays',         icon: AlertCircle,   on: true  },
+      { id: 'pickup',    label: 'Rider picked up package', icon: Bell,        on: true  },
+      { id: 'transit',   label: 'Package in transit',      icon: Bell,        on: true  },
+      { id: 'delivered', label: 'Package delivered',       icon: Bell,        on: true  },
+      { id: 'delay',     label: 'Delivery delays',         icon: AlertCircle, on: true  },
     ],
   },
   {
@@ -24,7 +25,7 @@ const groups = [
     title: 'Promotions',
     items: [
       { id: 'promo',   label: 'Discounts & offers', icon: Tag, on: false },
-      { id: 'updates', label: 'Product updates',    icon: Tag, on: false },
+      { id: 'updates', label: 'Notification',        icon: Tag, on: false },
     ],
   },
 ];
@@ -33,7 +34,7 @@ const Toggle = ({ on, onToggle }) => (
   <button
     onClick={onToggle}
     className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0
-      ${on ? 'bg-[#00C896]' : 'bg-gray-200'}`}
+      ${on ? 'bg-[#00C896]' : 'bg-gray-300 dark:bg-gray-600'}`}
   >
     <motion.div
       animate={{ x: on ? 20 : 2 }}
@@ -48,6 +49,7 @@ export default function Notification() {
   groups.forEach(g => g.items.forEach(i => { init[i.id] = i.on; }));
   const [prefs, setPrefs] = useState(init);
   const [saved, setSaved] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const handleSave = () => {
     setSaved(true);
@@ -56,9 +58,26 @@ export default function Notification() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-[28px] font-black text-white leading-[1.08] tracking-[-0.02em] mb-2" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>Notifications</h2>
-        <p className="text-[14px] font-medium text-white/60 leading-[1.6]">Choose what you want to be notified about</p>
+
+      {/* Header + theme toggle */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2
+            className="text-[23px] font-black text-black dark:text-white leading-[1.08] tracking-[-0.02em] mb-2"
+           
+          >
+            Notifications
+          </h2>
+          
+        </div>
+
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-bold
+            bg-black/5 dark:bg-white/10 text-black dark:text-white border border-black/10 dark:border-white/10"
+        >
+          {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+        </button>
       </div>
 
       {groups.map((group, gi) => (
@@ -67,18 +86,18 @@ export default function Notification() {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: gi * 0.07 }}
-          className="bg-white/10 rounded-2xl border border-white/10 overflow-hidden shadow-md"
+          className="bg-black/5 dark:bg-white/10 rounded-2xl border border-black/10 dark:border-white/10 overflow-hidden shadow-md"
         >
-          <p className="px-4 py-3 text-[10px] font-bold text-white/40 uppercase tracking-[0.12em] border-b border-white/10">
+          <p className="px-4 py-3 text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-[0.12em] border-b border-black/10 dark:border-white/10">
             {group.title}
           </p>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-black/5 dark:divide-white/5">
             {group.items.map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.id} className="flex items-center gap-3 px-4 py-3.5">
-                  <Icon size={14} className="text-white/50 flex-shrink-0" />
-                  <p className="flex-1 text-[13px] font-bold text-white">{item.label}</p>
+                  <Icon size={14} className="text-black/50 dark:text-white/50 flex-shrink-0" />
+                  <p className="flex-1 text-[13px] font-bold text-black dark:text-white">{item.label}</p>
                   <Toggle on={prefs[item.id]} onToggle={() => setPrefs(p => ({ ...p, [item.id]: !p[item.id] }))} />
                 </div>
               );

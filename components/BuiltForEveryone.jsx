@@ -23,16 +23,13 @@ const AUDIENCE = [
 
 export default function BuiltForEveryone() {
   return (
-    <section className="py-20 px-4 md:px-6 bg-black">
+    <section className="py-20 px-4 md:px-6 bg-white dark:bg-black">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-14">
-          
-          <h2 className="text-[28px] md:text-[38px] font-black text-white leading-[1.08] tracking-[-0.02em]">
-            Whether you ship{' '}
-            <span className="text-[#22c55e] italic">once</span>
-            <br className="hidden sm:block" />
-            {' '}or a thousand times.
+          <h2 className="text-[28px] md:text-[38px] font-black text-black dark:text-white leading-[1.08] tracking-[-0.02em]">
+            Whether you ship <span className="text-[#22c55e] italic">once</span>
+            <br className="hidden sm:block" /> or a thousand times.
           </h2>
         </div>
 
@@ -41,26 +38,23 @@ export default function BuiltForEveryone() {
           {AUDIENCE.map(({ emoji, title, desc, tags }) => (
             <div
               key={title}
-              className="rounded-2xl p-7 border border-white/10 bg-white/5 transition-transform duration-200 hover:-translate-y-1"
+              className="rounded-2xl p-7 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 transition-transform duration-200 hover:-translate-y-1"
             >
               <span className="text-[26px] mb-5 block">{emoji}</span>
               <h3
-                className="text-[18px] font-black mb-3 leading-snug tracking-[-0.01em] text-white"
+                className="text-[18px] font-black mb-3 leading-snug tracking-[-0.01em] text-black dark:text-white"
                 style={{ fontFamily: 'Fraunces, Georgia, serif' }}
               >
                 {title}
               </h3>
-              <p
-                className="text-[13px] leading-[1.65] mb-5 text-white/40"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
-              >
+              <p className="text-[13px] leading-[1.65] mb-5 text-black/40 dark:text-white/40">
                 {desc}
               </p>
               <div className="flex flex-wrap gap-2">
                 {tags.map((t) => (
                   <span
                     key={t}
-                    className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/8 text-white/40"
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-black/8 dark:bg-white/8 text-black/40 dark:text-white/40"
                   >
                     {t}
                   </span>

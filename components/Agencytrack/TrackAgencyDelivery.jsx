@@ -322,9 +322,9 @@ const [assigning, setAssigning] = useState(false);
   };
 
   return (
-    <div className="min-h-screen pb-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen pb-16 bg-white dark:bg-black ">
       <header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-gray-100 rounded-lg lg:hidden"

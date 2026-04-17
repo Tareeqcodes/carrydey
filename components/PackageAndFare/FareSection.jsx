@@ -5,7 +5,6 @@ import { formatNairaSimple } from '@/hooks/currency';
 
 function OfferQuality({ offered, suggested, minFare, isLongDistance }) {
   if (!offered || offered <= 0) return null;
-
   let label, color, bg, icon;
 
   if (isLongDistance) {
@@ -74,52 +73,47 @@ function FareInput({
   placeholder = '',
 }) {
   const decrement = useCallback(() => {
-    const next = (value || 0) - step;
-    onChange(Math.max(next, minFare));
+    onChange(Math.max((value || 0) - step, minFare));
   }, [value, step, minFare, onChange]);
-
   const increment = useCallback(() => {
     onChange((value || 0) + step);
   }, [value, step, onChange]);
 
   return (
     <div className="flex items-center justify-between gap-4 py-2">
-      {/* − button */}
       <button
         type="button"
         onClick={decrement}
-        className="w-10 h-10 rounded-full border-2 border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 active:scale-95 transition-all flex-shrink-0"
+        className="w-10 h-10 rounded-full border-2 border-black/10 dark:border-white/10 flex items-center justify-center text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 active:scale-95 transition-all flex-shrink-0"
       >
         <Minus className="w-5 h-5" />
       </button>
 
-      {/* Fare amount — centered, large */}
       <div className="flex-1 text-center">
         <div className="flex items-baseline justify-center gap-1">
-          <span className="text-2xl font-bold text-white/30">₦</span>
+          <span className="text-2xl font-bold text-black/30 dark:text-white/30">
+            ₦
+          </span>
           <input
             type="number"
             value={value || ''}
             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
             placeholder={placeholder}
-            className="w-36 text-4xl font-bold text-white outline-none bg-transparent text-center placeholder-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-36 text-4xl font-bold text-black dark:text-white outline-none bg-transparent text-center placeholder-black/20 dark:placeholder-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
       </div>
 
-      {/* + button */}
       <button
         type="button"
         onClick={increment}
-        className="w-10 h-10 rounded-full border-2 border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 active:scale-95 transition-all flex-shrink-0"
+        className="w-10 h-10 rounded-full border-2 border-black/10 dark:border-white/10 flex items-center justify-center text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 active:scale-95 transition-all flex-shrink-0"
       >
         <Plus className="w-5 h-5" />
       </button>
     </div>
   );
 }
-
-// Short distance (≤ 20 km)
 
 function ShortDistanceFare({
   fareDetails,
@@ -131,7 +125,7 @@ function ShortDistanceFare({
   return (
     <section className="space-y-1">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
+        <p className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-widest">
           Your offer
         </p>
         <OfferQuality
@@ -140,7 +134,6 @@ function ShortDistanceFare({
           isLongDistance={false}
         />
       </div>
-
       <FareInput
         value={fareDetails.offeredFare}
         onChange={onFareChange}
@@ -148,16 +141,14 @@ function ShortDistanceFare({
         minFare={fareFloor}
         placeholder={String(suggestedFare)}
       />
-
-      <div className="flex items-center pt-1 border-t border-white/10">
-        <span className="text-xs text-white/40">
+      <div className="flex items-center pt-1 border-t border-black/10 dark:border-white/10">
+        <span className="text-xs text-black/40 dark:text-white/40">
           Min{' '}
-          <span className="font-medium text-white/60">
+          <span className="font-medium text-black/60 dark:text-white/60">
             {formatNairaSimple(fareFloor)}
           </span>
         </span>
       </div>
-
       {errors?.fare && (
         <div className="flex items-center gap-1.5 pt-1">
           <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
@@ -168,24 +159,20 @@ function ShortDistanceFare({
   );
 }
 
-// Long distance (> 20 km) — broadcast / inDrive style
-
 function LongDistanceFare({ fareDetails, onFareChange, minFare, errors }) {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
+        <p className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-widest">
           Your offer
         </p>
         <div className="flex items-center gap-1.5">
-          <Truck className="w-3.5 h-3.5 text-white/40" />
-          <span className="text-xs font-medium text-white/50">
+          <Truck className="w-3.5 h-3.5 text-black/40 dark:text-white/40" />
+          <span className="text-xs font-medium text-black/50 dark:text-white/50">
             Long distance
           </span>
         </div>
       </div>
-
-      {/* Hero fare input */}
       <FareInput
         value={fareDetails.offeredFare}
         onChange={onFareChange}
@@ -193,24 +180,21 @@ function LongDistanceFare({ fareDetails, onFareChange, minFare, errors }) {
         minFare={minFare}
         placeholder={minFare ? String(minFare) : '0'}
       />
-
-      {/* Quality indicator + min fare */}
-      <div className="flex items-center justify-between pt-1 border-t border-white/10">
+      <div className="flex items-center justify-between pt-1 border-t border-black/10 dark:border-white/10">
         <OfferQuality
           offered={fareDetails.offeredFare}
           minFare={minFare}
           isLongDistance
         />
         {minFare > 0 && (
-          <span className="text-xs text-white/40">
+          <span className="text-xs text-black/40 dark:text-white/40">
             Min{' '}
-            <span className="font-medium text-white/60">
+            <span className="font-medium text-black/60 dark:text-white/60">
               {formatNairaSimple(minFare)}
             </span>
           </span>
         )}
       </div>
-
       {errors?.fare && (
         <div className="flex items-center gap-1.5">
           <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
@@ -240,7 +224,6 @@ export default function FareSection({
       />
     );
   }
-
   return (
     <ShortDistanceFare
       fareDetails={fareDetails}

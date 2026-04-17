@@ -36,6 +36,17 @@ function triggerDispatch(deliveryId) {
 
 /* ─── Tab strip */
 function TabStrip({ active, onChange }) {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
   const tabs = [
     { id: 'individual', label: 'Send a package' },
     { id: 'vendor', label: 'Batch orders' },
@@ -52,7 +63,7 @@ function TabStrip({ active, onChange }) {
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: isActive ? 600 : 400,
-              color: isActive ? '#00C896' : 'rgba(255,255,255,0.4)',
+              color: isActive ? '#00C896' : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'),
             }}
           >
             {tab.label}
@@ -74,7 +85,7 @@ function TabStrip({ active, onChange }) {
 function PageHeader({ tab, onTabChange }) {
   return (
     <div className="max-w-md mx-auto px-4 pt-6 pb-0">
-      <h1 className="mb-4 text-2xl font-bold text-white tracking-tight">
+      <h1 className="mb-4 text-2xl font-bold text-black dark:text-white tracking-tight">
         New <em>delivery</em>
       </h1>
       <TabStrip active={tab} onChange={onTabChange} />
@@ -377,7 +388,7 @@ const handleVendorConfirmed = async ({
 
   return (
     <BrandColorsProvider initialColors={DEFAULT_BRAND}>
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-white dark:bg-black">
         <PageHeader tab={tab} onTabChange={handleTabChange} />
 
         <AnimatePresence mode="wait">
