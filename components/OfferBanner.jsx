@@ -1,4 +1,3 @@
-
 'use client';
 import { X, Zap, CheckCircle, Loader2 } from 'lucide-react';
 
@@ -9,10 +8,13 @@ const OfferBanner = ({
   onAccept,
   onDecline,
   label = 'A delivery has been matched to you. Accept before time runs out.',
-  accepting = false,   // ← new prop
+  accepting = false,
 }) => {
   const circumference = 2 * Math.PI * 36;
-  const dashOffset = circumference * (1 - offerCountdown / OFFER_DURATION_S);
+  // Clamp so dashOffset is never negative (happens if offerCountdown > OFFER_DURATION_S
+  // on the very first render before the hook ticks down)
+  const clampedCount = Math.min(offerCountdown, OFFER_DURATION_S);
+  const dashOffset = circumference * (1 - clampedCount / OFFER_DURATION_S);
 
   if (accepting) {
     return (
@@ -54,10 +56,21 @@ const OfferBanner = ({
         <div className="flex justify-center mb-4">
           <div className="relative w-20 h-20">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
-              <circle cx="40" cy="40" r="36" stroke="#e5e7eb" strokeWidth="5" fill="none" />
               <circle
-                cx="40" cy="40" r="36"
-                stroke="#FF6B35" strokeWidth="5" fill="none"
+                cx="40"
+                cy="40"
+                r="36"
+                stroke="#e5e7eb"
+                strokeWidth="5"
+                fill="none"
+              />
+              <circle
+                cx="40"
+                cy="40"
+                r="36"
+                stroke="#FF6B35"
+                strokeWidth="5"
+                fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={dashOffset}
                 strokeLinecap="round"
