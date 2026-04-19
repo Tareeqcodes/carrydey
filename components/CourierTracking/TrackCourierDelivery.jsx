@@ -40,7 +40,6 @@ const TrackCourierDelivery = () => {
     updateDeliveryStatus,
     refresh,
   } = useCourierDelivery(user?.$id);
-
   const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
     useDispatchOffer(courier?.$id, USERS, { onAccepted: () => refresh() });
 
@@ -63,7 +62,7 @@ const TrackCourierDelivery = () => {
   usePushNotifications({
     enabled: !!user?.$id,
     onForegroundMessage: (payload) =>
-      console.log('Foreground notification:', payload.notification?.title),
+      console.log('Foreground notification:', payload.notification.title),
   });
 
   useEffect(() => {
@@ -115,19 +114,16 @@ const TrackCourierDelivery = () => {
     setCopiedCode(type);
     setTimeout(() => setCopiedCode(null), 2000);
   };
-
   const handleConfirmPickup = async (deliveryId, pickupCode) => {
     const r = await confirmPickup(deliveryId, pickupCode);
     if (r.success) refresh();
     else alert(r.error || 'Invalid pickup code');
   };
-
   const handleConfirmDelivery = async (deliveryId, otp) => {
     const r = await confirmDelivery(deliveryId, otp);
     if (r.success) refresh();
     else alert(r.error || 'Invalid OTP code');
   };
-
   const handleUpdateStatus = async (deliveryId, status) => {
     const r = await updateDeliveryStatus(deliveryId, status);
     if (r.success) refresh();
@@ -154,6 +150,7 @@ const TrackCourierDelivery = () => {
         return (
           <CourierHistory deliveries={completedDeliveries} loading={loading} />
         );
+
       case 'earnings': {
         const totalEarnings = completedDeliveries
           .filter((d) => d.status === 'delivered')
@@ -232,12 +229,14 @@ const TrackCourierDelivery = () => {
           </div>
         );
       }
+
       case 'profile':
         return (
           <div className="mb-6">
             <Profile />
           </div>
         );
+
       default:
         return null;
     }
@@ -276,13 +275,11 @@ const TrackCourierDelivery = () => {
         </main>
       </div>
 
-      {/* OfferBanner — pass incomingOffer as `offer` so it can show fare/distance/pickup */}
       {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}
           onAccept={handleAcceptOffer}
           onDecline={declineOffer}
-          offer={incomingOffer}
           accepting={accepting}
         />
       )}

@@ -4,41 +4,17 @@ import { getToken, onMessage } from 'firebase/messaging';
 import { getFirebaseMessaging } from '@/lib/config/firebase';
 import { account, ID, tablesDB, Query } from '@/lib/config/Appwriteconfig';
 
-const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-const PROVIDER_ID = process.env.NEXT_PUBLIC_APPWRITE_FCM_PROVIDER_ID;
-const DB = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const USERS = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
-const ORGS = process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID;
+const VAPID_KEY    = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+const PROVIDER_ID  = process.env.NEXT_PUBLIC_APPWRITE_FCM_PROVIDER_ID;
+const DB           = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+const USERS        = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
+const ORGS         = process.env.NEXT_PUBLIC_APPWRITE_ORGANISATION_COLLECTION_ID;
 
-const STORAGE_KEY = 'carrydey_push_target_id';
-const TOKEN_KEY = 'carrydey_push_fcm_token';
+const STORAGE_KEY    = 'carrydey_push_target_id';
+const TOKEN_KEY      = 'carrydey_push_fcm_token';
 const REGISTERING_KEY = 'carrydey_push_registering';
 
-// ── Inject Appwrite env vars into the installed service worker ─────────────
-// The SW needs PROJECT and ADVANCE_DISPATCH_FN_ID to call advance-dispatch
-// when a courier taps Accept/Decline directly from the notification shade.
-// We postMessage after registration so the SW can store them in self.*.
-// ──────────────────────────────────────────────────────────────────────────
-const injectEnvIntoSW = async () => {
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const target = reg.active ?? reg.waiting ?? reg.installing;
-    if (!target) return;
-
-    target.postMessage({
-      type: 'SET_ENV',
-      PROJECT: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID ?? '',
-      FN_ID: process.env.NEXT_PUBLIC_ADVANCE_DISPATCH_FUNCTION_ID ?? '',
-    });
-  } catch (e) {
-    console.warn('[Push] Could not inject env into SW:', e);
-  }
-};
-
-export function usePushNotifications({
-  enabled = true,
-  onForegroundMessage,
-} = {}) {
+export function usePushNotifications({ enabled = true, onForegroundMessage } = {}) {
   useEffect(() => {
     if (!enabled) return;
 
@@ -47,8 +23,7 @@ export function usePushNotifications({
       sessionStorage.setItem(REGISTERING_KEY, '1');
 
       try {
-        if (!('Notification' in window) || !('serviceWorker' in navigator))
-          return;
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
 
         const messaging = await getFirebaseMessaging();
         if (!messaging) return;
@@ -61,17 +36,12 @@ export function usePushNotifications({
 
         let swReg;
         try {
-          swReg = await navigator.serviceWorker.register(
-            '/firebase-messaging-sw.js'
-          );
+          swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
           await navigator.serviceWorker.ready;
         } catch (e) {
           console.error('[Push] Service worker registration failed:', e);
           return;
         }
-
-        // ── Inject env vars so SW action buttons can call advance-dispatch ──
-        await injectEnvIntoSW();
 
         const token = await getToken(messaging, {
           vapidKey: VAPID_KEY,
@@ -79,13 +49,11 @@ export function usePushNotifications({
         });
 
         if (!token) {
-          console.warn(
-            '[Push] No FCM token returned — check VAPID key and Firebase config'
-          );
+          console.warn('[Push] No FCM token returned — check VAPID key and Firebase config');
           return;
         }
 
-        const savedToken = localStorage.getItem(TOKEN_KEY);
+        const savedToken      = localStorage.getItem(TOKEN_KEY);
         const existingTargetId = localStorage.getItem(STORAGE_KEY);
 
         // Already registered with the same token — just wire foreground handler
@@ -112,20 +80,14 @@ export function usePushNotifications({
           const prefs = await account.getPrefs();
           role = prefs?.role ?? null;
         } catch (e) {
-          console.warn(
-            '[Push] Not authenticated, skipping push target registration'
-          );
+          console.warn('[Push] Not authenticated, skipping push target registration');
           return;
         }
 
         // Create push target
         let target;
         try {
-          target = await account.createPushTarget(
-            ID.unique(),
-            token,
-            PROVIDER_ID
-          );
+          target = await account.createPushTarget(ID.unique(), token, PROVIDER_ID);
         } catch (e) {
           console.error('[Push] createPushTarget failed:', e);
           return;
@@ -134,26 +96,29 @@ export function usePushNotifications({
         localStorage.setItem(STORAGE_KEY, target.$id);
         localStorage.setItem(TOKEN_KEY, token);
 
-        // Look up profile document by userId field (not by auth $id)
+        // ── FIX: look up the profile document by userId field, not by auth $id ──
+        // account.get().$id is the Appwrite Auth ID.
+        // Your USERS/ORGS collection documents have their own $id and a separate
+        // `userId` field that stores the auth ID. Using the auth ID as rowId
+        // calls a non-existent document and silently fails, leaving pushTargetId
+        // empty — which is why createPush gets "No valid recipients".
         const tableId = role === 'agency' ? ORGS : USERS;
+
         let profileDoc;
         try {
-          const result = await tablesDB.listRows({
+          const res = await tablesDB.listRows({
             databaseId: DB,
             tableId,
             queries: [Query.equal('userId', currentUser.$id), Query.limit(1)],
           });
-          profileDoc = result.rows?.[0] ?? null;
+          profileDoc = res.rows?.[0] ?? null;
         } catch (e) {
           console.error('[Push] Could not find profile doc by userId:', e);
           return;
         }
 
         if (!profileDoc) {
-          console.warn(
-            '[Push] No profile doc found for userId:',
-            currentUser.$id
-          );
+          console.warn('[Push] No profile doc found for userId:', currentUser.$id);
           return;
         }
 
@@ -161,15 +126,10 @@ export function usePushNotifications({
           await tablesDB.updateRow({
             databaseId: DB,
             tableId,
-            rowId: profileDoc.$id,
+            rowId: profileDoc.$id,           // ← profile document $id, not auth $id
             data: { pushTargetId: target.$id },
           });
-          console.log(
-            '[Push] pushTargetId saved to doc:',
-            profileDoc.$id,
-            '→',
-            target.$id
-          );
+          console.log('[Push] pushTargetId saved to doc:', profileDoc.$id, '→', target.$id);
         } catch (e) {
           console.error('[Push] Failed to save pushTargetId to collection:', e);
         }
