@@ -43,8 +43,13 @@ export default async ({ req, res, log, error }) => {
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
   // ── Push helper ────────────────────────────────────────────────────────────
-  // data{}  — arbitrary key-value pairs forwarded to the SW (all values must
-  //           be strings; Appwrite's Messaging will reject non-string values)
+  // node-appwrite createPush positional signature:
+  //   messageId, title, body, topics[], users[], targets[],
+  //   data{}, action, icon, sound, color, tag, badge, draft, scheduledAt
+  //
+  // IMPORTANT: only pass up to `data` (position 7). Passing extra positional
+  // args like a priority string or channel ID maps them to `action` and `icon`,
+  // which corrupts the FCM call and causes "not a push target" errors.
   // ──────────────────────────────────────────────────────────────────────────
   const sendPush = async (
     pushTargetId,
@@ -61,24 +66,20 @@ export default async ({ req, res, log, error }) => {
       'Sending notification to ' + entityLabel + ' | target: ' + pushTargetId
     );
     try {
-      // Stringify all data values — FCM data payload only accepts strings
+      // FCM data payload values must all be strings
       const safeData = Object.fromEntries(
         Object.entries(data).map(([k, v]) => [k, String(v ?? '')])
       );
 
       await messaging.createPush(
-        ID.unique(),
-        title,
-        body,
+        ID.unique(), // messageId
+        title, // title
+        body, // body
         [], // topics
-        [], // userIds
+        [], // users
         [pushTargetId], // targets
-        safeData, // ← data payload forwarded to the SW
-        'high', // priority — wakes the device
-        undefined, // scheduledAt
-        undefined, // ttl
-        undefined, // draft
-        'offer_channel' // Android notification channel ID (custom sound lives here)
+        safeData // data — forwarded to SW for rich notification
+        // stop here — action/icon/sound/tag/badge are all undefined (SDK defaults)
       );
       log('Notification sent to ' + entityLabel);
     } catch (e) {
@@ -86,7 +87,6 @@ export default async ({ req, res, log, error }) => {
     }
   };
 
-  // For couriers and agencies — entityId IS the document $id
   const notifyByDocId = async (
     entityDocId,
     tableId,
@@ -106,7 +106,6 @@ export default async ({ req, res, log, error }) => {
     }
   };
 
-  // For senders — authUserId is delivery.userId (Appwrite Auth ID)
   const notifyByAuthId = async (authUserId, title, body, data = {}) => {
     try {
       const result = await db.listRows({
@@ -216,13 +215,11 @@ export default async ({ req, res, log, error }) => {
 
   const senderAuthId = delivery.userId ?? delivery.senderId ?? null;
 
-  // ── Build human-readable fare string ──────────────────────────────────────
+  // Notification display strings
   const fareAmount = delivery.offeredFare ?? delivery.fare ?? null;
   const fareDisplay = fareAmount
-    ? '₦' + Number(fareAmount).toLocaleString('en-NG')
+    ? '\u20a6' + Number(fareAmount).toLocaleString('en-NG')
     : 'Negotiable';
-
-  // Truncate pickup address for notification body (keep it short)
   const pickupDisplay = delivery.pickupAddress
     ? delivery.pickupAddress.split(',')[0].trim()
     : '';
@@ -376,18 +373,18 @@ export default async ({ req, res, log, error }) => {
     log('Could not mark entity as offered: ' + e.message);
   }
 
-  // ── Notify first courier/agency — rich payload ─────────────────────────────
-  //
-  // All values MUST be strings (FCM data payload requirement).
-  // The SW receives these in payload.data and uses them to build
-  // the rich notification with action buttons.
-  // ──────────────────────────────────────────────────────────────────────────
+  // ── Notify first courier/agency ────────────────────────────────────────────
   const distanceStr = String(first.distance);
-
-  const notifTitle = '📦 New Delivery Offer';
+  const notifTitle = '\ud83d\udce6 New Delivery Offer';
   const notifBody = isFirstAgency
-    ? `${fareDisplay} · ${distanceStr}km — New delivery waiting for your agency`
-    : `${fareDisplay} · ${distanceStr}km from you — Tap to accept`;
+    ? fareDisplay +
+      ' \u00b7 ' +
+      distanceStr +
+      'km \u2014 New delivery waiting for your agency'
+    : fareDisplay +
+      ' \u00b7 ' +
+      distanceStr +
+      'km from you \u2014 Open Carrydey to accept';
 
   await notifyByDocId(
     first.courierId,
@@ -407,7 +404,7 @@ export default async ({ req, res, log, error }) => {
   log(
     'Queue ' +
       queueDoc.$id +
-      ' → offering to ' +
+      ' \u2192 offering to ' +
       first.entityType +
       ' ' +
       first.name

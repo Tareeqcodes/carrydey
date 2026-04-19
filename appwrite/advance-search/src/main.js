@@ -23,13 +23,13 @@ export default async ({ req, res, log, error }) => {
 
   const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
-  const USERS =
-    process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID ??
-    process.env.APPWRITE_USERS_COLLECTION_ID;
+  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID;
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
   // ── Push helper ────────────────────────────────────────────────────────────
+  // See dispatch-search for explanation of why we stop at the `data` arg.
+  // ──────────────────────────────────────────────────────────────────────────
   const sendPush = async (
     pushTargetId,
     title,
@@ -55,12 +55,8 @@ export default async ({ req, res, log, error }) => {
         [],
         [],
         [pushTargetId],
-        safeData,
-        'high',
-        undefined,
-        undefined,
-        undefined,
-        'offer_channel'
+        safeData
+        // action, icon, sound, color, tag, badge, draft, scheduledAt — all undefined
       );
       log('Notification sent to ' + entityLabel);
     } catch (e) {
@@ -164,7 +160,7 @@ export default async ({ req, res, log, error }) => {
   const collectionFor = (entry) =>
     entry?.entityType === 'agency' ? ORGS : USERS;
 
-  // ── Load delivery for fare/pickup display in notifications ─────────────────
+  // Load delivery for notification enrichment
   let delivery = null;
   try {
     delivery = await db.getRow({
@@ -178,7 +174,7 @@ export default async ({ req, res, log, error }) => {
 
   const fareAmount = delivery?.offeredFare ?? delivery?.fare ?? null;
   const fareDisplay = fareAmount
-    ? '₦' + Number(fareAmount).toLocaleString('en-NG')
+    ? '\u20a6' + Number(fareAmount).toLocaleString('en-NG')
     : 'Negotiable';
   const pickupDisplay = delivery?.pickupAddress
     ? delivery.pickupAddress.split(',')[0].trim()
@@ -268,18 +264,15 @@ export default async ({ req, res, log, error }) => {
           ' accepted by ' +
           currentEntry?.entityType +
           ' ' +
-          currentCourierId +
-          ' | pickupCode: ' +
-          pickupCode
+          currentCourierId
       );
 
-      // Notify sender — rich data so their app can update state
       if (senderAuthId) {
         const entityLabel = currentIsAgency ? 'An agency' : 'A courier';
         await notifyByAuthId(
           senderAuthId,
-          '🚀 Courier Found!',
-          `${entityLabel} accepted your delivery and is heading to the pickup.`,
+          '\ud83d\ude80 Courier Found!',
+          entityLabel + ' accepted your delivery and is heading to pickup.',
           {
             type: 'delivery_accepted',
             deliveryId: queue.deliveryId,
@@ -369,13 +362,18 @@ export default async ({ req, res, log, error }) => {
     })
     .catch((e) => log('Could not mark next entity as offered: ' + e.message));
 
-  // ── Notify next courier — rich payload ─────────────────────────────────────
+  // Notify next courier — same rich payload
   const nextDistanceStr = String(nextEntry.distance ?? '');
-
-  const notifTitle = '📦 New Delivery Offer';
+  const notifTitle = '\ud83d\udce6 New Delivery Offer';
   const notifBody = nextIsAgency
-    ? `${fareDisplay} · ${nextDistanceStr}km — New delivery waiting for your agency`
-    : `${fareDisplay} · ${nextDistanceStr}km from you — Tap to accept`;
+    ? fareDisplay +
+      ' \u00b7 ' +
+      nextDistanceStr +
+      'km \u2014 New delivery waiting for your agency'
+    : fareDisplay +
+      ' \u00b7 ' +
+      nextDistanceStr +
+      'km from you \u2014 Open Carrydey to accept';
 
   await notifyByDocId(
     nextCourierId,
