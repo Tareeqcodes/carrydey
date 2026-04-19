@@ -7,7 +7,6 @@ import {
   PackageSearch,
   LayoutDashboard,
   TrendingUp,
-  Bell,
   LogIn,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
@@ -125,20 +124,13 @@ const Navbar = () => {
               isEarn={link.label === 'Earn'}
             />
           ))}
-          {!user ? (
+          {!user && (
             <Link
               href="/login"
               className="ml-2 flex items-center gap-2 text-sm font-semibold text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors px-3 py-2 border border-black/20 dark:border-white/20 rounded-xl hover:border-black/40 dark:hover:border-white/40"
             >
               <LogIn size={16} /> Login
             </Link>
-          ) : (
-            <div className="ml-3 flex items-center gap-2">
-              <button className="relative w-9 h-9 flex items-center justify-center rounded-xl text-black/40 dark:text-white/40 hover:bg-black/5 dark:hover:bg-white/8 transition-colors">
-                <Bell size={18} />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
-            </div>
           )}
         </div>
       </nav>
@@ -157,24 +149,17 @@ const Navbar = () => {
             Carrydey
           </span>
         </Link>
-        <div className="flex items-center gap-2">
-          {!user ? (
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 border border-black/20 dark:border-white/20 text-black dark:text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/8 transition-colors"
-            >
-              <LogIn size={12} /> Login
-            </Link>
-          ) : (
-            <button className="relative w-8 h-8 flex items-center justify-center rounded-xl text-black/40 dark:text-white/40 hover:bg-black/5 dark:hover:bg-white/8 transition-colors">
-              <Bell size={16} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
-            </button>
-          )}
-        </div>
+        {!user && (
+          <Link
+            href="/login"
+            className="flex items-center gap-1.5 border border-black/20 dark:border-white/20 text-black dark:text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/8 transition-colors"
+          >
+            <LogIn size={12} /> Login
+          </Link>
+        )}
       </div>
 
-      {/* Mobile bottom tab bar — Telegram floating pill */}
+      {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
         <div
           className="flex justify-center"

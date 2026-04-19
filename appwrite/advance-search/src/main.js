@@ -23,19 +23,20 @@ export default async ({ req, res, log, error }) => {
 
   const DB = process.env.APPWRITE_DATABASE_ID;
   const DELIVERIES = process.env.APPWRITE_DELIVERIES_COLLECTION_ID;
-  const USERS = process.env.APPWRITE_USERS_COLLECTION_ID;
+  const USERS =
+    process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID ??
+    process.env.APPWRITE_USERS_COLLECTION_ID;
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Notify helpers ─────────────────────────────────────────────────────────
-  //
-  // Same split as dispatch-search:
-  //   notifyByDocId  → couriers & agencies  (entityId IS the document $id)
-  //   notifyByAuthId → senders              (delivery.userId is the Auth ID,
-  //                                          not the USERS document $id)
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const sendPush = async (pushTargetId, title, body, entityLabel) => {
+  // ── Push helper ────────────────────────────────────────────────────────────
+  const sendPush = async (
+    pushTargetId,
+    title,
+    body,
+    entityLabel,
+    data = {}
+  ) => {
     if (!pushTargetId) {
       log('No pushTargetId for ' + entityLabel + ', skipping notify');
       return;
@@ -44,13 +45,22 @@ export default async ({ req, res, log, error }) => {
       'Sending notification to ' + entityLabel + ' | target: ' + pushTargetId
     );
     try {
+      const safeData = Object.fromEntries(
+        Object.entries(data).map(([k, v]) => [k, String(v ?? '')])
+      );
       await messaging.createPush(
         ID.unique(),
         title,
         body,
         [],
         [],
-        [pushTargetId]
+        [pushTargetId],
+        safeData,
+        'high',
+        undefined,
+        undefined,
+        undefined,
+        'offer_channel'
       );
       log('Notification sent to ' + entityLabel);
     } catch (e) {
@@ -58,27 +68,33 @@ export default async ({ req, res, log, error }) => {
     }
   };
 
-  const notifyByDocId = async (entityDocId, tableId, title, body) => {
+  const notifyByDocId = async (
+    entityDocId,
+    tableId,
+    title,
+    body,
+    data = {}
+  ) => {
     try {
       const doc = await db.getRow({
         databaseId: DB,
         tableId,
         rowId: entityDocId,
       });
-      await sendPush(doc.pushTargetId ?? null, title, body, entityDocId);
+      await sendPush(doc.pushTargetId ?? null, title, body, entityDocId, data);
     } catch (e) {
       log('notifyByDocId failed for ' + entityDocId + ': ' + e.message);
     }
   };
 
-  const notifyByAuthId = async (authUserId, title, body) => {
+  const notifyByAuthId = async (authUserId, title, body, data = {}) => {
     try {
-      const res = await db.listRows({
+      const result = await db.listRows({
         databaseId: DB,
         tableId: USERS,
         queries: [Query.equal('userId', authUserId), Query.limit(1)],
       });
-      const doc = res.rows?.[0];
+      const doc = result.rows?.[0];
       if (!doc) {
         log(
           'No USERS doc found for authUserId ' +
@@ -87,7 +103,7 @@ export default async ({ req, res, log, error }) => {
         );
         return;
       }
-      await sendPush(doc.pushTargetId ?? null, title, body, authUserId);
+      await sendPush(doc.pushTargetId ?? null, title, body, authUserId, data);
     } catch (e) {
       log('notifyByAuthId failed for ' + authUserId + ': ' + e.message);
     }
@@ -148,6 +164,27 @@ export default async ({ req, res, log, error }) => {
   const collectionFor = (entry) =>
     entry?.entityType === 'agency' ? ORGS : USERS;
 
+  // ── Load delivery for fare/pickup display in notifications ─────────────────
+  let delivery = null;
+  try {
+    delivery = await db.getRow({
+      databaseId: DB,
+      tableId: DELIVERIES,
+      rowId: queue.deliveryId,
+    });
+  } catch (e) {
+    log('Could not load delivery for notification enrichment: ' + e.message);
+  }
+
+  const fareAmount = delivery?.offeredFare ?? delivery?.fare ?? null;
+  const fareDisplay = fareAmount
+    ? '₦' + Number(fareAmount).toLocaleString('en-NG')
+    : 'Negotiable';
+  const pickupDisplay = delivery?.pickupAddress
+    ? delivery.pickupAddress.split(',')[0].trim()
+    : '';
+  const senderAuthId = delivery?.userId ?? delivery?.senderId ?? null;
+
   // ── Reset current entity back to available ─────────────────────────────────
   try {
     await db.updateRow({
@@ -167,18 +204,6 @@ export default async ({ req, res, log, error }) => {
     try {
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
-
-      let senderAuthId = null;
-      try {
-        const delivery = await db.getRow({
-          databaseId: DB,
-          tableId: DELIVERIES,
-          rowId: queue.deliveryId,
-        });
-        senderAuthId = delivery.userId ?? delivery.senderId ?? null;
-      } catch (e) {
-        log('Could not load delivery for senderAuthId: ' + e.message);
-      }
 
       let driverName = null;
       let driverPhone = null;
@@ -248,13 +273,18 @@ export default async ({ req, res, log, error }) => {
           pickupCode
       );
 
-      // Notify sender — senderAuthId is an Auth ID, so use notifyByAuthId
+      // Notify sender — rich data so their app can update state
       if (senderAuthId) {
         const entityLabel = currentIsAgency ? 'An agency' : 'A courier';
         await notifyByAuthId(
           senderAuthId,
           '🚀 Courier Found!',
-          `${entityLabel} has accepted your delivery and is on the way.`
+          `${entityLabel} accepted your delivery and is heading to the pickup.`,
+          {
+            type: 'delivery_accepted',
+            deliveryId: queue.deliveryId,
+            driverName: driverName ?? '',
+          }
         );
       }
 
@@ -284,7 +314,6 @@ export default async ({ req, res, log, error }) => {
         data: { status: 'failed', failReason: 'all_rejected' },
       })
       .catch(() => {});
-
     await db
       .updateRow({
         databaseId: DB,
@@ -340,16 +369,27 @@ export default async ({ req, res, log, error }) => {
     })
     .catch((e) => log('Could not mark next entity as offered: ' + e.message));
 
-  // Notify next courier/agency — these are document $ids, so use notifyByDocId
-  const label = nextIsAgency
-    ? 'A new delivery is waiting for your agency.'
-    : 'A new delivery is near you. Open Carrydey to accept.';
+  // ── Notify next courier — rich payload ─────────────────────────────────────
+  const nextDistanceStr = String(nextEntry.distance ?? '');
+
+  const notifTitle = '📦 New Delivery Offer';
+  const notifBody = nextIsAgency
+    ? `${fareDisplay} · ${nextDistanceStr}km — New delivery waiting for your agency`
+    : `${fareDisplay} · ${nextDistanceStr}km from you — Tap to accept`;
 
   await notifyByDocId(
     nextCourierId,
     nextIsAgency ? ORGS : USERS,
-    '📦 New Delivery Offer',
-    label
+    notifTitle,
+    notifBody,
+    {
+      type: 'delivery_offer',
+      deliveryId: queue.deliveryId,
+      queueId,
+      fare: fareDisplay,
+      distance: nextDistanceStr,
+      pickup: pickupDisplay,
+    }
   );
 
   log(
