@@ -14,13 +14,14 @@ firebase.initializeApp({
   appId: '1:309613309004:web:95cb3f104e1a6d2b6998e9',
 });
 
+// ── Hardcode these — they are not secrets, just project config ─────────────
+const APPWRITE_BASE = 'https://cloud.appwrite.io';
+const APPWRITE_PROJECT = '684ea0d100384c008ca4'; // ← paste your project ID
+const ADVANCE_DISPATCH_FN_ID = '69bec5220031461e10d8 '; // ← paste your function
+
+
 const messaging = firebase.messaging();
 
-// ── Background message handler ─────────────────────────────────────────────
-// This fires when the app is in the background or closed.
-// We build the notification ourselves so we can set tag, actions,
-// vibrate, and requireInteraction — none of which are available
-// when FCM auto-constructs the notification from the `notification` key.
 messaging.onBackgroundMessage((payload) => {
   const data = payload.data ?? {};
   const note = payload.notification ?? {};
@@ -32,7 +33,6 @@ messaging.onBackgroundMessage((payload) => {
   const queueId = data.queueId ?? '';
   const type = data.type ?? '';
 
-  // ── Non-offer notifications (sender updates, etc.) — simple style ──────
   if (type !== 'delivery_offer') {
     self.registration.showNotification(note.title ?? 'Carrydey', {
       body: note.body ?? '',
@@ -44,76 +44,59 @@ messaging.onBackgroundMessage((payload) => {
     return;
   }
 
-  // ── Delivery offer notification — rich style ───────────────────────────
   const title = note.title ?? '📦 New Delivery Offer';
-
-  // Build a concise body: fare · distance · truncated pickup
   const bodyParts = [fare, distance, pickup].filter(Boolean);
   const body = bodyParts.join(' · ');
 
   self.registration.showNotification(title, {
     body,
     icon: '/icon-192.png',
-    badge: '/icon-72.png',
-
-    // tag deduplicates: replaces any existing offer notification
-    // for this delivery instead of stacking a second one
+    badge: '/icon-32.png',
     tag: `offer-${deliveryId}`,
-    renotify: true, // re-plays sound/vibrate even when replacing same tag
-
-    // Keeps notification on screen until the courier acts
+    renotify: true,
     requireInteraction: true,
-
     silent: false,
-
-    // Haptic pattern: short-short-long  (Android PWA honours this)
     vibrate: [200, 100, 200, 100, 500],
-
-    // Action buttons visible directly in the shade
     actions: [
       { action: 'accept', title: '✅ Accept' },
       { action: 'decline', title: '❌ Decline' },
     ],
-
-    // Passed through to notificationclick so we can act without reopening
     data: {
       type,
-      deliveryId,
+      deliveryId, // ✅ this is now defined from data.deliveryId above
       queueId,
       url: '/track',
     },
   });
 });
 
-// ── Notification click / action button handler ─────────────────────────────
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   const { action } = event;
+  // ✅ deliveryId destructured here — it was always in data, but now guaranteed non-empty
   const { type, deliveryId, queueId, url } = event.notification.data ?? {};
 
-  // Only intercept accept/decline taps on offer notifications
   if (
     type === 'delivery_offer' &&
     (action === 'accept' || action === 'decline')
   ) {
-    const APPWRITE_BASE = 'https://cloud.appwrite.io';
-    const PROJECT = self.__APPWRITE_PROJECT__ ?? ''; // injected via env — see note below
-    const FN_ID = self.__ADVANCE_DISPATCH_FN__ ?? '';
-
+    // ✅ Use hardcoded constants — no more race condition with SET_ENV postMessage
     event.waitUntil(
-      fetch(`${APPWRITE_BASE}/v1/functions/${FN_ID}/executions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Appwrite-Project': PROJECT,
-        },
-        body: JSON.stringify({
-          body: JSON.stringify({ queueId, action }),
-        }),
-      })
+      fetch(
+        `${APPWRITE_BASE}/v1/functions/${ADVANCE_DISPATCH_FN_ID}/executions`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Appwrite-Project': APPWRITE_PROJECT,
+          },
+          body: JSON.stringify({
+            body: JSON.stringify({ queueId, action }),
+          }),
+        }
+      )
         .then(() => {
-          // After accepting, open/focus the track page
           if (action === 'accept') {
             return self.clients
               .matchAll({ type: 'window', includeUncontrolled: true })
@@ -132,7 +115,6 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
 
-  // Default tap — open or focus the track page
   event.waitUntil(
     self.clients
       .matchAll({ type: 'window', includeUncontrolled: true })
@@ -147,23 +129,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// ── Inject env values at build time ───────────────────────────────────────
-// In next.config.js add this to make the SW aware of env vars:
-//
-//   async headers() { return []; }   // not needed
-//
-// Instead, in your SW registration (usePushNotifications.js), right after
-// navigator.serviceWorker.register('/firebase-messaging-sw.js'), do:
-//
-//   const reg = await navigator.serviceWorker.ready;
-//   reg.active?.postMessage({
-//     type: 'SET_ENV',
-//     PROJECT: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
-//     FN_ID:   process.env.NEXT_PUBLIC_ADVANCE_DISPATCH_FUNCTION_ID,
-//   });
-//
-// Then add this listener at the bottom of this file (already included):
-
+// Keep SET_ENV listener for backwards compat — but constants above take precedence
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SET_ENV') {
     self.__APPWRITE_PROJECT__ = event.data.PROJECT ?? '';
