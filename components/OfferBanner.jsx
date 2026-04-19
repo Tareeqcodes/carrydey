@@ -115,7 +115,6 @@ const OfferBanner = ({
     );
   }
 
-  // ── Main offer banner ───────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop — tap to dismiss (same as decline) */}
