@@ -101,7 +101,7 @@ export default function Onboarding() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }; 
 
   if (loading || checkingProfile || !user) {
     return (

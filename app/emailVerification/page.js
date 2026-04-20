@@ -80,10 +80,10 @@ export default function Confirm() {
   }, [router, checkSession]);
 
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="h-screen flex items-center bg- justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3A0A21] mx-auto mb-4" />
-        <p className="text-sm text-[#3A0A21]">{status}</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00C896] mx-auto mb-4" />
+        <p className="text-sm text-black dark:text-white">{status}</p>
       </div>
     </div>
   );

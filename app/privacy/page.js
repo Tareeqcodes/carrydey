@@ -74,7 +74,7 @@ function AccordionItem({ item, isOpen, onToggle }) {
         onClick={onToggle}
         className="w-full flex items-center justify-between py-5 text-left group"
       >
-        <span className="text-[15px] font-medium text-[#1a1a1a] group-hover:text-[#3A0A21] transition-colors">
+        <span className="text-[15px] font-medium text-black dark:text-white group-hover:text-[#00C896] transition-colors">
           {item.title}
         </span>
         <motion.div
@@ -82,7 +82,7 @@ function AccordionItem({ item, isOpen, onToggle }) {
           transition={{ duration: 0.2, ease: 'easeInOut' }}
           className="shrink-0 ml-4"
         >
-          <Plus size={15} className="text-[#3A0A21]" />
+          <Plus size={15} className="text-[#00C896]" />
         </motion.div>
       </button>
 
@@ -97,20 +97,20 @@ function AccordionItem({ item, isOpen, onToggle }) {
           >
             <div className="pb-6 pr-8 space-y-3">
               {item.content && (
-                <p className="text-sm text-[#888] leading-relaxed">{item.content}</p>
+                <p className="text-sm text-black dark:text-white leading-relaxed">{item.content}</p>
               )}
               {item.list && (
                 <ul className="space-y-2">
                   {item.list.map((li, i) => (
-                    <li key={i} className="text-sm text-[#888] leading-relaxed flex gap-2.5">
-                      <span className="text-[#3A0A21] shrink-0 mt-0.5">–</span>
+                    <li key={i} className="text-sm text-black dark:text-white leading-relaxed flex gap-2.5">
+                      <span className="text-[#00C896] shrink-0 mt-0.5">–</span>
                       {li}
                     </li>
                   ))}
                 </ul>
               )}
               {item.footer && (
-                <p className="text-sm text-[#3A0A21] font-medium mt-2">{item.footer}</p>
+                <p className="text-sm text-[#00C896] font-medium mt-2">{item.footer}</p>
               )}
             </div>
           </motion.div>
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
   const [open, setOpen] = useState(null);
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-white dark:bg-black" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
         rel="stylesheet"
@@ -136,18 +136,18 @@ export default function PrivacyPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-black dark:text-white mb-8">
           Legal
         </p>
 
         <h1
-          className="text-[clamp(2.4rem,6vw,3.5rem)] font-normal leading-[1.1] text-[#1a1a1a] mb-4"
+          className="text-[clamp(2.4rem,6vw,3.5rem)] font-normal leading-[1.1] text-black dark:text-white mb-4"
           style={{ fontFamily: "'DM Serif Display', serif", letterSpacing: '-0.02em' }}
         >
           Privacy Policy
         </h1>
 
-        <p className="text-sm text-[#bbb] mb-16">
+        <p className="text-sm text-black dark:text-white mb-16">
           Carrydey Technologies · Last updated November 2025
         </p>
 
@@ -167,7 +167,7 @@ export default function PrivacyPage() {
             Questions about this policy?{' '}
             <a
               href="mailto:support@carrydey.tech"
-              className="text-[#3A0A21] font-medium hover:underline"
+              className="text-[#00C896] font-medium hover:underline"
             >
               support@carrydey.tech
             </a>

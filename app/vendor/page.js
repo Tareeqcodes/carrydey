@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,25 +50,21 @@ const faqs = [
   },
   {
     q: 'Can my customers track their delivery?',
-    a: 'Yes. They get a link sent to them automatically  no app download needed. You stop being the middle man.',
-  },
-  {
-    q: 'What areas do you cover?',
-    a: 'We’re growing across Nigeria. Enter your location to see available couriers.',
+    a: 'Yes. They get a link sent to them automatically — no app download needed. You stop being the middle man.',
   },
 ];
 
 function Accordion({ items }) {
   const [open, setOpen] = useState(null);
   return (
-    <div className="divide-y divide-[#ebe6e9]">
+    <div className="divide-y divide-black/10 dark:divide-white/10">
       {items.map(({ q, a }, i) => (
         <div key={i} className="py-4">
           <button
             onClick={() => setOpen(open === i ? null : i)}
             className="w-full flex items-center justify-between text-left group"
           >
-            <span className="text-[15px] font-medium text-[#1a1a1a] group-hover:text-[#3A0A21] transition-colors">
+            <span className="text-[15px] font-medium text-black dark:text-white group-hover:text-[#00C896] transition-colors">
               {q}
             </span>
             <motion.div
@@ -77,7 +72,7 @@ function Accordion({ items }) {
               transition={{ duration: 0.2, ease: 'easeInOut' }}
               className="shrink-0 ml-4"
             >
-              <Plus size={16} className="text-[#3A0A21]" />
+              <Plus size={16} className="text-[#00C896]" />
             </motion.div>
           </button>
           <AnimatePresence initial={false}>
@@ -89,7 +84,7 @@ function Accordion({ items }) {
                 transition={{ duration: 0.25, ease: [0.04, 0.62, 0.23, 0.98] }}
                 style={{ overflow: 'hidden' }}
               >
-                <p className="pt-3 text-sm text-[#888] leading-relaxed pr-8">
+                <p className="pt-3 text-sm text-black/60 dark:text-white/60 leading-relaxed pr-8">
                   {a}
                 </p>
               </motion.div>
@@ -104,7 +99,7 @@ function Accordion({ items }) {
 export default function ForVendors() {
   return (
     <div
-      className="min-h-screen bg-[#faf9f7]"
+      className="min-h-screen bg-white dark:bg-black"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <link
@@ -118,14 +113,12 @@ export default function ForVendors() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        {/* Label */}
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-black/40 dark:text-white/40 mb-8">
           For Businesses & Vendors
         </p>
 
-        {/* Headline — speaks to the real pain */}
         <h1
-          className="text-[clamp(2.6rem,7vw,4rem)] font-normal leading-[1.1] text-[#1a1a1a] mb-5"
+          className="text-[clamp(2.6rem,7vw,4rem)] font-normal leading-[1.1] text-black dark:text-white mb-5"
           style={{
             fontFamily: "'DM Serif Display', serif",
             letterSpacing: '-0.02em',
@@ -136,21 +129,20 @@ export default function ForVendors() {
           paid. <em>Deliver fast.</em>
         </h1>
 
-        <p className="text-[17px] text-[#777] leading-relaxed mb-12 max-w-sm">
-          Carrydey gets your packages to customers the same day affordably,
+        <p className="text-[17px] text-black/60 dark:text-white/60 leading-relaxed mb-12 max-w-sm">
+          Carrydey gets your packages to customers the same day — affordably,
           reliably, without the WhatsApp back-and-forth.
         </p>
 
-        {/* CTA */}
         <Link
           href="/send"
-          className="inline-flex items-center gap-2 bg-[#3A0A21] text-white text-sm font-medium px-6 py-3 rounded-full hover:bg-[#521229] transition-colors mb-16"
+          className="inline-flex items-center gap-2 bg-[#00C896] text-black text-sm font-medium px-6 py-3 rounded-full hover:bg-[#00E5AD] transition-colors mb-16"
         >
           Send a package now <ArrowUpRight size={14} />
         </Link>
 
         {/* Feature list */}
-        <div className="space-y-0 divide-y divide-[#ebe6e9] border-t border-[#ebe6e9]">
+        <div className="space-y-0 divide-y divide-black/10 dark:divide-white/10 border-t border-black/10 dark:border-white/10">
           {features.map(({ label, desc }, i) => (
             <motion.div
               key={label}
@@ -163,53 +155,54 @@ export default function ForVendors() {
               }}
               className="flex items-start justify-between py-4 gap-6"
             >
-              <span className="text-[15px] font-medium text-[#1a1a1a]">
+              <span className="text-[15px] font-medium text-black dark:text-white">
                 {label}
               </span>
-              <span className="text-sm text-[#aaa] text-right max-w-[180px] leading-snug">
+              <span className="text-sm text-black/50 dark:text-white/50 text-right max-w-[180px] leading-snug">
                 {desc}
               </span>
             </motion.div>
           ))}
         </div>
 
-        {/* Divider */}
-        <div className="my-16 h-px bg-[#ebe6e9]" />
+        <div className="my-16 h-px bg-black/10 dark:bg-white/10" />
 
-        {/* Testimonial — one real voice beats five bullet points */}
-        <div className="bg-white border border-[#ebe6e9] rounded-2xl px-6 py-6 mb-16">
-          <p className="text-[15px] text-[#444] leading-relaxed italic mb-4">
+        {/* Testimonial */}
+        <div className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl px-6 py-6 mb-16">
+          <p className="text-[15px] text-black/70 dark:text-white/70 leading-relaxed italic mb-4">
             "I used to spend 30 minutes every day on WhatsApp chasing riders.
             Now I book on Carrydey in 2 minutes and my customers get updates
             automatically. My refund complaints dropped completely."
           </p>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#3A0A21] text-white text-xs font-bold flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#00C896] text-black text-xs font-bold flex items-center justify-center">
               A
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-[#1a1a1a]">
+              <p className="text-[13px] font-semibold text-black dark:text-white">
                 Adaeze O.
               </p>
-              <p className="text-[11px] text-[#aaa]">Fashion vendor, Lagos</p>
+              <p className="text-[11px] text-black/40 dark:text-white/40">
+                Fashion vendor, Lagos
+              </p>
             </div>
           </div>
         </div>
 
         {/* FAQ */}
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-6">
+        <p className="text-xs font-semibold uppercase tracking-widest text-black/30 dark:text-white/30 mb-6">
           Questions
         </p>
         <Accordion items={faqs} />
 
-        {/* Bottom CTA strip */}
-        <div className="mt-16 flex items-center justify-between border border-[#e2dce0] rounded-2xl px-4 py-5 bg-white">
-          <p className="text-[12px] font-medium text-[#1a1a1a]">
-            Send packages daily? 
+        {/* Bottom CTA */}
+        <div className="mt-16 flex items-center justify-between border border-black/10 dark:border-white/10 rounded-2xl px-4 py-5 bg-white dark:bg-black">
+          <p className="text-[12px] font-medium text-black dark:text-white">
+            Send packages daily?
           </p>
           <Link
             href="/send"
-            className="inline-flex items-center gap-1 text-[#3A0A21] text-sm font-bold hover:underline"
+            className="inline-flex items-center gap-1 text-[#00C896] text-sm font-bold hover:underline"
           >
             Send now <ArrowUpRight size={13} />
           </Link>

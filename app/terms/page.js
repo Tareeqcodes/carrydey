@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -52,7 +51,7 @@ const sections = [
   {
     title: 'Liability',
     list: [
-      'Carrydey\'s liability is limited to direct losses caused by our gross negligence.',
+      "Carrydey's liability is limited to direct losses caused by our gross negligence.",
       'We are not liable for indirect, incidental, or consequential losses.',
       'Delivery times are estimates — we do not guarantee specific windows.',
     ],
@@ -73,12 +72,12 @@ const sections = [
 
 function AccordionItem({ item, isOpen, onToggle }) {
   return (
-    <div className="border-b border-[#ebe6e9]">
+    <div className="border-b border-black/10 dark:border-white/10">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between py-5 text-left group"
       >
-        <span className="text-[15px] font-medium text-[#1a1a1a] group-hover:text-[#3A0A21] transition-colors">
+        <span className="text-[15px] font-medium text-black dark:text-white group-hover:text-[#00C896] transition-colors">
           {item.title}
         </span>
         <motion.div
@@ -86,7 +85,7 @@ function AccordionItem({ item, isOpen, onToggle }) {
           transition={{ duration: 0.2, ease: 'easeInOut' }}
           className="shrink-0 ml-4"
         >
-          <Plus size={15} className="text-[#3A0A21]" />
+          <Plus size={15} className="text-[#00C896]" />
         </motion.div>
       </button>
 
@@ -101,13 +100,18 @@ function AccordionItem({ item, isOpen, onToggle }) {
           >
             <div className="pb-6 pr-8 space-y-3">
               {item.content && (
-                <p className="text-sm text-[#888] leading-relaxed">{item.content}</p>
+                <p className="text-sm text-black/50 dark:text-white/50 leading-relaxed">
+                  {item.content}
+                </p>
               )}
               {item.list && (
                 <ul className="space-y-2">
                   {item.list.map((li, i) => (
-                    <li key={i} className="text-sm text-[#888] leading-relaxed flex gap-2.5">
-                      <span className="text-[#3A0A21] shrink-0 mt-0.5">–</span>
+                    <li
+                      key={i}
+                      className="text-sm text-black/50 dark:text-white/50 leading-relaxed flex gap-2.5"
+                    >
+                      <span className="text-[#00C896] shrink-0 mt-0.5">–</span>
                       {li}
                     </li>
                   ))}
@@ -125,7 +129,10 @@ export default function TermsPage() {
   const [open, setOpen] = useState(null);
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      className="min-h-screen bg-white dark:bg-black"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
       <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
         rel="stylesheet"
@@ -137,24 +144,28 @@ export default function TermsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-black/30 dark:text-white/30 mb-8">
           Legal
         </p>
 
         <h1
-          className="text-[clamp(2.4rem,6vw,3.5rem)] font-normal leading-[1.1] text-[#1a1a1a] mb-4"
-          style={{ fontFamily: "'DM Serif Display', serif", letterSpacing: '-0.02em' }}
+          className="text-[clamp(2.4rem,6vw,3.5rem)] font-normal leading-[1.1] text-black dark:text-white mb-4"
+          style={{
+            fontFamily: "'DM Serif Display', serif",
+            letterSpacing: '-0.02em',
+          }}
         >
           Terms &amp; Conditions
         </h1>
 
-        <p className="text-sm text-[#bbb] mb-6">
+        <p className="text-sm text-black/30 dark:text-white/30 mb-6">
           Carrydey Technologies · Effective November 2025
         </p>
 
-        <div className="bg-[#3A0A21]/5 border border-[#3A0A21]/15 rounded-xl px-5 py-4 mb-14">
-          <p className="text-sm text-[#3A0A21] leading-relaxed">
-            By creating an account or using Carrydey, you agree to be bound by these Terms. Please read them carefully.
+        <div className="bg-[#00C896]/8 border border-[#00C896]/20 rounded-xl px-5 py-4 mb-14">
+          <p className="text-sm text-[#00C896] leading-relaxed">
+            By creating an account or using Carrydey, you agree to be bound by
+            these Terms. Please read them carefully.
           </p>
         </div>
 
@@ -169,12 +180,12 @@ export default function TermsPage() {
           ))}
         </div>
 
-        <div className="mt-14 border border-[#e2dce0] rounded-2xl px-6 py-5 bg-white">
-          <p className="text-sm text-[#999]">
+        <div className="mt-14 border border-black/10 dark:border-white/10 rounded-2xl px-6 py-5 bg-white dark:bg-black">
+          <p className="text-sm text-black/50 dark:text-white/50">
             Questions about these Terms?{' '}
             <a
               href="mailto:support@carrydey.tech"
-              className="text-[#3A0A21] font-medium hover:underline"
+              className="text-[#00C896] font-medium hover:underline"
             >
               support@carrydey.tech
             </a>

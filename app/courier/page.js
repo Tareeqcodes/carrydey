@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,12 +9,13 @@ const tabs = ['Riders', 'Agencies'];
 const content = {
   Riders: {
     headline: 'More jobs.\nBetter pay.\nNo stress.',
-    sub: 'Stop waiting for WhatsApp messages. Carrydey sends jobs to you  verified, paid, and on your terms.',
+    sub: 'Stop waiting for WhatsApp messages. Carrydey sends jobs to you — verified, paid, and on your terms.',
     pills: ['Free to join', 'Get paid per job', 'Work your own hours'],
     stat1: { num: '120+', label: 'active riders' },
     stat2: { num: '0 fees', label: 'to sign up' },
     testimonial: {
-      quote: '"Before Carrydey I was just waiting for people to call me. Now jobs come to me and I know exactly what I\'ll earn before I accept. My income is consistent now."',
+      quote:
+        '"Before Carrydey I was just waiting for people to call me. Now jobs come to me and I know exactly what I\'ll earn before I accept. My income is consistent now."',
       name: 'Emeka D.',
       role: 'Dispatch rider, Lagos',
     },
@@ -24,13 +24,17 @@ const content = {
   },
   Agencies: {
     headline: 'Run your agency\nwithout\nthe chaos.',
-    sub: 'Stop managing drivers on WhatsApp. Carrydey gives your agency a proper system  bookings, payments, and drivers, all in one place.',
-    pills: ['Free to start', 'Your own booking link', 'Manage unlimited riders'],
+    sub: 'Stop managing drivers on WhatsApp. Carrydey gives your agency a proper system — bookings, payments, and drivers, all in one place.',
+    pills: [
+      'Free to start',
+      'Your own booking link',
+      'Manage unlimited riders',
+    ],
     stat1: { num: '1 link', label: 'customers book from' },
     stat2: { num: '0 calls', label: 'to assign a job' },
-    stat3: { num: 'Full', label: 'payment visibility' },
     testimonial: {
-      quote: '"We were running everything on WhatsApp missed jobs, confusion, unpaid deliveries. Carrydey gave us a real system. Our drivers are more accountable and clients trust us more."',
+      quote:
+        '"We were running everything on WhatsApp — missed jobs, confusion, unpaid deliveries. Carrydey gave us a real system. Our drivers are more accountable and clients trust us more."',
       name: 'Biodun A.',
       role: 'Agency owner, Abuja',
     },
@@ -58,11 +62,11 @@ const faqs = {
       a: 'Payment is digital and released after every confirmed delivery. No cash drama, no waiting weeks. What you earn is what you see.',
     },
     {
-      q: 'Can I reject jobs I don\'t want?',
-      a: 'Yes. You choose which jobs to accept. You\'re never forced to take a delivery that doesn\'t work for you.',
+      q: "Can I reject jobs I don't want?",
+      a: "Yes. You choose which jobs to accept. You're never forced to take a delivery that doesn't work for you.",
     },
     {
-      q: 'What if a customer has a problem with my delivery?',
+      q: 'What if a customer has a problem?',
       a: 'We have a support team that handles disputes fairly. Your history and proof of delivery protect you.',
     },
   ],
@@ -85,28 +89,30 @@ const faqs = {
     },
     {
       q: 'How does payment work for my agency?',
-      a: 'All customer payments go through Carrydey\'s secure system. You see every transaction clearly, and payouts are fast and recorded.',
+      a: "All customer payments go through Carrydey's secure system. You see every transaction clearly, and payouts are fast and recorded.",
     },
     {
-      q: 'What if I have multiple branches or locations?',
+      q: 'What if I have multiple branches?',
       a: 'Reach out to us on WhatsApp. We support multi-location agencies and can set up a structure that fits how you operate.',
     },
-     { q: 'What support do you offer?', a: 'Our team is here 24/7 to help you with any questions or issues.' },
+    {
+      q: 'What support do you offer?',
+      a: 'Our team is here 24/7 to help you with any questions or issues.',
+    },
   ],
 };
 
 function Accordion({ items }) {
   const [open, setOpen] = useState(null);
-
   return (
-    <div className="divide-y divide-[#ebe6e9]">
+    <div className="divide-y divide-black/10 dark:divide-white/10">
       {items.map(({ q, a }, i) => (
         <div key={i} className="py-4">
           <button
             onClick={() => setOpen(open === i ? null : i)}
             className="w-full flex items-center justify-between text-left group"
           >
-            <span className="text-[15px] font-medium text-[#1a1a1a] group-hover:text-[#3A0A21] transition-colors">
+            <span className="text-[15px] font-medium text-black dark:text-white group-hover:text-[#00C896] transition-colors">
               {q}
             </span>
             <motion.div
@@ -114,10 +120,9 @@ function Accordion({ items }) {
               transition={{ duration: 0.2, ease: 'easeInOut' }}
               className="shrink-0 ml-4"
             >
-              <Plus size={16} className="text-[#3A0A21]" />
+              <Plus size={16} className="text-[#00C896]" />
             </motion.div>
           </button>
-
           <AnimatePresence initial={false}>
             {open === i && (
               <motion.div
@@ -127,7 +132,9 @@ function Accordion({ items }) {
                 transition={{ duration: 0.25, ease: [0.04, 0.62, 0.23, 0.98] }}
                 style={{ overflow: 'hidden' }}
               >
-                <p className="pt-3 text-sm text-[#888] leading-relaxed pr-8">{a}</p>
+                <p className="pt-3 text-sm text-black/50 dark:text-white/50 leading-relaxed pr-8">
+                  {a}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -142,37 +149,44 @@ export default function Earn() {
   const c = content[active];
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      className="min-h-screen bg-white dark:bg-black"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
       <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
         rel="stylesheet"
       />
 
       <div className="max-w-2xl mx-auto px-6 pt-16 pb-32">
-
         {/* Tab toggle */}
-        <div className="flex gap-1 bg-white border border-[#e8e2e5] rounded-full p-1 w-fit mb-16">
+        <div className="flex gap-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full p-1 w-fit mb-16">
           {tabs.map((t) => (
             <button
               key={t}
               onClick={() => setActive(t)}
               className="relative px-5 py-2 text-sm font-medium rounded-full transition-colors duration-150 cursor-pointer"
-              style={{ color: active === t ? '#fff' : '#999' }}
+              style={{ color: active === t ? '#000' : 'rgba(0,0,0,0.4)' }}
             >
               {active === t && (
                 <motion.span
                   layoutId="tab-bg"
-                  className="absolute inset-0 rounded-full bg-[#3A0A21]"
+                  className="absolute inset-0 rounded-full bg-[#00C896]"
                   style={{ zIndex: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                 />
               )}
-              <span className="relative z-10">{t}</span>
+              <span
+                className="relative z-10 dark:text-white"
+                style={active === t ? { color: '#000' } : {}}
+              >
+                {t}
+              </span>
             </button>
           ))}
         </div>
 
-        {/* Hero text */}
+        {/* Hero */}
         <AnimatePresence mode="wait">
           <motion.div
             key={active}
@@ -182,13 +196,16 @@ export default function Earn() {
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <h1
-              className="text-[clamp(2.6rem,7vw,4rem)] font-normal leading-[1.1] text-[#1a1a1a] mb-5 whitespace-pre-line"
-              style={{ fontFamily: "'DM Serif Display', serif", letterSpacing: '-0.02em' }}
+              className="text-[clamp(2.6rem,7vw,4rem)] font-normal leading-[1.1] text-black dark:text-white mb-5 whitespace-pre-line"
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                letterSpacing: '-0.02em',
+              }}
             >
               {c.headline}
             </h1>
 
-            <p className="text-[17px] text-[#777] leading-relaxed mb-8 max-w-sm">
+            <p className="text-[17px] text-black/50 dark:text-white/50 leading-relaxed mb-8 max-w-sm">
               {c.sub}
             </p>
 
@@ -197,39 +214,44 @@ export default function Earn() {
               {c.pills.map((p) => (
                 <span
                   key={p}
-                  className="text-xs font-medium text-[#3A0A21] bg-[#3A0A21]/7 border border-[#3A0A21]/15 px-3 py-1.5 rounded-full"
+                  className="text-xs font-medium text-[#00C896] bg-[#00C896]/10 border border-[#00C896]/20 px-3 py-1.5 rounded-full"
                 >
                   {p}
                 </span>
               ))}
             </div>
 
-            {/* Stats row */}
+            {/* Stats */}
             <div className="flex items-center gap-6 mb-12 flex-wrap">
-              
               <div>
-                <p className="text-[20px] font-semibold text-[#1a1a1a] leading-none">{c.stat1.num}</p>
-                <p className="text-xs text-[#aaa] mt-1">{c.stat1.label}</p>
+                <p className="text-[20px] font-semibold text-black dark:text-white leading-none">
+                  {c.stat1.num}
+                </p>
+                <p className="text-xs text-black/40 dark:text-white/40 mt-1">
+                  {c.stat1.label}
+                </p>
               </div>
-              <div className="h-8 w-px bg-[#ebe6e9]" />
+              <div className="h-8 w-px bg-black/10 dark:bg-white/10" />
               <div>
-                <p className="text-[20px] font-semibold text-[#1a1a1a] leading-none">{c.stat2.num}</p>
-                <p className="text-xs text-[#aaa] mt-1">{c.stat2.label}</p>
+                <p className="text-[20px] font-semibold text-black dark:text-white leading-none">
+                  {c.stat2.num}
+                </p>
+                <p className="text-xs text-black/40 dark:text-white/40 mt-1">
+                  {c.stat2.label}
+                </p>
               </div>
             </div>
 
-            {/* CTA */}
             <Link
               href={c.ctaHref}
-              className="inline-flex items-center gap-2 bg-[#3A0A21] text-white text-sm font-medium px-6 py-3 rounded-full hover:bg-[#521229] transition-colors"
+              className="inline-flex items-center gap-2 bg-[#00C896] text-black text-sm font-medium px-6 py-3 rounded-full hover:bg-[#00E5AD] transition-colors"
             >
               {c.cta} <ArrowUpRight size={14} />
             </Link>
           </motion.div>
         </AnimatePresence>
 
-        {/* Divider */}
-        <div className="my-16 h-px bg-[#ebe6e9]" />
+        <div className="my-16 h-px bg-black/10 dark:bg-white/10" />
 
         {/* Testimonial */}
         <AnimatePresence mode="wait">
@@ -239,25 +261,29 @@ export default function Earn() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="bg-white border border-[#ebe6e9] rounded-2xl px-6 py-6 mb-16"
+            className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl px-6 py-6 mb-16"
           >
-            <p className="text-[15px] text-[#444] leading-relaxed italic mb-4">
+            <p className="text-[15px] text-black/60 dark:text-white/60 leading-relaxed italic mb-4">
               {c.testimonial.quote}
             </p>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#3A0A21] text-white text-xs font-bold flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#00C896] text-black text-xs font-bold flex items-center justify-center">
                 {c.testimonial.name[0]}
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-[#1a1a1a]">{c.testimonial.name}</p>
-                <p className="text-[11px] text-[#aaa]">{c.testimonial.role}</p>
+                <p className="text-[13px] font-semibold text-black dark:text-white">
+                  {c.testimonial.name}
+                </p>
+                <p className="text-[11px] text-black/40 dark:text-white/40">
+                  {c.testimonial.role}
+                </p>
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
         {/* FAQ */}
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#bbb] mb-6">
+        <p className="text-xs font-semibold uppercase tracking-widest text-black/30 dark:text-white/30 mb-6">
           Questions
         </p>
         <AnimatePresence mode="wait">
@@ -271,7 +297,6 @@ export default function Earn() {
             <Accordion items={faqs[active]} />
           </motion.div>
         </AnimatePresence>
-
       </div>
     </div>
   );
