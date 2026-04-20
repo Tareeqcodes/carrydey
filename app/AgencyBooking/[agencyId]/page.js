@@ -38,7 +38,7 @@ function checkAvailability(agencyData) {
       'Tuesday',
       'Wednesday',
       'Thursday',
-      'Friday', 
+      'Friday',
       'Saturday',
       'Sunday',
     ];
@@ -73,9 +73,9 @@ export default function AgencyBookingPage() {
   });
   const [showClosedModal, setShowClosedModal] = useState(false);
   const [brandColors, setBrandColors] = useState({
-    primary: '#3A0A21',
-    secondary: '#5A1A41',
-    accent: '#8B2E5A',
+     primary: '#00C896',
+    secondary: '#00E5AD',
+    accent: '#00C896',
   });
   const [loadingAgency, setLoadingAgency] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -155,8 +155,7 @@ export default function AgencyBookingPage() {
             packageDetails?.dropoffContact?.dropoffPhone,
           dropoffInstructions:
             packageDetails?.dropoffContact?.dropoffInstructions,
-          recipientPermission:
-            packageDetails?.dropoffContact?.recipientPermission,
+         
           offeredFare: fareDetails?.offeredFare
             ? parseInt(fareDetails.offeredFare)
             : null,
@@ -197,7 +196,7 @@ export default function AgencyBookingPage() {
             Loading booking page...
           </p>
         </motion.div>
-      </div> 
+      </div>
     );
   }
 

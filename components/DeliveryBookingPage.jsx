@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building2, Phone, Ruler, Clock, User, Loader2, Sparkles,
+  Building2, Phone, Ruler, Clock, User, Loader2, Sparkles, 
 } from 'lucide-react';
 import { useBrandColors } from '@/hooks/BrandColors';
 import { useAgencyFareCalculator, useFareCalculator } from '@/hooks/useFareCalculator';
@@ -124,7 +124,7 @@ function GuestInfoModal({ show, agency, brandColors, loading, guestInfo, onGuest
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-          onClick={onClose}
+          onClick={!loading ? onClose : undefined}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -132,8 +132,73 @@ function GuestInfoModal({ show, agency, brandColors, loading, guestInfo, onGuest
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-black rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-black/10 dark:border-white/10"
+            className="bg-white dark:bg-black rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-black/10 dark:border-white/10 relative"
           >
+            {/* ── Full-modal loading overlay ── */}
+            <AnimatePresence>
+              {loading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-3xl"
+                  style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(6px)' }}
+                >
+                  {/* Animated logo / spinner ring */}
+                  <div className="relative w-20 h-20 mb-5">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
+                      className="absolute inset-0 rounded-full border-4 border-transparent"
+                      style={{ borderTopColor: brandColors.primary, borderRightColor: `${brandColors.primary}40` }}
+                    />
+                    <div
+                      className="absolute inset-2 rounded-full flex items-center justify-center"
+                      style={{ background: `${brandColors.primary}12` }}
+                    >
+                      {agency?.logoUrl ? (
+                        <img src={agency.logoUrl} alt={agency.name} className="w-10 h-10 object-contain rounded-full" />
+                      ) : (
+                        <Building2 className="w-6 h-6" style={{ color: brandColors.primary }} />
+                      )}
+                    </div>
+                  </div>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="text-base font-black text-black dark:text-white mb-1"
+                    style={{ letterSpacing: '-0.3px' }}
+                  >
+                    Confirming your booking…
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-xs text-black/40 dark:text-white/40"
+                  >
+                    This only takes a moment
+                  </motion.p>
+
+                  {/* Animated progress dots */}
+                  <div className="flex items-center gap-1.5 mt-5">
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
+                        transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2, ease: 'easeInOut' }}
+                        className="w-2 h-2 rounded-full"
+                        style={{ background: brandColors.primary }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── Gradient header ── */}
             <div
               className="p-6 sm:p-8 relative overflow-hidden"
               style={{ background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)` }}
@@ -150,10 +215,14 @@ function GuestInfoModal({ show, agency, brandColors, loading, guestInfo, onGuest
                     <User className="w-4 h-4 text-white" />
                   </div>
                 )}
-                <p className="text-white/80 text-md font-medium">We will use this to reach you</p>
+                <div>
+                  <p className="text-white font-black text-base leading-tight">{agency?.name}</p>
+                  <p className="text-white/70 text-xs mt-0.5">We'll use this to reach you</p>
+                </div>
               </div>
             </div>
 
+            {/* ── Form fields ── */}
             <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-5">
               {[
                 { label: 'Your Full Name', key: 'name', type: 'text', icon: User, placeholder: 'John Doe', color: brandColors.primary, required: true },
@@ -171,26 +240,31 @@ function GuestInfoModal({ show, agency, brandColors, loading, guestInfo, onGuest
                       type={type}
                       value={guestInfo[key]}
                       onChange={(e) => onGuestInfoChange(key, e.target.value)}
-                      className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-white/5 border-2 border-black/10 dark:border-white/10 rounded-2xl focus:outline-none transition-all text-black dark:text-white font-medium placeholder:text-black/30 dark:placeholder:text-white/30"
+                      disabled={loading}
+                      className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-white/5 border-2 border-black/10 dark:border-white/10 rounded-2xl focus:outline-none transition-all text-black dark:text-white font-medium placeholder:text-black/30 dark:placeholder:text-white/30 disabled:opacity-50"
                       placeholder={placeholder}
                       required={required}
                     />
                   </div>
                 </div>
               ))}
+
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <button
                   type="button" onClick={onClose} disabled={loading}
-                  className="flex-1 px-6 py-3 bg-black/5 dark:bg-white/10 text-black dark:text-white rounded-2xl font-semibold hover:bg-black/10 dark:hover:bg-white/20 transition-all"
+                  className="flex-1 px-6 py-3 bg-black/5 dark:bg-white/10 text-black dark:text-white rounded-2xl font-semibold hover:bg-black/10 dark:hover:bg-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Back
                 </button>
                 <button
                   type="submit" disabled={loading}
-                  className="flex-1 px-3 py-3 text-white rounded-2xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-3 py-3 text-white rounded-2xl font-semibold transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{ background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)` }}
                 >
-                  {loading ? <><Loader2 className="w-5 h-5 animate-spin" /><span>Booking...</span></> : <span>Confirm Booking</span>}
+                  {loading
+                    ? <><Loader2 className="w-5 h-5 animate-spin" /><span>Booking…</span></>
+                    : <span>Confirm Booking</span>
+                  }
                 </button>
               </div>
             </form>

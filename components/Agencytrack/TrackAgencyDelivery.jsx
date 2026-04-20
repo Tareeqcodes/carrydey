@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
 import {
@@ -46,7 +46,45 @@ const TrackAgencyDelivery = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accepting, setAccepting] = useState(false);
-const [assigning, setAssigning] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+
+  // ── Swipe-to-open (edge gesture) ──────────────────────────────────────────
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      const isHorizontal = dy < 60;
+
+      // Open: swipe right starting within 30px of left edge
+      if (isHorizontal && dx > 50 && touchStartX.current < 30) {
+        setSidebarOpen(true);
+      }
+      // Close: swipe left while sidebar is open
+      if (isHorizontal && dx < -50 && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, {
+      passive: true,
+    });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [sidebarOpen]);
 
   const [assignmentModal, setAssignmentModal] = useState({
     isOpen: false,
@@ -54,7 +92,6 @@ const [assigning, setAssigning] = useState(false);
     selectedDriver: null,
     deliveryDetails: null,
   });
-
   const closeAssignmentModal = () =>
     setAssignmentModal({
       isOpen: false,
@@ -62,7 +99,6 @@ const [assigning, setAssigning] = useState(false);
       selectedDriver: null,
       deliveryDetails: null,
     });
-
   const openAssignmentModal = (delivery, preSelectedDriverId = null) =>
     setAssignmentModal({
       isOpen: true,
@@ -105,9 +141,8 @@ const [assigning, setAssigning] = useState(false);
     async (deliveryId, driver) => {
       await assignDelivery(deliveryId, driver.$id, driver.name, driver.phone);
       await assignDriverToDelivery(driver.$id, deliveryId);
-      if (driver.phoneType === 'keypad') {
+      if (driver.phoneType === 'keypad')
         triggerDriverSMS(deliveryId, driver.$id);
-      }
     },
     [assignDelivery, assignDriverToDelivery]
   );
@@ -116,7 +151,6 @@ const [assigning, setAssigning] = useState(false);
     async (deliveryId) => {
       await refreshDeliveries();
       const bestDriver = pickBestDriver(drivers);
-
       if (!bestDriver) {
         try {
           const delivery = await tablesDB.getRow({
@@ -131,15 +165,14 @@ const [assigning, setAssigning] = useState(false);
             deliveryDetails: delivery,
           });
         } catch (e) {
-          console.error('Could not load delivery for manual assignment:', e);
+          console.error('Could not load delivery:', e);
         }
         return;
       }
-
       try {
         await completeAssignment(deliveryId, bestDriver);
       } catch (e) {
-        console.error('Auto-assign failed, falling back to modal:', e);
+        console.error('Auto-assign failed:', e);
         try {
           const delivery = await tablesDB.getRow({
             databaseId: DB,
@@ -166,16 +199,16 @@ const [assigning, setAssigning] = useState(false);
     await acceptOffer();
     setTimeout(() => {
       setAccepting(false);
-      setActivePage('active'); 
+      setActivePage('active');
     }, 2000);
   }, [acceptOffer]);
 
   usePushNotifications({
     enabled: !!user?.$id,
-  onForegroundMessage: (payload) => {
-    console.log('Foreground notification:', payload.notification.title);
-  },
-});
+    onForegroundMessage: (payload) => {
+      console.log('Foreground notification:', payload.notification.title);
+    },
+  });
 
   const handleAcceptRequest = async (requestId) => {
     const result = await acceptRequest(requestId);
@@ -191,24 +224,24 @@ const [assigning, setAssigning] = useState(false);
   };
 
   const handleCompleteAssignment = async () => {
-  if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
-  const driver = drivers.find(
-    (d) => d.$id === assignmentModal.selectedDriver || d.id === assignmentModal.selectedDriver
-  );
-  if (!driver) return;
-  setAssigning(true);
-  try {
-    await completeAssignment(assignmentModal.deliveryId, driver);
-    closeAssignmentModal();
-  } finally {
-    setAssigning(false);
-  }
-};
+    if (!assignmentModal.selectedDriver || !assignmentModal.deliveryId) return;
+    const driver = drivers.find(
+      (d) =>
+        d.$id === assignmentModal.selectedDriver ||
+        d.id === assignmentModal.selectedDriver
+    );
+    if (!driver) return;
+    setAssigning(true);
+    try {
+      await completeAssignment(assignmentModal.deliveryId, driver);
+      closeAssignmentModal();
+    } finally {
+      setAssigning(false);
+    }
+  };
 
-  //  Location ping 
   useEffect(() => {
     if (!agencyId) return;
-
     const ping = () => {
       if (!navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(async ({ coords }) => {
@@ -229,10 +262,8 @@ const [assigning, setAssigning] = useState(false);
         }
       });
     };
-
     ping();
     locationIntervalRef.current = setInterval(ping, 15_000);
-
     return () => {
       clearInterval(locationIntervalRef.current);
       tablesDB
@@ -249,7 +280,6 @@ const [assigning, setAssigning] = useState(false);
   useEffect(() => {
     if (agencyId) fetchDrivers();
   }, [activeDeliveries.length, completedDeliveries.length]);
-
   useEffect(() => {
     if (activePage === 'drivers' && agencyId) fetchDrivers();
   }, [activePage, agencyId]);
@@ -260,6 +290,7 @@ const [assigning, setAssigning] = useState(false);
         return (
           <DashboardPage
             activeDeliveries={activeDeliveries}
+            completedDeliveries={completedDeliveries}
             drivers={formattedDrivers}
             onNavigateToTracking={() => setActivePage('tracking')}
           />
@@ -314,31 +345,33 @@ const [assigning, setAssigning] = useState(false);
       default:
         return (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-2">Page Not Found</h2>
-            <p className="text-gray-500">Select a page from the navigation</p>
+            <h2 className="text-2xl font-bold text-black dark:text-white mb-2">
+              Page Not Found
+            </h2>
+            <p className="text-black/50 dark:text-white/50">
+              Select a page from the navigation
+            </p>
           </div>
         );
     }
   };
 
   return (
-    <div className="min-h-screen pb-16 bg-white dark:bg-black ">
-      <header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg lg:hidden"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-        </div>
+    <div className="min-h-screen pb-16 bg-white dark:bg-black">
+      {/* Desktop header spacer — no hamburger needed, swipe handles mobile */}
+      <header className="hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" />
       </header>
 
       <div className="flex max-w-7xl mx-auto">
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
-          onClick={() => setSidebarOpen(false)}
-        />
+        {/* Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         <Sidebar
           activePage={activePage}
           onPageChange={(page) => {
@@ -347,11 +380,35 @@ const [assigning, setAssigning] = useState(false);
           }}
           drivers={drivers}
           isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
+
         <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
       </div>
 
-      {/* ── Offer banner — stays mounted during accepting confirmation ── */}
+      {/* ── Edge pull tab — mobile only, hidden when sidebar is open ── */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center"
+          aria-label="Open navigation"
+        >
+          {/* The tab shape */}
+          <div
+            className="bg-[#00C896] text-black rounded-r-xl pl-0.5 pr-1.5 py-6 shadow-lg flex flex-col items-center gap-1"
+            style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+            {/* Three stacked dots to hint "menu" */}
+            <div className="flex flex-col gap-0.5">
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+            </div>
+          </div>
+        </button>
+      )}
+
       {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}

@@ -228,7 +228,6 @@ const CodeInput = ({ label, length = 6, onSubmit, loading, hint, error }) => {
 
 function DriverPortalInner({ token }) {
   const { brandColors } = useBrandColors();
-
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, _setActionLoading] = useState(false);
@@ -246,6 +245,40 @@ function DriverPortalInner({ token }) {
   const currentStop = stops[currentStopIdx];
   const totalStops = stops.length;
   const isLastStop = currentStopIdx >= totalStops - 1;
+
+// ── Drop this inside DriverPortalInner, after existing state declarations ──
+// Location pinger — runs when driver is picked_up or in_transit
+useEffect(() => {
+  const shouldPing = ['picked_up', 'in_transit'].includes(delivery?.status);
+  if (!shouldPing || !delivery?.driverId) return;
+
+  const ping = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          await tablesDB.updateRow({
+            databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+            tableId: process.env.NEXT_PUBLIC_APPWRITE_DRIVER_COLLECTION_ID,
+            rowId: delivery.driverId,
+            data: {
+              lat: coords.latitude,
+              lng: coords.longitude,
+            },
+          });
+        } catch (e) {
+          console.warn('Driver location ping failed:', e.message);
+        }
+      },
+      (err) => console.warn('Geolocation error:', err.message),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  ping(); // immediate first ping
+  const interval = setInterval(ping, 10_000);
+  return () => clearInterval(interval);
+}, [delivery?.status, delivery?.driverId]);
 
   const fetchDelivery = useCallback(async () => {
     if (!token) return;

@@ -124,7 +124,7 @@ export default function GuestTrackingPage() {
         >
           {copied.type === 'link' && copied.active
             ? <Check className="w-4 h-4" />
-            : <Copy className="w-4 h-4" />}
+            : <Copy className="w-4 h-4" />} 
         </button>
       </div>
     </div>

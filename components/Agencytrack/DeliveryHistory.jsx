@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { formatNairaSimple } from '@/hooks/currency';
 
-// ─── Waybill Modal ────────────────────────────────────────────────────────────
 const WaybillModal = ({ delivery, onClose }) => {
   const printRef = useRef();
 
@@ -113,9 +112,7 @@ const WaybillModal = ({ delivery, onClose }) => {
       <div className="bg-white dark:bg-black w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-black/10 dark:border-white/10 shadow-2xl">
         {/* Modal header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-black/10 dark:border-white/10">
-          <h2 className="text-sm font-semibold text-black dark:text-white">
-            Waybill — {waybillNo}
-          </h2>
+          
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
@@ -136,87 +133,8 @@ const WaybillModal = ({ delivery, onClose }) => {
         {/* Waybill content */}
         <div ref={printRef}>
           <div className="wb-print">
-            {/* Header */}
-            <div
-              className="wb-header"
-              style={{
-                background: '#000',
-                padding: '20px 24px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <div
-                className="wb-logo"
-                style={{
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: '#fff',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                carry<span style={{ color: '#00C896' }}>dey</span>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p
-                  style={{
-                    fontSize: 10,
-                    color: 'rgba(255,255,255,0.5)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    margin: '0 0 2px',
-                  }}
-                >
-                  Waybill No.
-                </p>
-                <strong
-                  style={{
-                    fontSize: 14,
-                    color: '#fff',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {waybillNo}
-                </strong>
-              </div>
-            </div>
-
-            {/* Band */}
-            <div
-              style={{
-                background: '#00C896',
-                padding: '6px 24px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 11,
-                  color: '#000',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                }}
-              >
-                {delivery.deliveryType || 'Standard'} delivery
-              </span>
-              <span
-                style={{
-                  background: 'rgba(0,0,0,0.15)',
-                  color: '#000',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: '2px 10px',
-                  borderRadius: 20,
-                }}
-              >
-                {delivery.status === 'delivered' ? 'Delivered' : 'Cancelled'}
-              </span>
-            </div>
+            
+            
 
             {/* Body */}
             <div style={{ padding: '20px 24px' }}>
@@ -313,7 +231,6 @@ const WaybillModal = ({ delivery, onClose }) => {
                 }}
               >
                 {[
-                  { label: 'Date', value: formattedDate },
                   { label: 'Order ref', value: delivery.orderRef || '—' },
                   { label: 'Type', value: delivery.deliveryType || 'Standard' },
                   { label: 'Payment', value: delivery.paymentMethod || 'Cash' },
@@ -436,11 +353,9 @@ const WaybillModal = ({ delivery, onClose }) => {
               {/* Package */}
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
+                  { label: 'Date', value: formattedDate },
                   { label: 'Package', value: delivery.packageSize || 'Medium' },
-                  {
-                    label: 'Weight',
-                    value: delivery.weight ? `${delivery.weight} kg` : '—',
-                  },
+                  
                   {
                     label: 'Fragile',
                     value: delivery.isFragile ? 'Yes' : 'No',
@@ -567,7 +482,6 @@ const WaybillModal = ({ delivery, onClose }) => {
   );
 };
 
-// ─── CSV Export ───────────────────────────────────────────────────────────────
 const exportToCSV = (deliveries) => {
   const headers = [
     'Waybill No',
@@ -718,13 +632,12 @@ const DeliveryHistoryCard = ({ delivery, onViewWaybill }) => {
         className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-black/10 dark:border-white/10 hover:border-[#00C896]/50 hover:bg-[#00C896]/5 transition-all text-xs font-medium text-black/60 dark:text-white/60 hover:text-[#00C896]"
       >
         <FileText className="w-3.5 h-3.5" />
-        View Waybill
+        View Receipt
       </button>
     </div>
   );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 const DeliveryHistory = ({ completedDeliveries, loading }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
