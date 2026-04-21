@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { ChevronRight, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { formatNairaSimple } from '@/hooks/currency';
 import { useCourierDelivery } from '@/hooks/useCourierDelivery';
@@ -31,6 +31,34 @@ const TrackCourierDelivery = () => {
   const [selectedDeliveryForDropoff, setSelectedDeliveryForDropoff] =
     useState(null);
 
+  // ── Edge swipe ─────────────────────────────────────────────────────────────
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
+  useEffect(() => {
+    const onTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      if (dy < 60) {
+        if (dx > 50 && touchStartX.current < 30) setSidebarOpen(true);
+        if (dx < -50 && sidebarOpen) setSidebarOpen(false);
+      }
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [sidebarOpen]);
+
   const {
     courier,
     deliveries: allDeliveries,
@@ -40,6 +68,11 @@ const TrackCourierDelivery = () => {
     updateDeliveryStatus,
     refresh,
   } = useCourierDelivery(user?.$id);
+
+  // incomingOffer shape: { deliveryId, expiresAt, queueId, fare?, distance?, pickup? }
+  // The fare/distance/pickup fields are populated by useDispatchOffer when it
+  // reads them from the dispatch_queue doc's rankedCouriersJson and the delivery
+  // data payload forwarded from the FCM push.
   const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
     useDispatchOffer(courier?.$id, USERS, { onAccepted: () => refresh() });
 
@@ -62,7 +95,7 @@ const TrackCourierDelivery = () => {
   usePushNotifications({
     enabled: !!user?.$id,
     onForegroundMessage: (payload) =>
-      console.log('Foreground notification:', payload.notification.title),
+      console.log('Foreground notification:', payload.notification?.title),
   });
 
   useEffect(() => {
@@ -150,7 +183,6 @@ const TrackCourierDelivery = () => {
         return (
           <CourierHistory deliveries={completedDeliveries} loading={loading} />
         );
-
       case 'earnings': {
         const totalEarnings = completedDeliveries
           .filter((d) => d.status === 'delivered')
@@ -173,70 +205,64 @@ const TrackCourierDelivery = () => {
               Track your earnings and income
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-6 border border-black/10 dark:border-white/10 shadow-md">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-emerald-500/20 rounded-2xl">
-                    <DollarSign className="w-6 h-6 text-emerald-500" />
+              {[
+                {
+                  label: "Today's Earnings",
+                  sub: 'Current day income',
+                  value: formatNairaSimple(todayEarnings),
+                  icon: DollarSign,
+                  color: 'text-emerald-500',
+                  bg: 'bg-emerald-500/20',
+                },
+                {
+                  label: 'Total Earnings',
+                  sub: 'All-time income',
+                  value: formatNairaSimple(totalEarnings),
+                  icon: Calendar,
+                  color: 'text-blue-500',
+                  bg: 'bg-blue-500/20',
+                },
+                {
+                  label: 'Completed Jobs',
+                  sub: 'Total deliveries',
+                  value: completedDeliveries.filter(
+                    (d) => d.status === 'delivered'
+                  ).length,
+                  icon: CheckCircle,
+                  color: 'text-purple-500',
+                  bg: 'bg-purple-500/20',
+                },
+              ].map(({ label, sub, value, icon: Icon, color, bg }) => (
+                <div
+                  key={label}
+                  className="bg-black/5 dark:bg-white/5 rounded-3xl p-6 border border-black/10 dark:border-white/10 shadow-md"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`p-3 ${bg} rounded-2xl`}>
+                      <Icon className={`w-6 h-6 ${color}`} />
+                    </div>
+                    <p className="text-3xl font-bold text-black dark:text-white">
+                      {value}
+                    </p>
                   </div>
-                  <p className="text-3xl font-bold text-black dark:text-white">
-                    {formatNairaSimple(todayEarnings)}
+                  <p className="text-sm font-semibold text-black dark:text-white">
+                    {label}
+                  </p>
+                  <p className="text-xs text-black/50 dark:text-white/50 mt-1">
+                    {sub}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-black dark:text-white">
-                  Today's Earnings
-                </p>
-                <p className="text-xs text-black/50 dark:text-white/50 mt-1">
-                  Current day income
-                </p>
-              </div>
-              <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-6 border border-black/10 dark:border-white/10 shadow-md">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-blue-500/20 rounded-2xl">
-                    <Calendar className="w-6 h-6 text-blue-500" />
-                  </div>
-                  <p className="text-3xl font-bold text-black dark:text-white">
-                    {formatNairaSimple(totalEarnings)}
-                  </p>
-                </div>
-                <p className="text-sm font-semibold text-black dark:text-white">
-                  Total Earnings
-                </p>
-                <p className="text-xs text-black/50 dark:text-white/50 mt-1">
-                  All-time income
-                </p>
-              </div>
-              <div className="bg-black/5 dark:bg-white/5 rounded-3xl p-6 border border-black/10 dark:border-white/10 shadow-md">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-purple-500/20 rounded-2xl">
-                    <CheckCircle className="w-6 h-6 text-purple-500" />
-                  </div>
-                  <p className="text-3xl font-bold text-black dark:text-white">
-                    {
-                      completedDeliveries.filter(
-                        (d) => d.status === 'delivered'
-                      ).length
-                    }
-                  </p>
-                </div>
-                <p className="text-sm font-semibold text-black dark:text-white">
-                  Completed Jobs
-                </p>
-                <p className="text-xs text-black/50 dark:text-white/50 mt-1">
-                  Total deliveries
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         );
       }
-
       case 'profile':
         return (
           <div className="mb-6">
             <Profile />
           </div>
         );
-
       default:
         return null;
     }
@@ -244,19 +270,6 @@ const TrackCourierDelivery = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      <header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 hover:bg-black/5 dark:hover:bg-gray-800 rounded-xl transition-colors"
-            >
-              <Menu className="w-6 h-6 text-black dark:text-gray-300" />
-            </button>
-          </div>
-        </div>
-      </header>
-
       <div className="flex max-w-7xl mx-auto">
         {sidebarOpen && (
           <div
@@ -275,11 +288,36 @@ const TrackCourierDelivery = () => {
         </main>
       </div>
 
+      {/* Edge pull tab — mobile only */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-30"
+          aria-label="Open navigation"
+        >
+          <div className="bg-[#00C896] text-black rounded-r-xl pl-0.5 pr-1.5 py-6 shadow-lg flex flex-col items-center gap-1">
+            <ChevronRight className="w-3.5 h-3.5" />
+            <div className="flex flex-col gap-0.5">
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+            </div>
+          </div>
+        </button>
+      )}
+
+      {/* ── OfferBanner ────────────────────────────────────────────────────────
+          offer={incomingOffer} passes fare/distance/pickup into the banner
+          so the courier sees the delivery details before accepting.
+          Previously this prop was missing — the banner showed but had no
+          delivery info (no fare amount, no distance pill, no pickup label).
+      ──────────────────────────────────────────────────────────────────────── */}
       {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}
           onAccept={handleAcceptOffer}
           onDecline={declineOffer}
+          offer={incomingOffer}
           accepting={accepting}
         />
       )}

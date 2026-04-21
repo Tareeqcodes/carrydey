@@ -1,5 +1,5 @@
 'use client';
-import { Truck, History, User } from 'lucide-react';
+import { Truck, History, User, X } from 'lucide-react';
 
 const SenderSidebar = ({
   activePage,
@@ -30,9 +30,7 @@ const SenderSidebar = ({
 
   return (
     <aside
-      className={`fixed lg:sticky pt-5 top-10 left-0 h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] w-72 bg-black/5 dark:bg-black/40 backdrop-blur-xl border-r border-black/10 dark:border-white/10 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
+      className={`fixed lg:sticky pt-5 top-10 left-0 h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] w-72 bg-white dark:bg-black border-r border-black/10 dark:border-white/10 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
       <div className="p-6 h-full flex flex-col">
         <nav className="space-y-2 flex-1">
@@ -54,30 +52,20 @@ const SenderSidebar = ({
               >
                 <div className="relative z-10 flex items-start gap-4 p-4">
                   <div
-                    className={`p-2 rounded-xl transition-colors ${
-                      isActive
-                        ? 'bg-black/20'
-                        : 'bg-black/8 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/20'
-                    }`}
+                    className={`p-2 rounded-xl transition-colors ${isActive ? 'bg-black/20' : 'bg-black/8 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/20'}`}
                   >
                     <Icon
-                      className={`w-5 h-5 ${
-                        isActive ? 'text-black' : 'text-black/60 dark:text-white/70'
-                      }`}
+                      className={`w-5 h-5 ${isActive ? 'text-black' : 'text-black/60 dark:text-white/70'}`}
                     />
                   </div>
                   <div className="flex-1 text-left">
                     <p
-                      className={`font-semibold text-sm ${
-                        isActive ? 'text-black' : 'text-black dark:text-white'
-                      }`}
+                      className={`font-semibold text-sm ${isActive ? 'text-black' : 'text-black dark:text-white'}`}
                     >
                       {item.label}
                     </p>
                     <p
-                      className={`text-xs mt-0.5 ${
-                        isActive ? 'text-black/70' : 'text-black/50 dark:text-white/50'
-                      }`}
+                      className={`text-xs mt-0.5 ${isActive ? 'text-black/70' : 'text-black/50 dark:text-white/50'}`}
                     >
                       {item.description}
                     </p>

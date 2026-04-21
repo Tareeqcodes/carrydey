@@ -27,30 +27,25 @@ export default async ({ req, res, log, error }) => {
   const ORGS = process.env.APPWRITE_ORGANISATION_COLLECTION_ID;
   const DISPATCH = process.env.APPWRITE_DISPATCH_QUEUE_COLLECTION_ID;
 
-  // ── Notify helpers ─────────────────────────────────────────────────────────
-  //
-  // Same split as dispatch-search:
-  //   notifyByDocId  → couriers & agencies  (entityId IS the document $id)
-  //   notifyByAuthId → senders              (delivery.userId is the Auth ID,
-  //                                          not the USERS document $id)
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const sendPush = async (pushTargetId, title, body, entityLabel) => {
+  // ── sendPush — identical rule to dispatch-search: stop at data (pos 7) ────
+  const sendPush = async (pushTargetId, title, body, entityLabel, data = {}) => {
     if (!pushTargetId) {
       log('No pushTargetId for ' + entityLabel + ', skipping notify');
       return;
     }
-    log(
-      'Sending notification to ' + entityLabel + ' | target: ' + pushTargetId
-    );
+    log('Sending notification to ' + entityLabel + ' | target: ' + pushTargetId);
     try {
+      const safeData = Object.fromEntries(
+        Object.entries(data).map(([k, v]) => [k, String(v ?? '')])
+      );
       await messaging.createPush(
         ID.unique(),
         title,
         body,
         [],
         [],
-        [pushTargetId]
+        [pushTargetId],
+        safeData        // stop here — nothing after this
       );
       log('Notification sent to ' + entityLabel);
     } catch (e) {
@@ -58,20 +53,16 @@ export default async ({ req, res, log, error }) => {
     }
   };
 
-  const notifyByDocId = async (entityDocId, tableId, title, body) => {
+  const notifyByDocId = async (entityDocId, tableId, title, body, data = {}) => {
     try {
-      const doc = await db.getRow({
-        databaseId: DB,
-        tableId,
-        rowId: entityDocId,
-      });
-      await sendPush(doc.pushTargetId ?? null, title, body, entityDocId);
+      const doc = await db.getRow({ databaseId: DB, tableId, rowId: entityDocId });
+      await sendPush(doc.pushTargetId ?? null, title, body, entityDocId, data);
     } catch (e) {
       log('notifyByDocId failed for ' + entityDocId + ': ' + e.message);
     }
   };
 
-  const notifyByAuthId = async (authUserId, title, body) => {
+  const notifyByAuthId = async (authUserId, title, body, data = {}) => {
     try {
       const res = await db.listRows({
         databaseId: DB,
@@ -80,14 +71,10 @@ export default async ({ req, res, log, error }) => {
       });
       const doc = res.rows?.[0];
       if (!doc) {
-        log(
-          'No USERS doc found for authUserId ' +
-            authUserId +
-            ', skipping notify'
-        );
+        log('No USERS doc found for authUserId ' + authUserId + ', skipping notify');
         return;
       }
-      await sendPush(doc.pushTargetId ?? null, title, body, authUserId);
+      await sendPush(doc.pushTargetId ?? null, title, body, authUserId, data);
     } catch (e) {
       log('notifyByAuthId failed for ' + authUserId + ': ' + e.message);
     }
@@ -96,16 +83,10 @@ export default async ({ req, res, log, error }) => {
   // ── Parse body ─────────────────────────────────────────────────────────────
   let body = req.body;
   if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      body = {};
-    }
+    try { body = JSON.parse(body); } catch { body = {}; }
   }
   if (typeof body?.body === 'string') {
-    try {
-      body = JSON.parse(body.body);
-    } catch {}
+    try { body = JSON.parse(body.body); } catch {}
   }
 
   const { queueId, action } = body ?? {};
@@ -113,14 +94,9 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'missing queueId or action' }, 400);
   }
 
-  // ── Load queue ─────────────────────────────────────────────────────────────
   let queue;
   try {
-    queue = await db.getRow({
-      databaseId: DB,
-      tableId: DISPATCH,
-      rowId: queueId,
-    });
+    queue = await db.getRow({ databaseId: DB, tableId: DISPATCH, rowId: queueId });
   } catch (e) {
     error('Queue not found: ' + e.message);
     return res.json({ ok: false, reason: 'queue_not_found' }, 404);
@@ -131,7 +107,6 @@ export default async ({ req, res, log, error }) => {
     return res.json({ ok: false, reason: 'already_resolved' });
   }
 
-  // ── Parse ranked couriers ──────────────────────────────────────────────────
   let rankedCouriers = [];
   try {
     rankedCouriers = JSON.parse(queue.rankedCouriersJson ?? '[]');
@@ -144,11 +119,26 @@ export default async ({ req, res, log, error }) => {
   const currentCourierId = queue.currentCourierId;
   const currentEntry = rankedCouriers[currentIndex];
   const currentIsAgency = currentEntry?.entityType === 'agency';
+  const collectionFor = (entry) => entry?.entityType === 'agency' ? ORGS : USERS;
 
-  const collectionFor = (entry) =>
-    entry?.entityType === 'agency' ? ORGS : USERS;
+  // Load delivery for fare/pickup display strings used in next-courier notify
+  let delivery = null;
+  try {
+    delivery = await db.getRow({ databaseId: DB, tableId: DELIVERIES, rowId: queue.deliveryId });
+  } catch (e) {
+    log('Could not load delivery for notification enrichment: ' + e.message);
+  }
 
-  // ── Reset current entity back to available ─────────────────────────────────
+  const fareAmount = delivery?.offeredFare ?? delivery?.fare ?? null;
+  const fareDisplay = fareAmount
+    ? '\u20a6' + Number(fareAmount).toLocaleString('en-NG')
+    : 'Negotiable';
+  const pickupDisplay = delivery?.pickupAddress
+    ? delivery.pickupAddress.split(',')[0].trim()
+    : '';
+  const senderAuthId = delivery?.userId ?? delivery?.senderId ?? null;
+
+  // Reset current entity back to available
   try {
     await db.updateRow({
       databaseId: DB,
@@ -167,18 +157,6 @@ export default async ({ req, res, log, error }) => {
     try {
       const pickupCode = generatePickupCode();
       const dropoffOTP = generateOTP();
-
-      let senderAuthId = null;
-      try {
-        const delivery = await db.getRow({
-          databaseId: DB,
-          tableId: DELIVERIES,
-          rowId: queue.deliveryId,
-        });
-        senderAuthId = delivery.userId ?? delivery.senderId ?? null;
-      } catch (e) {
-        log('Could not load delivery for senderAuthId: ' + e.message);
-      }
 
       let driverName = null;
       let driverPhone = null;
@@ -214,13 +192,7 @@ export default async ({ req, res, log, error }) => {
             driverPhone,
           };
 
-      await db.updateRow({
-        databaseId: DB,
-        tableId: DELIVERIES,
-        rowId: queue.deliveryId,
-        data: deliveryUpdate,
-      });
-
+      await db.updateRow({ databaseId: DB, tableId: DELIVERIES, rowId: queue.deliveryId, data: deliveryUpdate });
       await db.updateRow({
         databaseId: DB,
         tableId: collectionFor(currentEntry),
@@ -229,32 +201,17 @@ export default async ({ req, res, log, error }) => {
           ? { isAvailable: false, currentOfferId: null }
           : { status: 'on_delivery', currentOfferId: null },
       });
+      await db.updateRow({ databaseId: DB, tableId: DISPATCH, rowId: queueId, data: { status: 'accepted' } });
 
-      await db.updateRow({
-        databaseId: DB,
-        tableId: DISPATCH,
-        rowId: queueId,
-        data: { status: 'accepted' },
-      });
+      log('Delivery ' + queue.deliveryId + ' accepted by ' + currentEntry?.entityType + ' ' + currentCourierId + ' | pickupCode: ' + pickupCode);
 
-      log(
-        'Delivery ' +
-          queue.deliveryId +
-          ' accepted by ' +
-          currentEntry?.entityType +
-          ' ' +
-          currentCourierId +
-          ' | pickupCode: ' +
-          pickupCode
-      );
-
-      // Notify sender — senderAuthId is an Auth ID, so use notifyByAuthId
       if (senderAuthId) {
         const entityLabel = currentIsAgency ? 'An agency' : 'A courier';
         await notifyByAuthId(
           senderAuthId,
-          '🚀 Courier Found!',
-          `${entityLabel} has accepted your delivery and is on the way.`
+          '\ud83d\ude80 Courier Found!',
+          entityLabel + ' has accepted your delivery and is on the way.',
+          { type: 'delivery_accepted', deliveryId: queue.deliveryId, driverName: driverName ?? '' }
         );
       }
 
@@ -277,29 +234,12 @@ export default async ({ req, res, log, error }) => {
 
   if (nextIndex >= rankedCouriers.length) {
     await db
-      .updateRow({
-        databaseId: DB,
-        tableId: DISPATCH,
-        rowId: queueId,
-        data: { status: 'failed', failReason: 'all_rejected' },
-      })
+      .updateRow({ databaseId: DB, tableId: DISPATCH, rowId: queueId, data: { status: 'failed', failReason: 'all_rejected' } })
       .catch(() => {});
-
     await db
-      .updateRow({
-        databaseId: DB,
-        tableId: DELIVERIES,
-        rowId: queue.deliveryId,
-        data: { status: 'no_couriers' },
-      })
+      .updateRow({ databaseId: DB, tableId: DELIVERIES, rowId: queue.deliveryId, data: { status: 'no_couriers' } })
       .catch(() => {});
-
-    log(
-      'All ' +
-        rankedCouriers.length +
-        ' candidates rejected delivery ' +
-        queue.deliveryId
-    );
+    log('All ' + rankedCouriers.length + ' candidates rejected delivery ' + queue.deliveryId);
     return res.json({ ok: true, assigned: false, reason: 'all_rejected' });
   }
 
@@ -313,11 +253,7 @@ export default async ({ req, res, log, error }) => {
       databaseId: DB,
       tableId: DISPATCH,
       rowId: queueId,
-      data: {
-        currentCourierId: nextCourierId,
-        attemptIndex: nextIndex,
-        expiresAt,
-      },
+      data: { currentCourierId: nextCourierId, attemptIndex: nextIndex, expiresAt },
     })
     .catch((e) => error('Queue advance failed: ' + e.message));
 
@@ -327,41 +263,31 @@ export default async ({ req, res, log, error }) => {
       tableId: collectionFor(nextEntry),
       rowId: nextCourierId,
       data: nextIsAgency
-        ? {
-            isAvailable: false,
-            currentOfferId: queue.deliveryId,
-            offerExpiresAt: expiresAt,
-          }
-        : {
-            status: 'offered',
-            currentOfferId: queue.deliveryId,
-            offerExpiresAt: expiresAt,
-          },
+        ? { isAvailable: false, currentOfferId: queue.deliveryId, offerExpiresAt: expiresAt }
+        : { status: 'offered', currentOfferId: queue.deliveryId, offerExpiresAt: expiresAt },
     })
     .catch((e) => log('Could not mark next entity as offered: ' + e.message));
 
-  // Notify next courier/agency — these are document $ids, so use notifyByDocId
-  const label = nextIsAgency
-    ? 'A new delivery is waiting for your agency.'
-    : 'A new delivery is near you. Open Carrydey to accept.';
+  const nextNotifBody = nextIsAgency
+    ? fareDisplay + ' \u00b7 ' + (nextEntry.distance ?? '') + 'km \u2014 New delivery for your agency'
+    : fareDisplay + ' \u00b7 ' + (nextEntry.distance ?? '') + 'km away \u2014 Open Carrydey to accept';
 
   await notifyByDocId(
     nextCourierId,
     nextIsAgency ? ORGS : USERS,
-    '📦 New Delivery Offer',
-    label
+    '\ud83d\udce6 New Delivery Offer',
+    nextNotifBody,
+    {
+      type:       'delivery_offer',
+      deliveryId: queue.deliveryId,
+      queueId,
+      fare:       fareDisplay,
+      distance:   String(nextEntry.distance ?? ''),
+      pickup:     pickupDisplay,
+    }
   );
 
-  log(
-    'Advanced to ' +
-      nextEntry.entityType +
-      ' ' +
-      (nextIndex + 1) +
-      '/' +
-      rankedCouriers.length +
-      ': ' +
-      nextCourierId
-  );
+  log('Advanced to ' + nextEntry.entityType + ' ' + (nextIndex + 1) + '/' + rankedCouriers.length + ': ' + nextCourierId);
 
   return res.json({
     ok: true,

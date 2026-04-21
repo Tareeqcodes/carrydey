@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { tablesDB, Query } from '@/lib/config/Appwriteconfig';
 import Sendertrackingview from './Sendertrackingview';
@@ -20,6 +20,34 @@ const TrackSenderDelivery = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
+
+  // ── Edge swipe ────────────────────────────────────────────────────────────
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
+  useEffect(() => {
+    const onTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      if (dy < 60) {
+        if (dx > 50 && touchStartX.current < 30) setSidebarOpen(true);
+        if (dx < -50 && sidebarOpen) setSidebarOpen(false);
+      }
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [sidebarOpen]);
 
   useEffect(() => {
     if (user) fetchUserDeliveries();
@@ -56,9 +84,8 @@ const TrackSenderDelivery = () => {
       setDeliveries((prev) =>
         prev.map((d) => (d.$id === deliveryId ? { ...d, ...response } : d))
       );
-      if (selectedDelivery?.$id === deliveryId) {
+      if (selectedDelivery?.$id === deliveryId)
         setSelectedDelivery((prev) => ({ ...prev, ...response }));
-      }
       return response;
     } catch (error) {
       console.error('Error updating delivery:', error);
@@ -74,7 +101,9 @@ const TrackSenderDelivery = () => {
   const activeDeliveries = deliveries.filter(
     (d) => !['delivered', 'cancelled'].includes(d.status)
   );
-  const completedDeliveries = deliveries.filter((d) => d.status === 'delivered');
+  const completedDeliveries = deliveries.filter(
+    (d) => d.status === 'delivered'
+  );
   const filteredActiveDeliveries = activeDeliveries.filter(
     (d) =>
       searchQuery === '' ||
@@ -115,21 +144,6 @@ const TrackSenderDelivery = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      <header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <Menu className="w-6 h-6 text-black dark:text-white" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="flex max-w-7xl mx-auto">
         {sidebarOpen && (
           <div
@@ -147,6 +161,24 @@ const TrackSenderDelivery = () => {
           {renderPage()}
         </main>
       </div>
+
+      {/* Edge pull tab — mobile only */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-30"
+          aria-label="Open navigation"
+        >
+          <div className="bg-[#00C896] text-black rounded-r-xl pl-0.5 pr-1.5 py-6 shadow-lg flex flex-col items-center gap-1">
+            <ChevronRight className="w-3.5 h-3.5" />
+            <div className="flex flex-col gap-0.5">
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+              <div className="w-1 h-1 rounded-full bg-black/60" />
+            </div>
+          </div>
+        </button>
+      )}
 
       {showTrackingModal && selectedDelivery && (
         <Sendertrackingview

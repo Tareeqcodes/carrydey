@@ -67,18 +67,7 @@ const Sidebar = ({ activePage, onPageChange, drivers, isOpen, onClose }) => {
         }`}
     >
       <div className="p-6 h-full flex flex-col">
-        {/* Close button — mobile only */}
-        <div className="flex items-center justify-between mb-4 lg:hidden">
-          <span className="text-xs font-bold text-black/40 dark:text-white/40 uppercase tracking-widest">
-            Menu
-          </span>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/15 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        
 
         <nav className="space-y-2 flex-1">
           {navItems.map((item) => {
