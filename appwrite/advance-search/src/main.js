@@ -49,8 +49,8 @@ export default async ({ req, res, log, error }) => {
       );
       await messaging.createPush(
         ID.unique(),
-        '',
-        '',
+        title,
+        body,
         [],
         [],
         [pushTargetId],

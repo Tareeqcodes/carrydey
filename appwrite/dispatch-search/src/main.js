@@ -73,8 +73,8 @@ export default async ({ req, res, log, error }) => {
       );
       await messaging.createPush(
         ID.unique(),
-        '', // ← empty: no notification key sent to FCM
-        '', // ← empty: forces data-only message → onBackgroundMessage fires
+        title,
+        body,
         [],
         [],
         [pushTargetId],
