@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Menu, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/Authcontext';
 import { useAgencyDeliveries } from '@/hooks/useAgencyDeliveries';
 import {
@@ -48,7 +48,7 @@ const TrackAgencyDelivery = () => {
   const [accepting, setAccepting] = useState(false);
   const [assigning, setAssigning] = useState(false);
 
-  // ── Swipe-to-open (edge gesture) ──────────────────────────────────────────
+  // ── Edge swipe ─────────────────────────────────────────────────────────────
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
 
@@ -57,25 +57,17 @@ const TrackAgencyDelivery = () => {
       touchStartX.current = e.touches[0].clientX;
       touchStartY.current = e.touches[0].clientY;
     };
-
     const handleTouchEnd = (e) => {
       if (touchStartX.current === null) return;
       const dx = e.changedTouches[0].clientX - touchStartX.current;
       const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
-      const isHorizontal = dy < 60;
-
-      // Open: swipe right starting within 30px of left edge
-      if (isHorizontal && dx > 50 && touchStartX.current < 30) {
-        setSidebarOpen(true);
-      }
-      // Close: swipe left while sidebar is open
-      if (isHorizontal && dx < -50 && sidebarOpen) {
-        setSidebarOpen(false);
+      if (dy < 60) {
+        if (dx > 50 && touchStartX.current < 30) setSidebarOpen(true);
+        if (dx < -50 && sidebarOpen) setSidebarOpen(false);
       }
       touchStartX.current = null;
       touchStartY.current = null;
     };
-
     document.addEventListener('touchstart', handleTouchStart, {
       passive: true,
     });
@@ -191,6 +183,7 @@ const TrackAgencyDelivery = () => {
     [drivers, completeAssignment, refreshDeliveries]
   );
 
+  // incomingOffer shape: { deliveryId, expiresAt, queueId, fare?, distance?, pickup? }
   const { incomingOffer, offerCountdown, acceptOffer, declineOffer } =
     useDispatchOffer(agencyId, ORGS, { onAccepted: handleDispatchAccepted });
 
@@ -205,9 +198,8 @@ const TrackAgencyDelivery = () => {
 
   usePushNotifications({
     enabled: !!user?.$id,
-    onForegroundMessage: (payload) => {
-      console.log('Foreground notification:', payload.notification.title);
-    },
+    onForegroundMessage: (payload) =>
+      console.log('Foreground notification:', payload.notification?.title),
   });
 
   const handleAcceptRequest = async (requestId) => {
@@ -358,20 +350,17 @@ const TrackAgencyDelivery = () => {
 
   return (
     <div className="min-h-screen pb-16 bg-white dark:bg-black">
-      {/* Desktop header spacer — no hamburger needed, swipe handles mobile */}
       <header className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" />
       </header>
 
       <div className="flex max-w-7xl mx-auto">
-        {/* Overlay */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
-
         <Sidebar
           activePage={activePage}
           onPageChange={(page) => {
@@ -382,24 +371,21 @@ const TrackAgencyDelivery = () => {
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-
         <main className="flex-1 p-0 lg:p-8">{renderPage()}</main>
       </div>
 
-      {/* ── Edge pull tab — mobile only, hidden when sidebar is open ── */}
+      {/* Edge pull tab */}
       {!sidebarOpen && (
         <button
           onClick={() => setSidebarOpen(true)}
-          className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center"
+          className="lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-30"
           aria-label="Open navigation"
         >
-          {/* The tab shape */}
           <div
             className="bg-[#00C896] text-black rounded-r-xl pl-0.5 pr-1.5 py-6 shadow-lg flex flex-col items-center gap-1"
             style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
           >
             <ChevronRight className="w-3.5 h-3.5" />
-            {/* Three stacked dots to hint "menu" */}
             <div className="flex flex-col gap-0.5">
               <div className="w-1 h-1 rounded-full bg-black/60" />
               <div className="w-1 h-1 rounded-full bg-black/60" />
@@ -409,11 +395,15 @@ const TrackAgencyDelivery = () => {
         </button>
       )}
 
+      {/* OfferBanner — offer={incomingOffer} passes fare/distance/pickup into
+          the banner so the agency sees delivery details before accepting.
+          Previously this prop was missing from TrackAgencyDelivery. */}
       {(incomingOffer || accepting) && (
         <OfferBanner
           offerCountdown={offerCountdown}
           onAccept={handleAcceptOffer}
           onDecline={declineOffer}
+          offer={incomingOffer}
           accepting={accepting}
           label="A new delivery offer has been matched to your agency."
         />
