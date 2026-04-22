@@ -16,7 +16,7 @@ import NavbarMorphism from '@/ui/NavbarMorphism';
 const getNavLinks = (user, role) => {
   if (!user)
     return [
-      { href: '/vendor', label: 'Send', icon: Send },
+      { href: 'send', label: 'Send', icon: Send },
       { href: '/courier', label: 'Earn', icon: TrendingUp },
     ];
   if (role === 'sender')
